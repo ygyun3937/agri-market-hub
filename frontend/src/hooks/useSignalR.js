@@ -5,6 +5,11 @@ import * as signalR from '@microsoft/signalr'
 export function useSignalR(onPriceUpdate, onAlertUpdate) {
   const connRef = useRef(null)
   const [connected, setConnected] = useState(false)
+  const priceRef = useRef(onPriceUpdate)
+  const alertRef = useRef(onAlertUpdate)
+
+  useEffect(() => { priceRef.current = onPriceUpdate }, [onPriceUpdate])
+  useEffect(() => { alertRef.current = onAlertUpdate }, [onAlertUpdate])
 
   useEffect(() => {
     const token = localStorage.getItem('token')
@@ -15,8 +20,8 @@ export function useSignalR(onPriceUpdate, onAlertUpdate) {
       .withAutomaticReconnect()
       .build()
 
-    conn.on('PriceUpdate', onPriceUpdate)
-    conn.on('AlertUpdate', onAlertUpdate)
+    conn.on('PriceUpdate', (...args) => priceRef.current?.(...args))
+    conn.on('AlertUpdate', (...args) => alertRef.current?.(...args))
 
     conn.start()
       .then(() => setConnected(true))
