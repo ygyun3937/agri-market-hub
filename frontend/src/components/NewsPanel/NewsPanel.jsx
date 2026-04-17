@@ -15,31 +15,43 @@ export default function NewsPanel() {
   const [news, setNews] = useState([])
 
   useEffect(() => {
-    client.get(`/news?tab=${tab}`).then(r => setNews(r.data)).catch(() => {})
+    client.get(`/news?tab=${tab}`).then(r => setNews(r.data)).catch(err => console.error('News fetch failed:', err))
   }, [tab])
 
   return (
-    <div style={{ display: 'flex', gap: 10, overflowX: 'auto', height: '100%', alignItems: 'flex-start' }}>
-      {news.slice(0, 6).map(n => (
-        <a key={n.id} href={n.url} target="_blank" rel="noreferrer"
-          style={{
-            display: 'block', flexShrink: 0, width: 200,
-            background: '#161b22', border: '1px solid #30363d', borderRadius: 8,
-            padding: '10px', textDecoration: 'none'
-          }}>
-          <div style={{ fontSize: 12, color: '#e6edf3', lineHeight: 1.4,
-            overflow: 'hidden', display: '-webkit-box',
-            WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-            {n.title}
-          </div>
-          <div style={{ fontSize: 10, color: '#8b949e', marginTop: 6 }}>
-            {n.source} · {n.publishedAt ? new Date(n.publishedAt).toLocaleDateString('ko') : ''}
-          </div>
-        </a>
-      ))}
-      {news.length === 0 && (
-        <div style={{ fontSize: 12, color: '#8b949e', padding: 8 }}>뉴스 없음</div>
-      )}
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: 6 }}>
+      <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+        {TABS.map(t => (
+          <button key={t.key} onClick={() => setTab(t.key)} style={{
+            background: tab === t.key ? '#238636' : '#21262d',
+            border: '1px solid ' + (tab === t.key ? '#2ea043' : '#30363d'),
+            color: tab === t.key ? '#fff' : '#8b949e',
+            fontSize: 11, padding: '3px 8px', borderRadius: 4, cursor: 'pointer'
+          }}>{t.label}</button>
+        ))}
+      </div>
+      <div style={{ display: 'flex', gap: 10, overflowX: 'auto', flex: 1, alignItems: 'flex-start' }}>
+        {news.slice(0, 6).map(n => (
+          <a key={n.id} href={n.url} target="_blank" rel="noreferrer"
+            style={{
+              display: 'block', flexShrink: 0, width: 200,
+              background: '#161b22', border: '1px solid #30363d', borderRadius: 8,
+              padding: '10px', textDecoration: 'none'
+            }}>
+            <div style={{ fontSize: 12, color: '#e6edf3', lineHeight: 1.4,
+              overflow: 'hidden', display: '-webkit-box',
+              WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+              {n.title}
+            </div>
+            <div style={{ fontSize: 10, color: '#8b949e', marginTop: 6 }}>
+              {n.source} · {n.publishedAt ? new Date(n.publishedAt).toLocaleDateString('ko') : ''}
+            </div>
+          </a>
+        ))}
+        {news.length === 0 && (
+          <div style={{ fontSize: 12, color: '#8b949e', padding: 8 }}>뉴스 없음</div>
+        )}
+      </div>
     </div>
   )
 }
