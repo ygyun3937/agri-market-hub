@@ -1,0 +1,73 @@
+version: "3.8"
+services:
+  web:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./frontend/dist:/usr/share/nginx/html:ro
+    depends_on: [api]
+
+  api:
+    build: ./backend/AgriHub.Api
+    expose: ["5000"]
+    environment:
+      - ASPNETCORE_URLS=http://+:5000
+      - ConnectionStrings__Postgres=Host=db;Port=5432;Database=agrihub;Username=agrihub;Password=${DB_PASS}
+      - ConnectionStrings__Redis=redis:6379
+      - Jwt__Secret=${JWT_SECRET}
+      - Jwt__Issuer=agrihub
+      - Jwt__Audience=agrihub
+      - ExternalApis__WeatherKey=${WEATHER_KEY}
+      - ExternalApis__KamisKey=${KAMIS_KEY}
+      - ExternalApis__NaverClientId=${NAVER_CLIENT_ID}
+      - ExternalApis__NaverClientSecret=${NAVER_CLIENT_SECRET}
+      - VapidPublicKey=${VAPID_PUBLIC_KEY}
+      - VapidPrivateKey=${VAPID_PRIVATE_KEY}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  crawler:
+    build: ./crawler
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=agrihub
+      - DB_USER=agrihub
+      - DB_PASS=${DB_PASS}
+      - KAMIS_KEY=${KAMIS_KEY}
+      - WEATHER_KEY=${WEATHER_KEY}
+      - NAVER_CLIENT_ID=${NAVER_CLIENT_ID}
+      - NAVER_CLIENT_SECRET=${NAVER_CLIENT_SECRET}
+      - PEST_KEY=${PEST_KEY}
+      - OPINET_KEY=${OPINET_KEY}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=agrihub
+      - POSTGRES_USER=agrihub
+      - POSTGRES_PASSWORD=${DB_PASS}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agrihub"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    expose: ["6379"]
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:
