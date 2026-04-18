@@ -148,8 +148,16 @@ export default function PricePanel() {
   const watchlist = watchCodes.map(code => priceMap[code]).filter(Boolean)
 
   const handleAdd = async (item) => {
-    await client.post('/user/watchlist', { itemCode: item.code, itemName: item.name, marketCode: '100110' }).catch(() => {})
-    setWatchCodes(prev => [...prev, item.code])
+    try {
+      await client.post('/user/watchlist', { itemCode: item.code, itemName: item.name, marketCode: '100110' })
+      setWatchCodes(prev => [...prev, item.code])
+    } catch (err) {
+      if (err.response?.status === 409) {
+        // 이미 서버에 있으면 로컬 상태만 동기화
+        const res = await client.get('/user/watchlist').catch(() => null)
+        if (res) setWatchCodes(res.data.map(w => w.itemCode))
+      }
+    }
     setShowModal(false)
   }
 
