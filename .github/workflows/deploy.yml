@@ -58,8 +58,8 @@ jobs:
       # ── SCP: 백엔드 + 크롤러 + compose ────────────────────────
       - name: Upload backend, crawler, compose
         run: |
-          rsync -az --delete backend/publish/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEPLOY_PATH }}/backend/publish/
-          rsync -az --delete crawler/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEPLOY_PATH }}/crawler/
+          rsync -az --delete --exclude '__pycache__' --exclude '*.pyc' backend/publish/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEPLOY_PATH }}/backend/publish/
+          rsync -az --delete --exclude '__pycache__' --exclude '*.pyc' crawler/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEPLOY_PATH }}/crawler/
           rsync -az postgres/init.sql ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEPLOY_PATH }}/postgres/
           scp docker-compose.yml ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEPLOY_PATH }}/docker-compose.yml
 
