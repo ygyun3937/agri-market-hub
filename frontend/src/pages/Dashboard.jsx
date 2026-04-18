@@ -119,9 +119,9 @@ export default function Dashboard() {
   const toggleLayer = (label) =>
     setLayers(prev => ({ ...prev, [label]: !prev[label] }))
 
-  const updateLayout = (patch) =>
+  const updateLayout = (key, delta, min = 0) =>
     setLayout(prev => {
-      const next = { ...prev, ...patch }
+      const next = { ...prev, [key]: Math.max(min, prev[key] + delta) }
       localStorage.setItem('dashboard_layout', JSON.stringify(next))
       return next
     })
@@ -158,30 +158,30 @@ export default function Dashboard() {
           <FuelPanel />
         </div>
 
-        <ColHandle onDelta={dx => updateLayout({ col1: Math.max(C, layout.col1 + dx) })} />
+        <ColHandle onDelta={dx => updateLayout('col1', dx, C)} />
 
         {/* Col 2: 지도 */}
         <div style={{ flex: 1, overflow: 'hidden', minWidth: 200 }}>
           <MapPanel layers={layers} />
         </div>
 
-        <ColHandle onDelta={dx => updateLayout({ col3: Math.max(C, layout.col3 - dx) })} />
+        <ColHandle onDelta={dx => updateLayout('col3', -dx, C)} />
 
         {/* Col 3: 가격 + 캘린더 */}
         <div style={{ width: layout.col3, flexShrink: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           <div style={{ flex: 1, overflow: 'auto', minHeight: 0 }}><PricePanel /></div>
-          <RowHandle onDelta={dy => updateLayout({ bottomH: Math.max(B, layout.bottomH - dy) })} />
+          <RowHandle onDelta={dy => updateLayout('bottomH', -dy, B)} />
           <div style={{ height: layout.bottomH, flexShrink: 0, overflow: 'auto' }}>
             <CalendarPanel schedules={schedules} setSchedules={setSchedules} />
           </div>
         </div>
 
-        <ColHandle onDelta={dx => updateLayout({ col4: Math.max(C, layout.col4 - dx) })} />
+        <ColHandle onDelta={dx => updateLayout('col4', -dx, C)} />
 
         {/* Col 4: 날씨 + 일정 */}
         <div style={{ width: layout.col4, flexShrink: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           <div style={{ flex: 1, overflow: 'auto', minHeight: 0 }}><WeatherPanel /></div>
-          <RowHandle onDelta={dy => updateLayout({ bottomH: Math.max(B, layout.bottomH - dy) })} />
+          <RowHandle onDelta={dy => updateLayout('bottomH', -dy, B)} />
           <div style={{ height: layout.bottomH, flexShrink: 0, overflow: 'auto' }}>
             <ScheduleList schedules={schedules} setSchedules={setSchedules} />
           </div>
