@@ -37,44 +37,42 @@ jobs:
       - run: pip install -r requirements.txt --target .packages -q
         working-directory: crawler
 
+      # ── SSH 키 설정 ───────────────────────────────────────────
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
       # ── 서버 디렉토리 생성 ────────────────────────────────────
-      - uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
+      - name: Create remote directories
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
             mkdir -p ${{ secrets.DEPLOY_PATH }}/backend/publish
             mkdir -p ${{ secrets.DEPLOY_PATH }}/crawler
             mkdir -p ${{ secrets.DEPLOY_PATH }}/postgres
             mkdir -p ${{ secrets.STATIC_PATH }}
+          "
 
       # ── SCP: 백엔드 + 크롤러 + compose ────────────────────────
-      - uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "backend/publish,crawler,docker-compose.yml,postgres/init.sql"
-          target: ${{ secrets.DEPLOY_PATH }}
+      - name: Upload backend, crawler, compose
+        run: |
+          rsync -az --delete backend/publish/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEPLOY_PATH }}/backend/publish/
+          rsync -az --delete crawler/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEPLOY_PATH }}/crawler/
+          rsync -az postgres/init.sql ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEPLOY_PATH }}/postgres/
+          scp docker-compose.yml ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEPLOY_PATH }}/docker-compose.yml
 
       # ── SCP: 프론트엔드 정적 파일 → Caddy 웹루트 ─────────────
-      - uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "frontend/dist/"
-          target: ${{ secrets.STATIC_PATH }}
-          strip_components: 2
+      - name: Upload frontend static files
+        run: |
+          rsync -az --delete frontend/dist/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.STATIC_PATH }}/
 
       # ── 서버 재시작 ───────────────────────────────────────────
-      - uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
+      - name: Restart services
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
             cd ${{ secrets.DEPLOY_PATH }}
             chmod +x backend/publish/AgriHub.Api
             docker compose up -d
+          "
