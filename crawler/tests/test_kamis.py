@@ -16,7 +16,7 @@ MOCK_KAMIS_RESPONSE = {
 def test_run_prices_calls_db_upsert():
     resp_mock.add(
         resp_mock.GET,
-        "http://www.kamis.or.kr/service/price/xml.do",
+        "https://www.kamis.or.kr/service/price/xml.do",
         json=MOCK_KAMIS_RESPONSE,
         status=200,
     )
