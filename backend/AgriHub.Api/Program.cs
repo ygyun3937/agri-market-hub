@@ -51,6 +51,7 @@ builder.Services.AddSignalR();
 builder.Services.AddControllers();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<CacheService>();
+builder.Services.AddScoped<GoogleCalendarService>();
 builder.Services.AddSingleton<PushService>();
 builder.Services.AddHostedService<SmartAlertService>();
 builder.Services.AddCors(opt => opt.AddDefaultPolicy(p =>
