@@ -12,9 +12,9 @@ services:
 
   api:
     build: ./backend/AgriHub.Api
-    expose: ["5000"]
+    expose: ["5031"]
     environment:
-      - ASPNETCORE_URLS=http://+:5000
+      - ASPNETCORE_URLS=http://+:5031
       - ConnectionStrings__Postgres=Host=db;Port=5432;Database=agrihub;Username=agrihub;Password=${DB_PASS}
       - ConnectionStrings__Redis=redis:6379
       - Jwt__Secret=${JWT_SECRET}
