@@ -1,13 +1,5 @@
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
+FROM mcr.microsoft.com/dotnet/runtime-deps:10.0
 WORKDIR /app
-
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
-WORKDIR /src
-COPY AgriHub.Api.csproj .
-RUN dotnet restore
-COPY . .
-RUN dotnet publish -c Release -o /app/publish
-
-FROM base AS final
-COPY --from=build /app/publish .
-ENTRYPOINT ["dotnet", "AgriHub.Api.dll"]
+COPY publish/ .
+RUN chmod +x AgriHub.Api
+ENTRYPOINT ["./AgriHub.Api"]

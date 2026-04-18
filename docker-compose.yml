@@ -7,7 +7,8 @@ services:
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
       - ./frontend/dist:/usr/share/nginx/html:ro
-    depends_on: [api]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   api:
     build: ./backend/AgriHub.Api
@@ -25,6 +26,7 @@ services:
       - ExternalApis__NaverClientSecret=${NAVER_CLIENT_SECRET}
       - VapidPublicKey=${VAPID_PUBLIC_KEY}
       - VapidPrivateKey=${VAPID_PRIVATE_KEY}
+      - DOTNET_GCConserveMemory=9
     depends_on:
       db:
         condition: service_healthy
@@ -53,6 +55,8 @@ services:
       - POSTGRES_DB=agrihub
       - POSTGRES_USER=agrihub
       - POSTGRES_PASSWORD=${DB_PASS}
+    ports:
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
@@ -64,7 +68,8 @@ services:
 
   redis:
     image: redis:7-alpine
-    expose: ["6379"]
+    ports:
+      - "6379:6379"
     volumes:
       - redis_data:/data
 

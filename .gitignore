@@ -3,3 +3,8 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+backend/AgriHub.Api/publish/
+backend/AgriHub.Api/bin/
+backend/AgriHub.Api/obj/
+frontend/dist/
+frontend/node_modules/

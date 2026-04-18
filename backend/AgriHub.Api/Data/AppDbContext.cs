@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using AgriHub.Api.Models;
 
@@ -23,13 +24,41 @@ public class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder mb)
     {
+        // Map to lowercase table names matching init.sql
+        mb.Entity<User>().ToTable("users");
+        mb.Entity<UserSetting>().ToTable("user_settings");
+        mb.Entity<WatchItem>().ToTable("watch_items");
+        mb.Entity<WeatherData>().ToTable("weather_data");
+        mb.Entity<WeatherForecast>().ToTable("weather_forecast");
+        mb.Entity<AuctionPrice>().ToTable("auction_prices");
+        mb.Entity<NewsArticle>().ToTable("news_articles");
+        mb.Entity<PestAlert>().ToTable("pest_alerts");
+        mb.Entity<DisasterAlert>().ToTable("disaster_alerts");
+        mb.Entity<FuelPrice>().ToTable("fuel_prices");
+        mb.Entity<Schedule>().ToTable("schedules");
+        mb.Entity<Notification>().ToTable("notifications");
+        mb.Entity<PushSubscription>().ToTable("push_subscriptions");
+
         mb.Entity<UserSetting>().HasKey(s => s.UserId);
         mb.Entity<UserSetting>().Property(s => s.WatchRegions).HasColumnType("text[]");
+        mb.Entity<UserSetting>().Property(s => s.AlertThresholds).HasColumnType("jsonb");
         mb.Entity<WeatherForecast>()
             .HasIndex(f => new { f.RegionCode, f.ForecastDate }).IsUnique();
         mb.Entity<AuctionPrice>()
             .HasIndex(p => new { p.ItemCode, p.MarketCode, p.Date }).IsUnique();
         mb.Entity<PushSubscription>()
             .HasIndex(s => new { s.UserId, s.Endpoint }).IsUnique();
+
+        // Apply snake_case column names to match PostgreSQL init.sql
+        foreach (var entity in mb.Model.GetEntityTypes())
+        {
+            foreach (var prop in entity.GetProperties())
+            {
+                prop.SetColumnName(ToSnakeCase(prop.Name));
+            }
+        }
     }
+
+    private static string ToSnakeCase(string name) =>
+        Regex.Replace(name, "([a-z0-9])([A-Z])", "$1_$2").ToLower();
 }
