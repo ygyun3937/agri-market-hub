@@ -4,7 +4,7 @@ import client from '../../api/client'
 
 export default function CalendarPanel() {
   const [schedules, setSchedules] = useState([])
-  const now = new Date()
+  const [now] = useState(() => new Date())
   const year = now.getFullYear()
   const month = now.getMonth()
 
