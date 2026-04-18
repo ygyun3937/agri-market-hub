@@ -6,7 +6,13 @@ export default function NewsTicker() {
   const [items, setItems] = useState([])
 
   useEffect(() => {
-    client.get('/news?tab=all').then(res => setItems(res.data.slice(0, 5))).catch(() => {})
+    Promise.all([client.get('/news?tab=pest'), client.get('/news?tab=crop')])
+      .then(([pest, crop]) => {
+        const combined = [...pest.data, ...crop.data]
+          .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
+          .slice(0, 5)
+        setItems(combined)
+      }).catch(() => {})
   }, [])
 
   if (items.length === 0) return null

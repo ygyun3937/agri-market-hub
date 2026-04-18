@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import client from '../../api/client'
 
 const TABS = [
+  { key: 'headline', label: '🔥 헤드라인' },
   { key: 'all', label: '전체' },
   { key: 'crop', label: '작황·가격' },
   { key: 'logistics', label: '물류·운송' },
@@ -11,11 +12,21 @@ const TABS = [
 ]
 
 export default function NewsPanel() {
-  const [tab, setTab] = useState('all')
+  const [tab, setTab] = useState('headline')
   const [news, setNews] = useState([])
 
   useEffect(() => {
-    client.get(`/news?tab=${tab}`).then(r => setNews(r.data)).catch(err => console.error('News fetch failed:', err))
+    if (tab === 'headline') {
+      Promise.all([client.get('/news?tab=pest'), client.get('/news?tab=crop')])
+        .then(([pest, crop]) => {
+          const combined = [...pest.data, ...crop.data]
+            .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
+            .slice(0, 6)
+          setNews(combined)
+        }).catch(() => {})
+    } else {
+      client.get(`/news?tab=${tab}`).then(r => setNews(r.data)).catch(() => {})
+    }
   }, [tab])
 
   return (
