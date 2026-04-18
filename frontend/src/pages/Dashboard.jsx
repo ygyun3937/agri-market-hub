@@ -123,6 +123,7 @@ export default function Dashboard() {
     setLayout(prev => {
       const next = { ...prev, [key]: Math.max(min, prev[key] + delta) }
       localStorage.setItem('dashboard_layout', JSON.stringify(next))
+      window.dispatchEvent(new Event('resize'))
       return next
     })
 
