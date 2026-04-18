@@ -2,7 +2,24 @@
 import { useEffect, useState } from 'react'
 import client from '../../api/client'
 
-const REGION = '11B10101'
+const REGIONS = [
+  { code: '11B10101', name: '서울' },
+  { code: '11B20201', name: '인천' },
+  { code: '11B20601', name: '수원' },
+  { code: '11D10301', name: '춘천' },
+  { code: '11C10301', name: '청주' },
+  { code: '11C20401', name: '대전' },
+  { code: '11C20404', name: '세종' },
+  { code: '11F10201', name: '전주' },
+  { code: '11F20401', name: '광주' },
+  { code: '11F20501', name: '목포' },
+  { code: '11H10201', name: '안동' },
+  { code: '11H10701', name: '대구' },
+  { code: '11H20101', name: '울산' },
+  { code: '11H20201', name: '부산' },
+  { code: '11H20301', name: '창원' },
+  { code: '11G00201', name: '제주' },
+]
 const ICON = { sunny: '☀️', cloudy: '⛅', rainy: '🌧️', snowy: '❄️' }
 
 function RainBar({ prob = 0 }) {
@@ -18,21 +35,43 @@ function RainBar({ prob = 0 }) {
 }
 
 export default function WeatherPanel() {
+  const [region, setRegion] = useState(
+    () => localStorage.getItem('weather_region') || '11B10101'
+  )
   const [weather, setWeather] = useState(null)
   const [forecast, setForecast] = useState([])
 
+  const regionName = REGIONS.find(r => r.code === region)?.name || '서울'
+
   useEffect(() => {
-    client.get(`/weather/${REGION}`).then(r => setWeather(r.data)).catch(() => {})
-    client.get(`/weather/${REGION}/forecast`).then(r => setForecast(r.data)).catch(() => {})
-  }, [])
+    setWeather(null)
+    setForecast([])
+    client.get(`/weather/${region}`).then(r => setWeather(r.data)).catch(() => {})
+    client.get(`/weather/${region}/forecast`).then(r => setForecast(r.data)).catch(() => {})
+  }, [region])
+
+  const handleRegionChange = (e) => {
+    localStorage.setItem('weather_region', e.target.value)
+    setRegion(e.target.value)
+  }
 
   return (
     <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 0 }}>
 
       {/* 헤더 */}
-      <div style={{ fontSize: 11, color: '#8b949e', textTransform: 'uppercase',
-        letterSpacing: 0.8, marginBottom: 10, fontWeight: 600 }}>
-        ⛅ 날씨 · 서울
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+        <div style={{ fontSize: 11, color: '#8b949e', textTransform: 'uppercase',
+          letterSpacing: 0.8, fontWeight: 600 }}>
+          ⛅ 날씨 · {regionName}
+        </div>
+        <select value={region} onChange={handleRegionChange} style={{
+          background: '#21262d', border: '1px solid #30363d', borderRadius: 4,
+          color: '#c9d1d9', fontSize: 11, padding: '2px 4px', cursor: 'pointer', outline: 'none'
+        }}>
+          {REGIONS.map(r => (
+            <option key={r.code} value={r.code}>{r.name}</option>
+          ))}
+        </select>
       </div>
 
       {/* 현재 날씨 */}
