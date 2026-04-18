@@ -6,7 +6,7 @@ services:
     volumes:
       - ./backend/publish:/app
     ports:
-      - "127.0.0.1:5031:5031"
+      - "5031:5031"
     environment:
       - ASPNETCORE_URLS=http://+:5031
       - ConnectionStrings__Postgres=Host=db;Port=5432;Database=agrihub;Username=agrihub;Password=${DB_PASS}
