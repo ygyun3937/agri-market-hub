@@ -109,9 +109,15 @@ public class SmartAlertService(
 
         foreach (var schedule in todaySchedules)
         {
-            var weather = await db.WeatherForecasts
-                .Where(f => f.ForecastDate == today)
-                .FirstOrDefaultAsync();
+            var settings = await db.UserSettings.FirstOrDefaultAsync(s => s.UserId == schedule.UserId);
+            string? regionCode = null;
+            if (settings?.WatchRegions != null && settings.WatchRegions.Length > 0)
+                regionCode = settings.WatchRegions[0];
+
+            var weatherQuery = db.WeatherForecasts.Where(f => f.ForecastDate == today);
+            if (regionCode != null)
+                weatherQuery = weatherQuery.Where(f => f.RegionCode == regionCode);
+            var weather = await weatherQuery.FirstOrDefaultAsync();
 
             if (weather?.RainProb >= 70 || weather?.Icon == "rainy")
             {

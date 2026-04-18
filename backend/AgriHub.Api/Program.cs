@@ -10,6 +10,10 @@ using AgriHub.Api.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var jwtSecret = builder.Configuration["Jwt:Secret"] ?? "";
+if (jwtSecret.Length < 32 || jwtSecret.StartsWith("CHANGE_ME"))
+    throw new InvalidOperationException("Jwt:Secret must be set to a 32+ character random value via environment variable.");
+
 if (builder.Environment.IsEnvironment("Testing"))
     builder.Services.AddDbContext<AppDbContext>(opt =>
         opt.UseInMemoryDatabase("TestDb"));
@@ -55,9 +59,24 @@ builder.Services.AddScoped<GoogleCalendarService>();
 builder.Services.AddSingleton<PushService>();
 builder.Services.AddHostedService<SmartAlertService>();
 builder.Services.AddCors(opt => opt.AddDefaultPolicy(p =>
-    p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
+{
+    var allowed = builder.Configuration["Cors:AllowedOrigins"] ?? "http://localhost";
+    p.WithOrigins(allowed.Split(',', StringSplitOptions.RemoveEmptyEntries))
+     .AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+}));
 
 var app = builder.Build();
+
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler(err => err.Run(async ctx =>
+    {
+        ctx.Response.StatusCode = 500;
+        ctx.Response.ContentType = "application/json";
+        await ctx.Response.WriteAsync("{\"error\":\"Internal server error\"}");
+    }));
+}
+
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
