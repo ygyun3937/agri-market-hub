@@ -8,7 +8,8 @@ public class SmartAlertService(IServiceScopeFactory scopeFactory, ILogger<SmartA
         while (!stoppingToken.IsCancellationRequested)
         {
             await CheckAlertsAsync();
-            await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
+            try { await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken); }
+            catch (OperationCanceledException) { break; }
         }
     }
 
