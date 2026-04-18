@@ -42,10 +42,10 @@ function PriceRow({ price, onRemove }) {
     }}>
       <span style={{ fontSize: 15 }}>{ITEM_ICONS[price.itemCode] || '🌿'}</span>
       <span style={{ fontSize: 12, color: '#c9d1d9', flex: 1 }}>
-        {ITEM_NAMES[price.itemCode] || price.itemCode}
+        {price.itemName || ITEM_NAMES[price.itemCode] || price.itemCode}
       </span>
-      <span style={{ fontSize: 14, fontWeight: 700 }}>
-        ₩{price.price?.toLocaleString()}
+      <span style={{ fontSize: 14, fontWeight: 700, color: price.price ? '#e6edf3' : '#8b949e' }}>
+        {price.price ? `₩${price.price.toLocaleString()}` : '가격 없음'}
       </span>
       {price.changePercent != null && (
         <span style={{ fontSize: 12, fontWeight: 700, color: isUp ? '#f85149' : '#3fb950' }}>
@@ -135,35 +135,38 @@ function AddItemModal({ onAdd, onClose, existing }) {
 
 export default function PricePanel() {
   const [prices, setPrices] = useState([])
-  const [watchCodes, setWatchCodes] = useState([])
+  const [watchItems, setWatchItems] = useState([])
   const [showModal, setShowModal] = useState(false)
+
+  const syncWatchlist = () =>
+    client.get('/user/watchlist').then(r => setWatchItems(r.data)).catch(() => {})
 
   useEffect(() => {
     client.get('/prices?market=100110').then(r => setPrices(r.data)).catch(() => {})
-    client.get('/user/watchlist').then(r => setWatchCodes(r.data.map(w => w.itemCode))).catch(() => {})
+    syncWatchlist()
   }, [])
 
   const priceMap = Object.fromEntries(prices.map(p => [p.itemCode, p]))
   const seasonal = SEASONAL.map(code => priceMap[code]).filter(Boolean)
-  const watchlist = watchCodes.map(code => priceMap[code]).filter(Boolean)
+  const watchCodes = watchItems.map(w => w.itemCode)
+  const watchlist = watchItems.map(w => ({
+    ...(priceMap[w.itemCode] ?? { itemCode: w.itemCode, price: null, changePercent: null }),
+    itemName: ITEM_NAMES[w.itemCode] || w.itemName,
+  }))
 
   const handleAdd = async (item) => {
     try {
       await client.post('/user/watchlist', { itemCode: item.code, itemName: item.name, marketCode: '100110' })
-      setWatchCodes(prev => [...prev, item.code])
+      setWatchItems(prev => [...prev, { itemCode: item.code, itemName: item.name }])
     } catch (err) {
-      if (err.response?.status === 409) {
-        // 이미 서버에 있으면 로컬 상태만 동기화
-        const res = await client.get('/user/watchlist').catch(() => null)
-        if (res) setWatchCodes(res.data.map(w => w.itemCode))
-      }
+      if (err.response?.status === 409) syncWatchlist()
     }
     setShowModal(false)
   }
 
   const handleRemove = async (itemCode) => {
     await client.delete(`/user/watchlist/${itemCode}`).catch(() => {})
-    setWatchCodes(prev => prev.filter(c => c !== itemCode))
+    setWatchItems(prev => prev.filter(w => w.itemCode !== itemCode))
   }
 
   return (
