@@ -10,9 +10,16 @@ namespace AgriHub.Api.Controllers;
 [ApiController]
 [Route("api/user")]
 [Authorize]
-public class UserController(AppDbContext db) : ControllerBase
+public class UserController(AppDbContext db, IConfiguration config) : ControllerBase
 {
     private int UserId => (int)HttpContext.Items["UserId"]!;
+
+    [HttpGet("vapid-public-key")]
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
+    public IActionResult GetVapidPublicKey()
+    {
+        return Ok(new { publicKey = config["VapidPublicKey"] ?? "" });
+    }
 
     [HttpGet("settings")]
     public async Task<ActionResult<UserSetting>> GetSettings()

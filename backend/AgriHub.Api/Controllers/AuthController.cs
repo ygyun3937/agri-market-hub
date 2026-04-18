@@ -6,7 +6,7 @@ namespace AgriHub.Api.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-public class AuthController(AuthService auth) : ControllerBase
+public class AuthController(AuthService auth, GoogleCalendarService gcal) : ControllerBase
 {
     [HttpPost("register")]
     public async Task<ActionResult<AuthResponse>> Register(RegisterRequest req)
@@ -28,4 +28,12 @@ public class AuthController(AuthService auth) : ControllerBase
 
     [HttpPost("logout")]
     public IActionResult Logout() => Ok();
+
+    [HttpGet("google/callback")]
+    public async Task<IActionResult> GoogleCallback([FromQuery] string code, [FromQuery] string state)
+    {
+        var accessToken = await gcal.ExchangeCodeAsync(code);
+        if (accessToken == null) return BadRequest("Google Calendar not configured");
+        return Redirect("/?gcal=connected");
+    }
 }
