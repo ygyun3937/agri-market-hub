@@ -49,11 +49,6 @@ public class AppDbContext : DbContext
         mb.Entity<PushSubscription>()
             .HasIndex(s => new { s.UserId, s.Endpoint }).IsUnique();
 
-        // Explicit column mapping for P256Dh: generic snake_case would produce "p256_dh"
-        // but the PostgreSQL column in init.sql is "p256dh" (no underscore).
-        mb.Entity<PushSubscription>()
-            .Property(s => s.P256Dh).HasColumnName("p256dh");
-
         // Apply snake_case column names to match PostgreSQL init.sql
         foreach (var entity in mb.Model.GetEntityTypes())
         {
@@ -62,6 +57,11 @@ public class AppDbContext : DbContext
                 prop.SetColumnName(ToSnakeCase(prop.Name));
             }
         }
+
+        // Explicit overrides AFTER the generic loop (last-write-wins in EF Core).
+        // P256Dh: generic snake_case produces "p256_dh" but DB column is "p256dh".
+        mb.Entity<PushSubscription>()
+            .Property(s => s.P256Dh).HasColumnName("p256dh");
     }
 
     private static string ToSnakeCase(string name) =>
