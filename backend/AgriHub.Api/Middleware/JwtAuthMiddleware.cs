@@ -10,7 +10,7 @@ public class JwtAuthMiddleware(RequestDelegate next)
         {
             var userId = ctx.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userId != null)
-                ctx.Items["UserId"] = int.Parse(userId);
+                if (int.TryParse(userId, out var id)) ctx.Items["UserId"] = id;
         }
         await next(ctx);
     }

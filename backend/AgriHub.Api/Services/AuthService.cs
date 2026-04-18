@@ -22,7 +22,8 @@ public class AuthService(AppDbContext db, IConfiguration config)
             CreatedAt = DateTime.UtcNow
         };
         db.Users.Add(user);
-        await db.SaveChangesAsync();
+        try { await db.SaveChangesAsync(); }
+        catch (DbUpdateException) { return null; }
         db.UserSettings.Add(new UserSetting { UserId = user.Id, UpdatedAt = DateTime.UtcNow });
         await db.SaveChangesAsync();
         return user;
