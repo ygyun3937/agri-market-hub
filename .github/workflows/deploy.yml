@@ -37,6 +37,18 @@ jobs:
       - run: pip install -r requirements.txt --target .packages -q
         working-directory: crawler
 
+      # ── 서버 디렉토리 생성 ────────────────────────────────────
+      - uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            mkdir -p ${{ secrets.DEPLOY_PATH }}/backend/publish
+            mkdir -p ${{ secrets.DEPLOY_PATH }}/crawler
+            mkdir -p ${{ secrets.DEPLOY_PATH }}/postgres
+            mkdir -p ${{ secrets.STATIC_PATH }}
+
       # ── SCP: 백엔드 + 크롤러 + compose ────────────────────────
       - uses: appleboy/scp-action@v0.1.7
         with:
