@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="AgriHub.Api.Tests/AgriHub.Api.Tests.csproj" />
+  <Project Path="AgriHub.Api/AgriHub.Api.csproj" />
+</Solution>
