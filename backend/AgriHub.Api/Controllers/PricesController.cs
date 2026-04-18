@@ -31,12 +31,14 @@ public class PricesController(AppDbContext db) : ControllerBase
         var prevPrices = await db.AuctionPrices
             .Where(p => itemCodes.Contains(p.ItemCode) && p.Date == today.AddDays(-2))
             .ToListAsync();
-        var prevMap = prevPrices.ToDictionary(p => p.ItemCode, p => p.Price);
+        var prevMap = prevPrices
+            .GroupBy(p => (p.ItemCode, p.MarketCode))
+            .ToDictionary(g => g.Key, g => g.First().Price);
 
         var result = prices.Select(p =>
         {
             decimal? change = null;
-            if (prevMap.TryGetValue(p.ItemCode, out var prev) && prev != 0)
+            if (prevMap.TryGetValue((p.ItemCode, p.MarketCode), out var prev) && prev != 0)
                 change = Math.Round((p.Price - prev) / prev * 100, 1);
             return new PriceDto(p.ItemCode, p.MarketCode, p.Price, p.Volume, p.Grade, p.Date, change);
         }).ToList();
