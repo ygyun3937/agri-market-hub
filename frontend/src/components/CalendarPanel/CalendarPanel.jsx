@@ -48,7 +48,7 @@ export default function CalendarPanel({ schedules = [], setSchedules }) {
       setSchedules(prev => [...prev, res.data])
       setForm({ title: '', memo: '' })
       setSelectedDay(null)
-    } catch {}
+    } catch { /* noop */ }
     setSaving(false)
   }
 

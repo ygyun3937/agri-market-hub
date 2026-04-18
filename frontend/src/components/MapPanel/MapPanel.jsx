@@ -79,7 +79,14 @@ export default function MapPanel({ layers = { '도매시장': true, '산지': tr
       results.forEach(({ code, prices }) => { map[code] = prices })
       setPricesByMarket(map)
     })
-    client.get('/alerts/pest').then(r => setPestAlerts(r.data)).catch(() => {})
+    client.get('/alerts/pest').then(r => {
+      setPestAlerts(r.data.map(a => {
+        const coords = REGION_COORDS[a.region?.substring(0, 2)]
+        return coords
+          ? { ...a, offset: [coords[0] + (Math.random() * 0.3 - 0.15), coords[1] + (Math.random() * 0.3 - 0.15)] }
+          : { ...a, offset: null }
+      }))
+    }).catch(() => {})
     client.get('/alerts/disaster').then(r => setDisasterAlerts(r.data)).catch(() => {})
   }, [])
 
@@ -136,11 +143,9 @@ export default function MapPanel({ layers = { '도매시장': true, '산지': tr
       })}
 
       {layers['병해충'] && pestAlerts.map(a => {
-        const coords = REGION_COORDS[a.region?.substring(0, 2)]
-        if (!coords) return null
-        const offset = [coords[0] + Math.random() * 0.3 - 0.15, coords[1] + Math.random() * 0.3 - 0.15]
+        if (!a.offset) return null
         return (
-          <Marker key={a.id} position={offset} icon={ICONS['병해충']}>
+          <Marker key={a.id} position={a.offset} icon={ICONS['병해충']}>
             <Popup>
               <div style={{ minWidth: 140 }}>
                 <div style={{ fontWeight: 700, color: '#d29922', marginBottom: 4 }}>🐛 {a.severity}</div>

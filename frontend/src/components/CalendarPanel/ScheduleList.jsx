@@ -27,7 +27,7 @@ export default function ScheduleList({ schedules = [], setSchedules }) {
       const res = await client.post('/schedules', { title: form.title, type: 'shipping', date: form.date, memo: '' })
       setSchedules(prev => [...prev, res.data])
       setForm({ date: today, title: '' })
-    } catch {}
+    } catch { /* noop */ }
     setSaving(false)
   }
 

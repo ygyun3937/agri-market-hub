@@ -44,10 +44,8 @@ export default function WeatherPanel() {
   const regionName = REGIONS.find(r => r.code === region)?.name || '서울'
 
   useEffect(() => {
-    setWeather(null)
-    setForecast([])
-    client.get(`/weather/${region}`).then(r => setWeather(r.data)).catch(() => {})
-    client.get(`/weather/${region}/forecast`).then(r => setForecast(r.data)).catch(() => {})
+    client.get(`/weather/${region}`).then(r => setWeather(r.data)).catch(() => setWeather(null))
+    client.get(`/weather/${region}/forecast`).then(r => setForecast(r.data)).catch(() => setForecast([]))
   }, [region])
 
   const handleRegionChange = (e) => {
