@@ -1,5 +1,6 @@
 # crawler/crawlers/news.py
 import os
+import html
 import requests
 import re
 from datetime import datetime
@@ -31,8 +32,8 @@ def run_news():
         )
         resp.raise_for_status()
         for item in resp.json().get("items", []):
-            title = re.sub(r"<[^>]+>", "", item.get("title", ""))
-            summary = re.sub(r"<[^>]+>", "", item.get("description", ""))
+            title = html.unescape(re.sub(r"<[^>]+>", "", item.get("title", "")))
+            summary = html.unescape(re.sub(r"<[^>]+>", "", item.get("description", "")))
             pub_date = item.get("pubDate", "")
             try:
                 published_at = datetime.strptime(pub_date, "%a, %d %b %Y %H:%M:%S %z")

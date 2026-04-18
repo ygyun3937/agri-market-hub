@@ -52,4 +52,41 @@ public class UserController(AppDbContext db, IConfiguration config) : Controller
         await db.SaveChangesAsync();
         return Ok();
     }
+
+    [HttpGet("watchlist")]
+    public async Task<ActionResult<List<WatchItem>>> GetWatchlist()
+    {
+        var items = await db.WatchItems
+            .Where(w => w.UserId == UserId)
+            .OrderBy(w => w.Id)
+            .ToListAsync();
+        return Ok(items);
+    }
+
+    [HttpPost("watchlist")]
+    public async Task<IActionResult> AddWatchItem([FromBody] WatchItemRequest req)
+    {
+        if (await db.WatchItems.AnyAsync(w => w.UserId == UserId && w.ItemCode == req.ItemCode))
+            return Conflict("Already in watchlist");
+        db.WatchItems.Add(new WatchItem
+        {
+            UserId = UserId,
+            ItemCode = req.ItemCode,
+            ItemName = req.ItemName,
+            MarketCode = req.MarketCode,
+        });
+        await db.SaveChangesAsync();
+        return Ok();
+    }
+
+    [HttpDelete("watchlist/{itemCode}")]
+    public async Task<IActionResult> RemoveWatchItem(string itemCode)
+    {
+        var item = await db.WatchItems
+            .FirstOrDefaultAsync(w => w.UserId == UserId && w.ItemCode == itemCode);
+        if (item == null) return NotFound();
+        db.WatchItems.Remove(item);
+        await db.SaveChangesAsync();
+        return Ok();
+    }
 }

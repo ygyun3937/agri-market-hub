@@ -1,0 +1,68 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # ── Frontend ──────────────────────────────────────────────
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+        working-directory: frontend
+      - run: npm run build
+        working-directory: frontend
+
+      # ── Backend ───────────────────────────────────────────────
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - run: |
+          dotnet publish backend/AgriHub.Api/AgriHub.Api.csproj \
+            -c Release -r linux-x64 --self-contained true \
+            -o backend/publish
+
+      # ── Crawler deps ──────────────────────────────────────────
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt --target .packages -q
+        working-directory: crawler
+
+      # ── SCP: 백엔드 + 크롤러 + compose ────────────────────────
+      - uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "backend/publish,crawler,docker-compose.yml,postgres/init.sql"
+          target: ${{ secrets.DEPLOY_PATH }}
+
+      # ── SCP: 프론트엔드 정적 파일 → Caddy 웹루트 ─────────────
+      - uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "frontend/dist/"
+          target: ${{ secrets.STATIC_PATH }}
+          strip_components: 2
+
+      # ── 서버 재시작 ───────────────────────────────────────────
+      - uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ${{ secrets.DEPLOY_PATH }}
+            chmod +x backend/publish/AgriHub.Api
+            docker compose up -d

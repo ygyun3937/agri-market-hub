@@ -1,63 +1,126 @@
 // src/components/CalendarPanel/CalendarPanel.jsx
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import client from '../../api/client'
 
-export default function CalendarPanel() {
-  const [schedules, setSchedules] = useState([])
+function gcalLink(s) {
+  const d = s.date.replace(/-/g, '')
+  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(s.title)}&dates=${d}/${d}&details=${encodeURIComponent(s.memo || '')}`
+}
+
+export default function CalendarPanel({ schedules = [], setSchedules }) {
   const [now] = useState(() => new Date())
+  const [selectedDay, setSelectedDay] = useState(null)
+  const [form, setForm] = useState({ title: '', memo: '' })
+  const [saving, setSaving] = useState(false)
+
   const year = now.getFullYear()
   const month = now.getMonth()
-
-  useEffect(() => {
-    client.get('/schedules').then(r => setSchedules(r.data)).catch(() => {})
-  }, [])
+  const today = now.getDate()
 
   const firstDay = new Date(year, month, 1).getDay()
   const daysInMonth = new Date(year, month + 1, 0).getDate()
-  const today = now.getDate()
 
-  const scheduledDays = new Set(
-    schedules
-      .filter(s => {
-        const d = new Date(s.date)
-        return d.getFullYear() === year && d.getMonth() === month
-      })
-      .map(s => new Date(s.date).getDate())
-  )
+  const schedulesByDay = {}
+  schedules.forEach(s => {
+    const d = new Date(s.date)
+    if (d.getFullYear() === year && d.getMonth() === month) {
+      const day = d.getDate()
+      if (!schedulesByDay[day]) schedulesByDay[day] = []
+      schedulesByDay[day].push(s)
+    }
+  })
 
   const cells = Array(firstDay).fill(null).concat(
     Array.from({ length: daysInMonth }, (_, i) => i + 1)
   )
 
+  const dateStr = (day) =>
+    `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+
+  const handleSave = async () => {
+    if (!form.title.trim() || !selectedDay) return
+    setSaving(true)
+    try {
+      const res = await client.post('/schedules', {
+        title: form.title, type: 'shipping',
+        date: dateStr(selectedDay), memo: form.memo,
+      })
+      setSchedules(prev => [...prev, res.data])
+      setForm({ title: '', memo: '' })
+      setSelectedDay(null)
+    } catch {}
+    setSaving(false)
+  }
+
   return (
-    <div style={{ padding: '8px 10px' }}>
+    <div style={{ padding: '10px 14px', position: 'relative' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-        <span style={{ fontSize: 11, color: '#c9d1d9', fontWeight: 600 }}>
-          📅 {year}.{String(month + 1).padStart(2, '0')} 출하 일정
+        <span style={{ fontSize: 14, color: '#c9d1d9', fontWeight: 600 }}>
+          📅 {year}.{String(month + 1).padStart(2, '0')}
         </span>
-        <span style={{ fontSize: 10, color: '#58a6ff', cursor: 'pointer' }}>🔗 Google</span>
+        <span style={{ fontSize: 11, color: '#8b949e' }}>날짜 클릭 → 추가</span>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 1 }}>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2 }}>
         {['일', '월', '화', '수', '목', '금', '토'].map(d => (
-          <div key={d} style={{ fontSize: 9, color: '#8b949e', textAlign: 'center', padding: '2px 0' }}>{d}</div>
+          <div key={d} style={{ fontSize: 11, color: '#8b949e', textAlign: 'center', padding: '2px 0' }}>{d}</div>
         ))}
-        {cells.map((day, i) => (
-          <div key={i} style={{
-            fontSize: 10, textAlign: 'center', padding: '3px 0',
-            borderRadius: 3, position: 'relative',
-            color: day === today ? '#0d1117' : day ? '#c9d1d9' : 'transparent',
-            background: day === today ? '#3fb950' : 'transparent',
-          }}>
-            {day || ''}
-            {day && scheduledDays.has(day) && day !== today && (
-              <div style={{
-                position: 'absolute', bottom: 1, left: '50%', transform: 'translateX(-50%)',
-                width: 4, height: 4, borderRadius: '50%', background: '#58a6ff'
-              }} />
-            )}
-          </div>
-        ))}
+        {cells.map((day, i) => {
+          const isToday = day === today
+          const isSelected = day === selectedDay
+          const daySchedules = day && schedulesByDay[day]
+          return (
+            <div key={i} onClick={() => day && setSelectedDay(day === selectedDay ? null : day)}
+              style={{
+                fontSize: 13, textAlign: 'center', padding: '3px 1px',
+                borderRadius: 4, cursor: day ? 'pointer' : 'default', minHeight: 30,
+                color: isToday ? '#0d1117' : isSelected ? '#fff' : day ? '#c9d1d9' : 'transparent',
+                background: isToday ? '#3fb950' : isSelected ? '#1f6feb' : 'transparent',
+                border: isSelected && !isToday ? '1px solid #388bfd' : '1px solid transparent',
+              }}>
+              {day || ''}
+              {daySchedules && daySchedules.map((s, si) => (
+                <div key={si} style={{
+                  fontSize: 9, color: isToday ? '#0d1117' : '#58a6ff',
+                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                  lineHeight: 1.2, textAlign: 'left', paddingLeft: 1,
+                }}>{s.title}</div>
+              ))}
+            </div>
+          )
+        })}
       </div>
+
+      {selectedDay && (
+        <div style={{ marginTop: 8, background: '#161b22', border: '1px solid #30363d', borderRadius: 6, padding: '8px 10px' }}>
+          <div style={{ fontSize: 12, color: '#8b949e', marginBottom: 6 }}>{dateStr(selectedDay)} 일정</div>
+          {(schedulesByDay[selectedDay] || []).map(s => (
+            <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+              <span style={{ fontSize: 12, color: '#c9d1d9', flex: 1 }}>{s.title}</span>
+              <a href={gcalLink(s)} target="_blank" rel="noreferrer"
+                style={{ fontSize: 11, color: '#58a6ff', textDecoration: 'none' }}>GCal</a>
+            </div>
+          ))}
+          <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+            onKeyDown={e => e.key === 'Enter' && handleSave()}
+            placeholder="일정 제목..."
+            style={{
+              width: '100%', boxSizing: 'border-box', background: '#0d1117',
+              border: '1px solid #30363d', borderRadius: 4, color: '#e6edf3',
+              fontSize: 12, padding: '4px 6px', marginBottom: 4, outline: 'none'
+            }} />
+          <div style={{ display: 'flex', gap: 4 }}>
+            <button onClick={handleSave} disabled={saving} style={{
+              flex: 1, background: '#238636', border: 'none', borderRadius: 4,
+              color: '#fff', fontSize: 12, padding: '4px 0', cursor: 'pointer'
+            }}>추가</button>
+            <button onClick={() => setSelectedDay(null)} style={{
+              background: '#21262d', border: '1px solid #30363d', borderRadius: 4,
+              color: '#8b949e', fontSize: 12, padding: '4px 8px', cursor: 'pointer'
+            }}>닫기</button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

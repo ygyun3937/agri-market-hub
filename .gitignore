@@ -8,3 +8,8 @@ backend/AgriHub.Api/bin/
 backend/AgriHub.Api/obj/
 frontend/dist/
 frontend/node_modules/
+.omc/
+frontend/.omc/
+crawler/debug_*.py
+crawler/fetch_friday.py
+backend/publish/

@@ -16,19 +16,19 @@ export default function WeatherPanel() {
 
   return (
     <div style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <div style={{ fontSize: 9, color: '#8b949e', textTransform: 'uppercase', letterSpacing: 0.8 }}>
+      <div style={{ fontSize: 11, color: '#8b949e', textTransform: 'uppercase', letterSpacing: 0.8 }}>
         날씨 · 서울
       </div>
       {weather ? (
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 28, fontWeight: 700, color: '#e6edf3' }}>
+          <div style={{ fontSize: 31, fontWeight: 700, color: '#e6edf3' }}>
             {weather.temp ?? '--'}°C
           </div>
-          <div style={{ fontSize: 11, color: '#8b949e', marginTop: 4 }}>
+          <div style={{ fontSize: 12, color: '#8b949e', marginTop: 4 }}>
             습도 {weather.humidity ?? '--'}% · 바람 {weather.wind ?? '--'}m/s
           </div>
           {weather.rain > 0 && (
-            <div style={{ fontSize: 11, color: '#58a6ff' }}>강수 {weather.rain}mm</div>
+            <div style={{ fontSize: 12, color: '#58a6ff' }}>강수 {weather.rain}mm</div>
           )}
         </div>
       ) : (
@@ -36,12 +36,12 @@ export default function WeatherPanel() {
       )}
 
       <div style={{ height: 1, background: '#21262d' }} />
-      <div style={{ fontSize: 9, color: '#8b949e', textTransform: 'uppercase', letterSpacing: 0.8 }}>
+      <div style={{ fontSize: 11, color: '#8b949e', textTransform: 'uppercase', letterSpacing: 0.8 }}>
         5일 예보
       </div>
       {forecast.map(f => (
         <div key={f.date} style={{
-          display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#c9d1d9'
+          display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#c9d1d9'
         }}>
           <span style={{ width: 42, flexShrink: 0, color: '#8b949e', fontSize: 10 }}>
             {new Date(f.date).toLocaleDateString('ko', { weekday: 'short', month: 'numeric', day: 'numeric' })}
@@ -54,7 +54,7 @@ export default function WeatherPanel() {
         </div>
       ))}
       {forecast.length === 0 && (
-        <div style={{ fontSize: 11, color: '#8b949e' }}>예보 없음</div>
+        <div style={{ fontSize: 12, color: '#8b949e' }}>예보 없음</div>
       )}
     </div>
   )

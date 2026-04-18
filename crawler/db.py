@@ -41,7 +41,7 @@ def upsert_auction_price(item_code, market_code, price, volume, grade, date):
             """INSERT INTO auction_prices (item_code, market_code, price, volume, grade, date)
                VALUES (%s, %s, %s, %s, %s, %s)
                ON CONFLICT (item_code, market_code, date) DO UPDATE
-               SET price=EXCLUDED.price, volume=EXCLUDED.volume""",
+               SET price=EXCLUDED.price, volume=EXCLUDED.volume, grade=EXCLUDED.grade""",
             (item_code, market_code, price, volume, grade, date),
         )
 
