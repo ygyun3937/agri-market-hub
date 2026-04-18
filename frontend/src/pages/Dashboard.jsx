@@ -35,16 +35,6 @@ export default function Dashboard() {
       <AlertBanner alerts={disasterAlerts} />
       <NewsTicker />
 
-      <div style={{ padding: '6px 12px 0', borderBottom: '1px solid #21262d',
-        display: 'flex', gap: 4, flexShrink: 0 }}>
-        {['전체', '작황·가격', '물류·운송', '정책', '병해충'].map(tab => (
-          <button key={tab} style={{
-            background: 'none', border: 'none', color: '#8b949e',
-            fontSize: 12, cursor: 'pointer', padding: '4px 8px'
-          }}>{tab}</button>
-        ))}
-      </div>
-
       <div style={{ padding: '8px 12px', borderBottom: '1px solid #21262d',
         flexShrink: 0, overflow: 'hidden', height: 110 }}>
         <NewsPanel />

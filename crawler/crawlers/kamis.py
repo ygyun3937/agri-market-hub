@@ -1,11 +1,31 @@
 # crawler/crawlers/kamis.py
 import os
+import ssl
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.poolmanager import PoolManager
+import urllib3
 from datetime import date
 import db
 
+urllib3.disable_warnings()
+
 API_KEY = os.getenv("KAMIS_KEY", "")
-BASE_URL = "http://www.kamis.or.kr/service/price/xml.do"
+BASE_URL = "https://www.kamis.or.kr/service/price/xml.do"
+
+
+class _LegacySSL(HTTPAdapter):
+    def init_poolmanager(self, *args, **kwargs):
+        ctx = ssl.create_default_context()
+        ctx.set_ciphers("DEFAULT:@SECLEVEL=1")
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        kwargs["ssl_context"] = ctx
+        return super().init_poolmanager(*args, **kwargs)
+
+
+_session = requests.Session()
+_session.mount("https://", _LegacySSL())
 
 ITEMS = [
     ("111", "배추"),
@@ -37,7 +57,7 @@ def run_prices():
             "p_endday": today,
             "p_convert_kg_yn": "N",
         }
-        resp = requests.get(BASE_URL, params=params, timeout=10)
+        resp = _session.get(BASE_URL, params=params, timeout=10)
         resp.raise_for_status()
         data = resp.json()
         items = data.get("data", {}).get("item", [])

@@ -34,6 +34,8 @@ if __name__ == "__main__":
     safe(run_weather)()
     safe(run_forecast)()
     safe(run_prices)()
+    safe(run_news)()
+    safe(run_pest)()
     safe(run_fuel)()
     log.info("Initial run complete, entering schedule loop")
     while True:
