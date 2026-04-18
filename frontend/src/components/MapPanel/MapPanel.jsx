@@ -1,6 +1,16 @@
 // src/components/MapPanel/MapPanel.jsx
 import { useEffect, useState } from 'react'
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
+
+function MapResizer() {
+  const map = useMap()
+  useEffect(() => {
+    const observer = new ResizeObserver(() => map.invalidateSize())
+    observer.observe(map.getContainer())
+    return () => observer.disconnect()
+  }, [map])
+  return null
+}
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 import client from '../../api/client'
@@ -75,6 +85,7 @@ export default function MapPanel({ layers = { '도매시장': true, '산지': tr
 
   return (
     <MapContainer center={[36.5, 127.5]} zoom={7} style={{ width: '100%', height: '100%' }} zoomControl={true}>
+      <MapResizer />
       <TileLayer
         url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
         attribution='&copy; <a href="https://carto.com/">CARTO</a>'

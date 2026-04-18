@@ -87,26 +87,101 @@
 
 ---
 
-## 아키텍처
+## 프로젝트 구성도
 
+### 전체 시스템 아키텍처
+
+```mermaid
+graph TB
+    subgraph Client["브라우저"]
+        React["React SPA\n(Vite)"]
+    end
+
+    subgraph Server["원격 서버 (Docker Compose)"]
+        Caddy["Caddy\n(Reverse Proxy)"]
+        API["ASP.NET Core\napi:5031"]
+        Crawler["Python Crawler\n(cron scheduler)"]
+        DB["PostgreSQL 15"]
+        Redis["Redis 7"]
+    end
+
+    subgraph ExternalAPIs["외부 API"]
+        Weather["기상청 단기예보"]
+        KAMIS["KAMIS 농산물가격"]
+        Opinet["오피넷 유가"]
+        Naver["네이버 뉴스"]
+        Pest["병해충 API"]
+    end
+
+    React -- "HTTPS /api/*" --> Caddy
+    React -- "WebSocket SignalR" --> Caddy
+    Caddy -- "HTTP" --> API
+    API --> DB
+    API --> Redis
+    Crawler --> DB
+    Crawler --> Weather
+    Crawler --> KAMIS
+    Crawler --> Opinet
+    Crawler --> Naver
+    Crawler --> Pest
+    Caddy -- "Static Files" --> React
 ```
-Browser
-  │
-  ├─ HTTPS ──► Caddy (reverse proxy)
-  │               ├─ /api/*  ──► api:5031  (ASP.NET Core)
-  │               └─ /*      ──► static files (React SPA)
-  │
-  └─ WebSocket ──► SignalR Hub (ASP.NET Core)
 
-ASP.NET Core
-  ├─ PostgreSQL (EF Core)
-  └─ Redis (캐시·세션)
+### 데이터 흐름
 
-Python Crawler (cron)
-  ├─ 기상청 API  ──► DB
-  ├─ KAMIS API   ──► DB
-  ├─ 오피넷 API  ──► DB
-  └─ 네이버 뉴스 ──► DB
+```mermaid
+sequenceDiagram
+    participant C as 브라우저
+    participant Caddy
+    participant API as ASP.NET Core
+    participant DB as PostgreSQL
+    participant Redis
+    participant Crawler as Python Crawler
+
+    Note over Crawler,DB: cron 스케줄 (주기적 수집)
+    Crawler->>DB: 날씨·가격·뉴스·유가 저장
+
+    C->>Caddy: GET /api/weather/{region}
+    Caddy->>API: 프록시
+    API->>Redis: 캐시 조회
+    alt 캐시 히트
+        Redis-->>API: 캐시 데이터
+    else 캐시 미스
+        API->>DB: SELECT
+        DB-->>API: 결과
+        API->>Redis: 캐시 저장
+    end
+    API-->>C: JSON 응답
+
+    Note over C,API: 재난 알림 실시간 수신
+    C-->>API: WebSocket 연결 (SignalR)
+    API-->>C: 재난 문자 Push
+```
+
+### CI/CD 파이프라인
+
+```mermaid
+flowchart LR
+    Push["git push\nmain"] --> CI
+
+    subgraph CI["GitHub Actions CI"]
+        direction TB
+        FE["Frontend\nnpm ci → build"] 
+        BE["Backend\ndotnet build"]
+        CW["Crawler\npip install → pytest"]
+    end
+
+    CI --> Deploy
+
+    subgraph Deploy["GitHub Actions Deploy"]
+        direction TB
+        SSH["SSH 키 설정"]
+        Upload["rsync\nbackend/publish\ncrawler\nfrontend/dist"]
+        Restart["docker compose up -d"]
+        SSH --> Upload --> Restart
+    end
+
+    Deploy --> Prod["원격 서버\n(Docker Compose)"]
 ```
 
 ---
