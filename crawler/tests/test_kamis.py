@@ -4,11 +4,9 @@ from unittest.mock import patch
 from crawlers.kamis import run_prices
 
 MOCK_KAMIS_RESPONSE = {
-    "data": {
-        "item": [
-            {"dpr1": "8,200", "kindname": "상품", "date": "2026-04-18"}
-        ]
-    }
+    "price": [
+        {"productno": "34", "dpr1": "8,200", "kindname": "상품", "date": "2026-04-18"}
+    ]
 }
 
 

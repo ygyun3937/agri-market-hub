@@ -33,7 +33,7 @@ def test_run_weather_calls_db_upsert():
 
     with patch("crawlers.weather.db") as mock_db:
         run_weather()
-        assert mock_db.upsert_weather.call_count == 4  # 4 regions
+        assert mock_db.upsert_weather.call_count == 16  # 16 regions
         first_call = mock_db.upsert_weather.call_args_list[0]
         assert first_call.kwargs["temp"] == 18.5
         assert first_call.kwargs["humidity"] == 65
