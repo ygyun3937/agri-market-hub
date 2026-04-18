@@ -10,11 +10,15 @@ using AgriHub.Api.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<AppDbContext>(opt =>
-    opt.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")));
+if (builder.Environment.IsEnvironment("Testing"))
+    builder.Services.AddDbContext<AppDbContext>(opt =>
+        opt.UseInMemoryDatabase("TestDb"));
+else
+    builder.Services.AddDbContext<AppDbContext>(opt =>
+        opt.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")));
 
 var redisConn = builder.Configuration.GetConnectionString("Redis");
-if (!string.IsNullOrEmpty(redisConn))
+if (!string.IsNullOrEmpty(redisConn) && !builder.Environment.IsEnvironment("Testing"))
     builder.Services.AddSingleton<IConnectionMultiplexer>(
         ConnectionMultiplexer.Connect(redisConn));
 
