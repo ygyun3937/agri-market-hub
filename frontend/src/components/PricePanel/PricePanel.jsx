@@ -3,8 +3,8 @@ import { useEffect, useState } from 'react'
 import client from '../../api/client'
 
 const SEASONAL = ['111', '112', '411']
-const ITEM_NAMES = { '111': '봄배추', '112': '무', '211': '양파', '214': '당근', '215': '감자', '311': '사과', '312': '배', '411': '쌀' }
-const ITEM_ICONS = { '111': '🥬', '112': '🌿', '211': '🧅', '214': '🥕', '215': '🥔', '311': '🍎', '312': '🍐', '411': '🌾' }
+const ITEM_NAMES = { '111': '봄배추', '112': '무', '211': '양파', '214': '당근', '215': '감자', '411': '쌀' }
+const ITEM_ICONS = { '111': '🥬', '112': '🌿', '211': '🧅', '214': '🥕', '215': '🥔', '411': '🌾' }
 
 function PriceRow({ price }) {
   const isUp = (price.changePercent ?? 0) >= 0
@@ -69,6 +69,11 @@ export default function PricePanel() {
         {watchlist.length === 0 && (
           <div style={{ fontSize: 11, color: '#8b949e', padding: 8 }}>설정한 품목 없음</div>
         )}
+        <button style={{
+          margin: '4px 0 0', padding: 4, background: '#21262d',
+          border: '1px dashed #30363d', borderRadius: 5,
+          fontSize: 10, color: '#8b949e', cursor: 'pointer'
+        }}>＋ 품목 추가</button>
       </div>
     </div>
   )
