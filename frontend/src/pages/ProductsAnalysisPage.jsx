@@ -499,7 +499,7 @@ function PageToolbar({ selectedDate, setSelectedDate, viewMode, setViewMode }) {
       borderBottom: `1px solid ${BORDER}`, flexShrink: 0, flexWrap: 'wrap', gap: 8,
     }}>
       <h1 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: TEXT }}>
-        품목별 가격
+        전국 농수산물 경매 현황
       </h1>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: DIM }}>

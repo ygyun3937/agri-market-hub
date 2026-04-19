@@ -409,7 +409,7 @@ function PageToolbar({ selectedDate, setSelectedDate }) {
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       padding: '10px 16px', background: SURFACE,
       borderBottom: `1px solid ${BORDER}`, flexShrink: 0 }}>
-      <h1 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: TEXT }}>시장별 현황</h1>
+      <h1 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: TEXT }}>전국 농수산물 경매 현황</h1>
       <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: DIM }}>
         기준일:
         <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
