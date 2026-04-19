@@ -4,7 +4,7 @@ import {
   ResponsiveContainer, ComposedChart, Line, Bar,
   XAxis, YAxis, CartesianGrid, Tooltip,
 } from 'recharts'
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 import Header from '../components/Header/Header'
@@ -132,7 +132,13 @@ function fmtDate(dateStr) {
 }
 
 // ─── Market Map ───────────────────────────────────────────────────────────────
-function MarketMap({ marketPrices, selectedMarket, onSelect }) {
+function MapResizer({ mapH }) {
+  const map = useMap()
+  useEffect(() => { map.invalidateSize() }, [mapH, map])
+  return null
+}
+
+function MarketMap({ marketPrices, selectedMarket, onSelect, mapH }) {
   const priceMap = {}
   marketPrices.forEach(m => { priceMap[m.marketCode] = Number(m.avgPrice) })
   const prices = Object.values(priceMap)
@@ -153,7 +159,7 @@ function MarketMap({ marketPrices, selectedMarket, onSelect }) {
   }
 
   return (
-    <div style={{ height: 240, borderRadius: 8, overflow: 'hidden',
+    <div style={{ height: '100%', borderRadius: 8, overflow: 'hidden',
       border: '1px solid #30363d' }}>
       <MapContainer center={[36.5, 127.8]} zoom={7}
         style={{ height: '100%', width: '100%' }} zoomControl={true}>
@@ -161,6 +167,7 @@ function MarketMap({ marketPrices, selectedMarket, onSelect }) {
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
           attribution="&copy; OpenStreetMap &copy; CARTO"
         />
+        <MapResizer mapH={mapH} />
         {markers.map(m => {
           const icon = L.divIcon({
             className: '',
@@ -517,11 +524,12 @@ export default function MarketsAnalysisPage() {
         {/* Center+Right: map + market table + trend */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
           {/* Map */}
-          <div style={{ height: mapH, flexShrink: 0, padding: '12px 12px 0' }}>
+          <div style={{ height: mapH, flexShrink: 0, padding: '12px 12px 0', boxSizing: 'border-box' }}>
             <MarketMap
               marketPrices={marketPrices}
               selectedMarket={selectedMarketCode ? { marketCode: selectedMarketCode } : null}
               onSelect={setSelectedMarketCode}
+              mapH={mapH}
             />
           </div>
 
