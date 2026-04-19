@@ -407,16 +407,16 @@ function RightPanel({ selectedProduct, selectedDate, marketPrices, trendData, lo
 function PageToolbar({ selectedDate, setSelectedDate }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: '10px 16px', background: SURFACE,
+      padding: '12px 16px', background: SURFACE,
       borderBottom: `1px solid ${BORDER}`, flexShrink: 0 }}>
-      <h1 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: TEXT }}>전국 농수산물 경매 현황</h1>
+      <h1 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: TEXT }}>전국 농수산물 경매 현황</h1>
       <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: DIM }}>
         기준일:
         <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
           <input type="date" value={selectedDate} max={getYesterday()}
             onChange={e => setSelectedDate(e.target.value)}
-            style={{ background: '#0d1117', border: '1px solid #30363d', borderRadius: 5,
-              color: '#c9d1d9', fontSize: 13, padding: '4px 28px 4px 8px', outline: 'none', cursor: 'pointer' }} />
+            style={{ background: BG, border: `1px solid ${BORDER}`, borderRadius: 5,
+              color: TEXT, fontSize: 13, padding: '4px 28px 4px 8px', outline: 'none', cursor: 'pointer' }} />
           <span style={{ position: 'absolute', right: 6, pointerEvents: 'none', fontSize: 14 }}>📅</span>
         </div>
       </label>

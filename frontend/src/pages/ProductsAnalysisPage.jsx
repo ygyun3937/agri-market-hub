@@ -495,10 +495,10 @@ function PageToolbar({ selectedDate, setSelectedDate, viewMode, setViewMode }) {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: '10px 16px', background: SURFACE,
+      padding: '12px 16px', background: SURFACE,
       borderBottom: `1px solid ${BORDER}`, flexShrink: 0, flexWrap: 'wrap', gap: 8,
     }}>
-      <h1 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: TEXT }}>
+      <h1 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: TEXT }}>
         전국 농수산물 경매 현황
       </h1>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
