@@ -6,7 +6,10 @@ import { useAuth } from '../hooks/useAuth'
 export default function Login() {
   const { setSession } = useAuth()
   const navigate = useNavigate()
-  const [error, setError] = useState('')
+  const [error] = useState(() => {
+    const params = new URLSearchParams(window.location.search)
+    return params.get('error') ? '로그인에 실패했습니다. 다시 시도해주세요.' : ''
+  })
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -15,10 +18,8 @@ export default function Login() {
     if (token) {
       setSession(token, decodeURIComponent(name || ''))
       navigate('/', { replace: true })
-    } else if (params.get('error')) {
-      setError('로그인에 실패했습니다. 다시 시도해주세요.')
     }
-  }, [])
+  }, [navigate, setSession])
 
   return (
     <div style={{ minHeight: '100vh', background: '#0d1117',
