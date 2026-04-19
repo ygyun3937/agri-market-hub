@@ -77,11 +77,6 @@ if (!app.Environment.IsDevelopment())
     }));
 }
 
-app.Use(async (ctx, next) =>
-{
-    ctx.Response.Headers["Cross-Origin-Opener-Policy"] = "same-origin-allow-popups";
-    await next();
-});
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
