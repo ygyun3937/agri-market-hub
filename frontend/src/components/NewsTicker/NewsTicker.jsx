@@ -20,8 +20,8 @@ export default function NewsTicker() {
 
   return (
     <div style={{
-      background: '#0d1117', borderBottom: '1px solid #21262d',
-      padding: '5px 16px', fontSize: 14, color: '#8b949e',
+      background: '#0f2318', borderBottom: '1px solid #1e3a28',
+      padding: '5px 16px', fontSize: 14, color: '#7ee8a2',
       display: 'flex', alignItems: 'center', gap: 8,
       overflow: 'hidden', flexShrink: 0
     }}>
