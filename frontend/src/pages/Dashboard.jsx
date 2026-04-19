@@ -103,10 +103,14 @@ export default function Dashboard() {
   const [schedules, setSchedules] = useState([])
   const [layout, setLayout] = useState(loadLayout)
 
+  const isLoggedIn = !!localStorage.getItem('token')
+
   useEffect(() => {
     client.get('/alerts/disaster').then(r => setDisasterAlerts(r.data)).catch(() => {})
-    client.get('/notifications').then(r => setNotifications(r.data)).catch(() => {})
-    client.get('/schedules').then(r => setSchedules(r.data)).catch(() => {})
+    if (isLoggedIn) {
+      client.get('/notifications').then(r => setNotifications(r.data)).catch(() => {})
+      client.get('/schedules').then(r => setSchedules(r.data)).catch(() => {})
+    }
   }, [])
 
   const unreadCount = notifications.filter(n => !n.isRead).length

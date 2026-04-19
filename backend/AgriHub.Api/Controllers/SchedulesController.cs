@@ -39,6 +39,18 @@ public class SchedulesController(AppDbContext db, GoogleCalendarService gcal) : 
         };
         db.Schedules.Add(schedule);
         await db.SaveChangesAsync();
+
+        var user = await db.Users.FindAsync(UserId);
+        if (user?.GoogleRefreshToken != null)
+        {
+            var eventId = await gcal.CreateEventAsync(user, schedule);
+            if (eventId != null)
+            {
+                schedule.GcalEventId = eventId;
+                await db.SaveChangesAsync();
+            }
+        }
+
         return CreatedAtAction(nameof(GetSchedules), new { }, schedule);
     }
 
@@ -60,6 +72,13 @@ public class SchedulesController(AppDbContext db, GoogleCalendarService gcal) : 
     {
         var schedule = await db.Schedules.FirstOrDefaultAsync(s => s.Id == id && s.UserId == UserId);
         if (schedule == null) return NotFound();
+
+        if (schedule.GcalEventId != null)
+        {
+            var user = await db.Users.FindAsync(UserId);
+            if (user != null) await gcal.DeleteEventAsync(user, schedule.GcalEventId);
+        }
+
         db.Schedules.Remove(schedule);
         await db.SaveChangesAsync();
         return NoContent();

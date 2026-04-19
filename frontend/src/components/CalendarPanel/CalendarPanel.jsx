@@ -1,6 +1,8 @@
 // src/components/CalendarPanel/CalendarPanel.jsx
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import client from '../../api/client'
+import { useAuth } from '../../hooks/useAuth'
 
 function gcalLink(s) {
   const d = s.date.replace(/-/g, '')
@@ -12,6 +14,8 @@ export default function CalendarPanel({ schedules = [], setSchedules }) {
   const [selectedDay, setSelectedDay] = useState(null)
   const [form, setForm] = useState({ title: '', memo: '' })
   const [saving, setSaving] = useState(false)
+  const { user } = useAuth()
+  const navigate = useNavigate()
 
   const year = now.getFullYear()
   const month = now.getMonth()
@@ -101,24 +105,36 @@ export default function CalendarPanel({ schedules = [], setSchedules }) {
                 style={{ fontSize: 11, color: '#58a6ff', textDecoration: 'none' }}>GCal</a>
             </div>
           ))}
-          <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-            onKeyDown={e => e.key === 'Enter' && handleSave()}
-            placeholder="일정 제목..."
-            style={{
-              width: '100%', boxSizing: 'border-box', background: '#0d1117',
-              border: '1px solid #30363d', borderRadius: 4, color: '#e6edf3',
-              fontSize: 12, padding: '4px 6px', marginBottom: 4, outline: 'none'
-            }} />
-          <div style={{ display: 'flex', gap: 4 }}>
-            <button onClick={handleSave} disabled={saving} style={{
-              flex: 1, background: '#238636', border: 'none', borderRadius: 4,
-              color: '#fff', fontSize: 12, padding: '4px 0', cursor: 'pointer'
-            }}>추가</button>
-            <button onClick={() => setSelectedDay(null)} style={{
-              background: '#21262d', border: '1px solid #30363d', borderRadius: 4,
-              color: '#8b949e', fontSize: 12, padding: '4px 8px', cursor: 'pointer'
-            }}>닫기</button>
-          </div>
+          {user ? (
+            <>
+              <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+                onKeyDown={e => e.key === 'Enter' && handleSave()}
+                placeholder="일정 제목..."
+                style={{
+                  width: '100%', boxSizing: 'border-box', background: '#0d1117',
+                  border: '1px solid #30363d', borderRadius: 4, color: '#e6edf3',
+                  fontSize: 12, padding: '4px 6px', marginBottom: 4, outline: 'none'
+                }} />
+              <div style={{ display: 'flex', gap: 4 }}>
+                <button onClick={handleSave} disabled={saving} style={{
+                  flex: 1, background: '#238636', border: 'none', borderRadius: 4,
+                  color: '#fff', fontSize: 12, padding: '4px 0', cursor: 'pointer'
+                }}>추가</button>
+                <button onClick={() => setSelectedDay(null)} style={{
+                  background: '#21262d', border: '1px solid #30363d', borderRadius: 4,
+                  color: '#8b949e', fontSize: 12, padding: '4px 8px', cursor: 'pointer'
+                }}>닫기</button>
+              </div>
+            </>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '6px 0' }}>
+              <div style={{ fontSize: 12, color: '#8b949e', marginBottom: 6 }}>일정 추가는 로그인이 필요합니다</div>
+              <button onClick={() => navigate('/login')} style={{
+                background: '#238636', border: 'none', borderRadius: 4,
+                color: '#fff', fontSize: 12, padding: '5px 16px', cursor: 'pointer', fontWeight: 600
+              }}>로그인하기</button>
+            </div>
+          )}
         </div>
       )}
     </div>

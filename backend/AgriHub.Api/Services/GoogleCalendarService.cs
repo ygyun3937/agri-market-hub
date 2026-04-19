@@ -1,6 +1,9 @@
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Auth.OAuth2.Flows;
+using Google.Apis.Auth.OAuth2.Responses;
 using Google.Apis.Calendar.v3;
+using Google.Apis.Calendar.v3.Data;
+using Google.Apis.Services;
 using AgriHub.Api.Models;
 
 namespace AgriHub.Api.Services;
@@ -21,21 +24,51 @@ public class GoogleCalendarService(IConfiguration config, ILogger<GoogleCalendar
         });
     }
 
-    private string RedirectUri => config["Google:RedirectUri"] ?? "https://agri.dooyg.store/api/auth/google/callback";
-
-    public string? GetAuthUrl()
+    private CalendarService? GetCalendarService(string refreshToken)
     {
         if (_flow == null) return null;
-        return _flow.CreateAuthorizationCodeRequest(RedirectUri).Build().AbsoluteUri;
+        var credential = new UserCredential(_flow, "user", new TokenResponse { RefreshToken = refreshToken });
+        return new CalendarService(new BaseClientService.Initializer { HttpClientInitializer = credential });
     }
 
-    public record LoginTokenResult(string AccessToken, string? RefreshToken, string? IdToken);
-
-    public async Task<LoginTokenResult?> ExchangeLoginCodeAsync(string code)
+    public async Task<string?> CreateEventAsync(User user, Schedule schedule)
     {
-        if (_flow == null) return null;
-        var token = await _flow.ExchangeCodeForTokenAsync("login", code, RedirectUri, CancellationToken.None);
-        return new LoginTokenResult(token.AccessToken, token.RefreshToken, token.IdToken);
+        if (string.IsNullOrEmpty(user.GoogleRefreshToken)) return null;
+        var svc = GetCalendarService(user.GoogleRefreshToken);
+        if (svc == null) return null;
+        try
+        {
+            var dateStr = schedule.Date.ToString("yyyy-MM-dd");
+            var ev = new Event
+            {
+                Summary = schedule.Title,
+                Description = schedule.Memo,
+                Start = new EventDateTime { Date = dateStr },
+                End = new EventDateTime { Date = dateStr }
+            };
+            var created = await svc.Events.Insert(ev, "primary").ExecuteAsync();
+            return created.Id;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "GCal create event failed for user {UserId}", user.Id);
+            return null;
+        }
+    }
+
+    public async Task DeleteEventAsync(User user, string? eventId)
+    {
+        if (string.IsNullOrEmpty(user.GoogleRefreshToken) || string.IsNullOrEmpty(eventId)) return;
+        var svc = GetCalendarService(user.GoogleRefreshToken);
+        if (svc == null) return;
+        try
+        {
+            await svc.Events.Delete("primary", eventId).ExecuteAsync();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "GCal delete event {EventId} failed for user {UserId}", eventId, user.Id);
+        }
     }
 
     public async Task SyncSchedulesAsync(int userId, List<Schedule> schedules)

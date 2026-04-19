@@ -51,12 +51,22 @@ export default function Header({ alertCount = 0, hasDisasterAlert = false }) {
         <span style={{ fontSize: 14, color: '#8b949e' }}>
           🔔{alertCount > 0 && <span style={{ color: '#f85149', fontWeight: 700 }}>{alertCount}</span>}
         </span>
-        <span style={{ fontSize: 14, color: '#c9d1d9' }}>{user?.name || ''}</span>
-        <button onClick={handleLogout}
-          style={{ background: 'none', border: '1px solid #30363d', color: '#8b949e',
-            fontSize: 13, padding: '3px 10px', borderRadius: 5, cursor: 'pointer' }}>
-          로그아웃
-        </button>
+        {user ? (
+          <>
+            <span style={{ fontSize: 14, color: '#c9d1d9' }}>{user.name}</span>
+            <button onClick={handleLogout}
+              style={{ background: 'none', border: '1px solid #30363d', color: '#8b949e',
+                fontSize: 13, padding: '3px 10px', borderRadius: 5, cursor: 'pointer' }}>
+              로그아웃
+            </button>
+          </>
+        ) : (
+          <button onClick={() => navigate('/login')}
+            style={{ background: '#238636', border: 'none', color: '#fff',
+              fontSize: 13, padding: '3px 12px', borderRadius: 5, cursor: 'pointer', fontWeight: 600 }}>
+            로그인
+          </button>
+        )}
       </div>
     </header>
   )

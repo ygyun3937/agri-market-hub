@@ -1,6 +1,8 @@
 // src/components/CalendarPanel/ScheduleList.jsx
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import client from '../../api/client'
+import { useAuth } from '../../hooks/useAuth'
 
 function gcalLink(s) {
   const d = s.date.replace(/-/g, '')
@@ -19,6 +21,8 @@ export default function ScheduleList({ schedules = [], setSchedules }) {
   const today = new Date().toISOString().slice(0, 10)
   const [form, setForm] = useState({ date: today, title: '' })
   const [saving, setSaving] = useState(false)
+  const { user } = useAuth()
+  const navigate = useNavigate()
 
   const handleAdd = async () => {
     if (!form.title.trim() || !form.date) return
@@ -86,24 +90,37 @@ export default function ScheduleList({ schedules = [], setSchedules }) {
         📋 출하 일정
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 10 }}>
-        <input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
-          style={{ width: '100%', boxSizing: 'border-box', background: '#0d1117',
-            border: '1px solid #30363d', borderRadius: 4, color: '#c9d1d9',
-            fontSize: 11, padding: '3px 6px', outline: 'none' }} />
-        <div style={{ display: 'flex', gap: 4 }}>
-          <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-            onKeyDown={e => e.key === 'Enter' && handleAdd()}
-            placeholder="일정 제목..."
-            style={{ flex: 1, background: '#0d1117', border: '1px solid #30363d', borderRadius: 4,
-              color: '#e6edf3', fontSize: 11, padding: '3px 6px', outline: 'none', minWidth: 0 }} />
-          <button onClick={handleAdd} disabled={saving}
-            style={{ background: '#238636', border: 'none', borderRadius: 4,
-              color: '#fff', fontSize: 11, padding: '3px 10px', cursor: 'pointer', flexShrink: 0 }}>+</button>
+      {user ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 10 }}>
+          <input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
+            style={{ width: '100%', boxSizing: 'border-box', background: '#0d1117',
+              border: '1px solid #30363d', borderRadius: 4, color: '#c9d1d9',
+              fontSize: 11, padding: '3px 6px', outline: 'none' }} />
+          <div style={{ display: 'flex', gap: 4 }}>
+            <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+              onKeyDown={e => e.key === 'Enter' && handleAdd()}
+              placeholder="일정 제목..."
+              style={{ flex: 1, background: '#0d1117', border: '1px solid #30363d', borderRadius: 4,
+                color: '#e6edf3', fontSize: 11, padding: '3px 6px', outline: 'none', minWidth: 0 }} />
+            <button onClick={handleAdd} disabled={saving}
+              style={{ background: '#238636', border: 'none', borderRadius: 4,
+                color: '#fff', fontSize: 11, padding: '3px 10px', cursor: 'pointer', flexShrink: 0 }}>+</button>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div style={{ marginBottom: 10, padding: '10px', background: '#161b22',
+          border: '1px solid #30363d', borderRadius: 6, textAlign: 'center' }}>
+          <div style={{ fontSize: 12, color: '#8b949e', marginBottom: 6 }}>
+            일정 관리 및 Google Calendar 연동은<br />로그인이 필요합니다
+          </div>
+          <button onClick={() => navigate('/login')} style={{
+            background: '#238636', border: 'none', borderRadius: 4,
+            color: '#fff', fontSize: 12, padding: '5px 16px', cursor: 'pointer', fontWeight: 600
+          }}>Google로 로그인</button>
+        </div>
+      )}
 
-      {upcoming.length === 0 && past.length === 0 && (
+      {upcoming.length === 0 && past.length === 0 && user && (
         <div style={{ fontSize: 13, color: '#8b949e', padding: '12px 0', textAlign: 'center' }}>
           등록된 일정이 없습니다
         </div>
