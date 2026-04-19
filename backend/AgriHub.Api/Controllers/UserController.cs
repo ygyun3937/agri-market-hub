@@ -21,6 +21,13 @@ public class UserController(AppDbContext db, IConfiguration config) : Controller
         return Ok(new { publicKey = config["VapidPublicKey"] ?? "" });
     }
 
+    [HttpGet("gcal-connected")]
+    public async Task<IActionResult> GcalConnected()
+    {
+        var user = await db.Users.FindAsync(UserId);
+        return Ok(new { connected = !string.IsNullOrEmpty(user?.GoogleRefreshToken) });
+    }
+
     [HttpGet("settings")]
     public async Task<ActionResult<UserSetting>> GetSettings()
     {

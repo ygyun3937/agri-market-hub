@@ -1,5 +1,5 @@
 // src/components/CalendarPanel/ScheduleList.jsx
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import client from '../../api/client'
 import { useAuth } from '../../hooks/useAuth'
@@ -21,8 +21,15 @@ export default function ScheduleList({ schedules = [], setSchedules }) {
   const today = new Date().toISOString().slice(0, 10)
   const [form, setForm] = useState({ date: today, title: '' })
   const [saving, setSaving] = useState(false)
+  const [gcalConnected, setGcalConnected] = useState(null)
   const { user } = useAuth()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (user) {
+      client.get('/user/gcal-connected').then(r => setGcalConnected(r.data.connected)).catch(() => setGcalConnected(false))
+    }
+  }, [user])
 
   const handleAdd = async () => {
     if (!form.title.trim() || !form.date) return
@@ -85,9 +92,21 @@ export default function ScheduleList({ schedules = [], setSchedules }) {
 
   return (
     <div style={{ padding: '10px 12px' }}>
-      <div style={{ fontSize: 12, color: '#8b949e', textTransform: 'uppercase',
-        letterSpacing: 0.8, marginBottom: 8, fontWeight: 600 }}>
-        📋 출하 일정
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+        <div style={{ fontSize: 12, color: '#8b949e', textTransform: 'uppercase',
+          letterSpacing: 0.8, fontWeight: 600 }}>
+          📋 출하 일정
+        </div>
+        {user && gcalConnected === false && (
+          <button onClick={() => { window.location.href = '/api/auth/google/redirect' }}
+            style={{ fontSize: 10, color: '#f85149', background: 'none', border: '1px solid #f8514933',
+              borderRadius: 4, padding: '2px 6px', cursor: 'pointer' }}>
+            캘린더 재연동 필요
+          </button>
+        )}
+        {user && gcalConnected === true && (
+          <span style={{ fontSize: 10, color: '#3fb950' }}>● GCal 연동됨</span>
+        )}
       </div>
 
       {user ? (
