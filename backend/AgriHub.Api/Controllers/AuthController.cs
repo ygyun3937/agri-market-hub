@@ -33,7 +33,9 @@ public class AuthController(AuthService auth, GoogleCalendarService gcal, IConfi
     [HttpPost("google")]
     public async Task<ActionResult<AuthResponse>> GoogleLogin([FromBody] GoogleAuthRequest req)
     {
-        var tokens = await gcal.ExchangeLoginCodeAsync(req.Code);
+        LoginTokenResult? tokens;
+        try { tokens = await gcal.ExchangeLoginCodeAsync(req.Code); }
+        catch (Exception ex) { return StatusCode(500, new { error = "Google token exchange failed", detail = ex.Message }); }
         if (tokens == null) return BadRequest("Google not configured");
         GoogleJsonWebSignature.Payload payload;
         try

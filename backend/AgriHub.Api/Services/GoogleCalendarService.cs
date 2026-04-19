@@ -17,7 +17,7 @@ public class GoogleCalendarService(IConfiguration config, ILogger<GoogleCalendar
         return new GoogleAuthorizationCodeFlow(new GoogleAuthorizationCodeFlow.Initializer
         {
             ClientSecrets = new ClientSecrets { ClientId = clientId, ClientSecret = clientSecret },
-            Scopes = [CalendarService.Scope.Calendar]
+            Scopes = ["openid", "email", "profile", CalendarService.Scope.Calendar]
         });
     }
 
