@@ -404,6 +404,25 @@ function RightPanel({ selectedProduct, selectedDate, marketPrices, trendData, lo
 }
 
 // ─── Page Toolbar ─────────────────────────────────────────────────────────────
+function HolidayBanner({ selectedDate, hasData }) {
+  const d = new Date(selectedDate)
+  const day = d.getDay()
+  const isWeekend = day === 0 || day === 6
+  if (!isWeekend && hasData) return null
+  const msg = isWeekend
+    ? `${day === 6 ? '토요일' : '일요일'}은 공영도매시장 휴장일입니다.`
+    : '해당 날짜의 경매 데이터가 없습니다. 공휴일 또는 휴장일일 수 있습니다.'
+  return (
+    <div style={{
+      background: '#d2992222', border: '1px solid #d29922',
+      borderRadius: 6, padding: '8px 14px', margin: '12px 16px 0',
+      fontSize: 13, color: '#d29922', display: 'flex', alignItems: 'center', gap: 8,
+    }}>
+      ⚠️ {msg} 가장 가까운 거래일을 선택해주세요.
+    </div>
+  )
+}
+
 function PageToolbar({ selectedDate, setSelectedDate }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -505,6 +524,7 @@ export default function MarketsAnalysisPage() {
       <Header />
       <AnalysisNav />
       <PageToolbar selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
+      <HolidayBanner selectedDate={selectedDate} hasData={products.length > 0} />
 
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 0 }}>
         {/* Left: product filter + list */}
