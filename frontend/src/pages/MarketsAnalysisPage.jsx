@@ -10,7 +10,8 @@ import L from 'leaflet'
 import Header from '../components/Header/Header'
 import AnalysisNav from '../components/Analysis/AnalysisNav'
 import client from '../api/client'
-import { MOCK_MARKETS, MOCK_MARKET_PRODUCTS, MOCK_TREND } from '../data/analysisMock'
+import { MOCK_DAILY, MOCK_MARKETS, MOCK_TREND } from '../data/analysisMock'
+
 
 delete L.Icon.Default.prototype._getIconUrl
 L.Icon.Default.mergeOptions({
@@ -27,21 +28,22 @@ const TEXT    = '#c9d1d9'
 const DIM     = '#8b949e'
 const ACCENT  = '#58a6ff'
 const GREEN   = '#3fb950'
+const RED     = '#f85149'
 
 // ─── 제철 품목 (월별 item name 목록) ────────────────────────────────────────
 const SEASONAL_BY_MONTH = {
-  1:  ['시금치', '무', '배추', '당근', '사과', '배', '딸기', '굴'],
-  2:  ['시금치', '무', '배추', '당근', '딸기', '한라봉'],
-  3:  ['봄배추', '시금치', '딸기', '냉이', '달래'],
-  4:  ['봄배추', '시금치', '오이', '파프리카', '딸기', '장미', '두릅'],
-  5:  ['봄배추', '양파', '오이', '상추', '딸기', '참외'],
-  6:  ['양파', '감자', '수박', '참외', '오이', '토마토'],
-  7:  ['감자', '수박', '참외', '복숭아', '토마토', '고추'],
-  8:  ['수박', '감자', '복숭아', '포도', '토마토', '고추'],
+  1:  ['시금치', '무', '배추', '당근', '사과', '배', '딸기'],
+  2:  ['시금치', '무', '배추', '당근', '딸기'],
+  3:  ['봄배추', '시금치', '딸기'],
+  4:  ['봄배추', '시금치', '오이', '파프리카', '딸기', '장미'],
+  5:  ['봄배추', '양파', '오이', '딸기', '참외'],
+  6:  ['양파', '감자', '수박', '참외', '오이'],
+  7:  ['감자', '수박', '참외', '복숭아'],
+  8:  ['수박', '감자', '복숭아', '포도'],
   9:  ['배', '사과', '포도', '고등어', '고구마'],
-  10: ['사과', '배', '밤', '쌀', '고등어', '콩', '감자'],
-  11: ['사과', '배', '김장배추', '무', '쌀', '콩', '고등어'],
-  12: ['김장배추', '무', '사과', '배', '딸기', '굴', '방어'],
+  10: ['사과', '배', '쌀', '고등어', '콩'],
+  11: ['사과', '배', '배추', '무', '쌀', '콩', '고등어'],
+  12: ['배추', '무', '사과', '배', '딸기'],
 }
 function isSeasonalItem(itemName, month) {
   const list = SEASONAL_BY_MONTH[month] || []
@@ -86,50 +88,146 @@ function fmtDate(dateStr) {
   return dateStr ? dateStr.slice(5).replace('-', '/') : ''
 }
 
-function groupByRegion(markets) {
-  const map = {}
-  markets.forEach(m => {
-    const region = m.name.slice(0, 2)
-    if (!map[region]) map[region] = []
-    map[region].push(m)
-  })
-  return Object.entries(map).sort(([a], [b]) => a.localeCompare(b, 'ko'))
-}
-
 // ─── Market Map ───────────────────────────────────────────────────────────────
-function MarketMap({ markets, selectedMarket, onSelect }) {
-  const marketsWithCoords = markets
-    .filter(m => MARKET_COORDS[m.code])
-    .map(m => ({ ...m, ...MARKET_COORDS[m.code] }))
+function MarketMap({ marketPrices, selectedMarket, onSelect }) {
+  const priceMap = {}
+  marketPrices.forEach(m => { priceMap[m.marketCode] = Number(m.avgPrice) })
+  const prices = Object.values(priceMap)
+  const minP = Math.min(...prices)
+  const maxP = Math.max(...prices)
 
-  if (marketsWithCoords.length === 0) return null
+  const markers = Object.entries(MARKET_COORDS).map(([code, coord]) => ({
+    code, ...coord,
+    price: priceMap[code],
+  })).filter(m => m.price != null)
+
+  function priceColor(price) {
+    if (prices.length < 2) return ACCENT
+    const ratio = (price - minP) / (maxP - minP + 1)
+    if (ratio > 0.66) return '#f85149'
+    if (ratio > 0.33) return '#f0a202'
+    return '#3fb950'
+  }
 
   return (
-    <div style={{ height: 260, borderRadius: 8, overflow: 'hidden',
-      border: '1px solid #30363d', marginBottom: 12 }}>
-      <MapContainer
-        center={[36.5, 127.8]}
-        zoom={7}
-        style={{ height: '100%', width: '100%' }}
-        zoomControl={true}
-      >
+    <div style={{ height: 240, borderRadius: 8, overflow: 'hidden',
+      border: '1px solid #30363d' }}>
+      <MapContainer center={[36.5, 127.8]} zoom={7}
+        style={{ height: '100%', width: '100%' }} zoomControl={true}>
         <TileLayer
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
           attribution="&copy; OpenStreetMap &copy; CARTO"
         />
-        {marketsWithCoords.map(m => (
-          <Marker
-            key={m.code}
-            position={[m.lat, m.lng]}
-            eventHandlers={{ click: () => onSelect({ code: m.code, name: m.name }) }}
-          >
-            <Popup>
-              <div style={{ fontSize: 13, fontWeight: 600 }}>{m.name}</div>
-              <div style={{ fontSize: 11, color: '#666' }}>클릭하여 선택</div>
-            </Popup>
-          </Marker>
-        ))}
+        {markers.map(m => {
+          const icon = L.divIcon({
+            className: '',
+            html: `<div style="
+              background:${priceColor(m.price)};
+              color:#fff;font-size:10px;font-weight:700;
+              padding:3px 6px;border-radius:10px;white-space:nowrap;
+              box-shadow:0 1px 4px rgba(0,0,0,.5);
+              border:2px solid ${selectedMarket?.marketCode === m.code ? '#fff' : 'transparent'}
+            ">${m.price.toLocaleString()}</div>`,
+            iconAnchor: [0, 0],
+          })
+          return (
+            <Marker key={m.code} position={[m.lat, m.lng]} icon={icon}
+              eventHandlers={{ click: () => onSelect(m.code) }}>
+              <Popup>
+                <div style={{ fontSize: 13, fontWeight: 600 }}>{m.name}</div>
+                <div style={{ fontSize: 12 }}>{m.price.toLocaleString()}원</div>
+              </Popup>
+            </Marker>
+          )
+        })}
       </MapContainer>
+    </div>
+  )
+}
+
+// ─── Left Panel: Product list with filter ────────────────────────────────────
+const FILTERS = [
+  { key: 'all',       label: '전체' },
+  { key: 'seasonal',  label: '제철' },
+  { key: 'watchlist', label: '★ 관심' },
+]
+
+function LeftPanel({ products, selectedProduct, onSelect, watchlist, onToggleWatch }) {
+  const [filter, setFilter] = useState('all')
+  const month = new Date().getMonth() + 1
+
+  const filtered = products.filter(p => {
+    if (filter === 'seasonal')  return isSeasonalItem(p.itemName, month)
+    if (filter === 'watchlist') return watchlist.has(p.itemCode)
+    return true
+  })
+
+  return (
+    <div style={{ width: 200, flexShrink: 0, borderRight: `1px solid ${BORDER}`,
+      display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+
+      {/* Filter tabs */}
+      <div style={{ display: 'flex', borderBottom: `1px solid ${BORDER}`, flexShrink: 0 }}>
+        {FILTERS.map(f => (
+          <button key={f.key} onClick={() => setFilter(f.key)} style={{
+            flex: 1, padding: '8px 4px', fontSize: 11, cursor: 'pointer',
+            background: 'none', border: 'none',
+            borderBottom: filter === f.key ? `2px solid ${GREEN}` : '2px solid transparent',
+            color: filter === f.key ? GREEN : DIM,
+            fontWeight: filter === f.key ? 700 : 400,
+          }}>
+            {f.key === 'watchlist'
+              ? `★ 관심${watchlist.size > 0 ? `(${watchlist.size})` : ''}`
+              : f.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Product list */}
+      <div style={{ overflowY: 'auto', flex: 1 }}>
+        {filtered.length === 0 ? (
+          <div style={{ padding: 20, textAlign: 'center', color: DIM, fontSize: 12 }}>
+            {filter === 'watchlist' ? '★를 눌러 추가' : '데이터 없음'}
+          </div>
+        ) : filtered.map(p => {
+          const isActive  = selectedProduct?.itemCode === p.itemCode
+          const isWatched = watchlist.has(p.itemCode)
+          const chg = Number(p.change7d)
+          return (
+            <div key={p.itemCode}
+              onClick={() => onSelect(p)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '7px 10px', cursor: 'pointer',
+                background: isActive ? '#21262d' : 'transparent',
+                borderBottom: '1px solid #21262d',
+              }}
+              onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = '#1c2128' }}
+              onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
+            >
+              {/* Star */}
+              <span onClick={e => { e.stopPropagation(); onToggleWatch(p.itemCode) }}
+                style={{ fontSize: 13, color: isWatched ? '#f0a202' : BORDER,
+                  cursor: 'pointer', flexShrink: 0 }}>★</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: isActive ? 700 : 400,
+                  color: isActive ? ACCENT : TEXT, whiteSpace: 'nowrap',
+                  overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {p.itemName}
+                </div>
+                <div style={{ fontSize: 10, color: DIM }}>{p.category}</div>
+              </div>
+              {/* Change badge */}
+              {p.change7d != null && (
+                <span style={{ fontSize: 10, fontWeight: 700, flexShrink: 0,
+                  color: chg > 0 ? RED : chg < 0 ? ACCENT : DIM }}>
+                  {chg > 0 ? `+${chg}%` : `${chg}%`}
+                </span>
+              )}
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
@@ -138,322 +236,118 @@ function MarketMap({ markets, selectedMarket, onSelect }) {
 function TrendTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null
   return (
-    <div style={{
-      background: '#161b22', border: '1px solid #30363d',
-      borderRadius: 6, color: TEXT, fontSize: 12, padding: '8px 12px',
-    }}>
+    <div style={{ background: '#161b22', border: '1px solid #30363d',
+      borderRadius: 6, color: TEXT, fontSize: 12, padding: '8px 12px' }}>
       <div style={{ color: DIM, marginBottom: 4 }}>{label}</div>
       {payload.map(p => (
         <div key={p.dataKey} style={{ color: p.color, marginBottom: 2 }}>
-          {p.name}: {typeof p.value === 'number' ? p.value.toLocaleString() : p.value}
-          {p.dataKey === 'avgPrice' ? '원' : '박스'}
+          {p.name}: {p.value.toLocaleString()}{p.dataKey === 'avgPrice' ? '원' : '박스'}
         </div>
       ))}
     </div>
   )
 }
 
-// ─── Trend Panel ──────────────────────────────────────────────────────────────
-function TrendPanel({ market, product, trendData, loadingTrend, onClose }) {
-  const chartData = trendData.map(row => ({
-    date: fmtDate(row.date),
-    avgPrice: Number(row.avgPrice),
-    volume: Number(row.volume),
+// ─── Right Panel ──────────────────────────────────────────────────────────────
+function RightPanel({ selectedProduct, selectedDate, marketPrices, trendData, loadingMarkets, loadingTrend, selectedMarketCode, onSelectMarket }) {
+  if (!selectedProduct) {
+    return (
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        color: DIM, fontSize: 14 }}>
+        ← 품목을 선택하세요
+      </div>
+    )
+  }
+
+  const chartData = trendData.map(r => ({
+    date: fmtDate(r.date),
+    avgPrice: Number(r.avgPrice),
+    volume: Number(r.volume),
   }))
 
   return (
-    <div style={{
-      background: SURFACE, border: `1px solid ${BORDER}`,
-      borderRadius: 8, padding: '12px 16px', marginTop: 12,
-      animation: 'slideIn 0.2s ease-out',
-    }}>
-      <style>{`@keyframes slideIn { from { opacity:0; transform:translateY(12px) } to { opacity:1; transform:translateY(0) } }`}</style>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-        <span style={{ fontSize: 14, fontWeight: 700, color: TEXT }}>
-          {market.name} · {product.itemName} 30일 추이
-        </span>
-        <button
-          onClick={onClose}
-          style={{
-            marginLeft: 'auto', background: 'none', border: `1px solid ${BORDER}`,
-            color: DIM, fontSize: 13, width: 24, height: 24,
-            borderRadius: 4, cursor: 'pointer', lineHeight: 1,
-          }}
-        >×</button>
-      </div>
-
-      {loadingTrend ? (
-        <div style={{ padding: 40, textAlign: 'center', color: DIM, fontSize: 13 }}>불러오는 중...</div>
-      ) : chartData.length === 0 ? (
-        <div style={{ padding: 40, textAlign: 'center', color: DIM, fontSize: 13 }}>데이터 없음</div>
-      ) : (
-        <div style={{ height: 200 }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={chartData} margin={{ top: 4, right: 40, bottom: 4, left: 8 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#21262d" />
-              <XAxis
-                dataKey="date"
-                tick={{ fill: DIM, fontSize: 10 }}
-                axisLine={{ stroke: BORDER }}
-                tickLine={false}
-              />
-              <YAxis
-                yAxisId="price"
-                orientation="left"
-                tick={{ fill: DIM, fontSize: 10 }}
-                axisLine={{ stroke: BORDER }}
-                tickLine={false}
-                tickFormatter={v => v.toLocaleString()}
-              />
-              <YAxis
-                yAxisId="vol"
-                orientation="right"
-                tick={{ fill: DIM, fontSize: 10 }}
-                axisLine={{ stroke: BORDER }}
-                tickLine={false}
-                tickFormatter={v => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}
-              />
-              <Tooltip content={<TrendTooltip />} />
-              <Bar
-                yAxisId="vol"
-                dataKey="volume"
-                name="거래량"
-                fill="#30363d"
-                opacity={0.5}
-                radius={[2, 2, 0, 0]}
-              />
-              <Line
-                yAxisId="price"
-                type="monotone"
-                dataKey="avgPrice"
-                name="평균가"
-                stroke={ACCENT}
-                strokeWidth={2}
-                dot={false}
-                activeDot={{ r: 4, fill: ACCENT }}
-              />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </div>
-      )}
-    </div>
-  )
-}
-
-// ─── Product Table ────────────────────────────────────────────────────────────
-function ProductTable({ products, selectedProduct, onSelect, watchlist, onToggleWatch, filter, selectedDate }) {
-  const month = new Date(selectedDate).getMonth() + 1
-  const filtered = [...products]
-    .filter(row => {
-      if (filter === 'seasonal')  return isSeasonalItem(row.itemName, month)
-      if (filter === 'watchlist') return watchlist.has(row.itemCode)
-      return true
-    })
-    .sort((a, b) => Number(b.volume) - Number(a.volume))
-
-  if (filtered.length === 0) {
-    return (
-      <div style={{ padding: 40, textAlign: 'center', color: DIM, fontSize: 14 }}>
-        {filter === 'watchlist' ? '관심 품목이 없습니다. ★을 눌러 추가하세요.' : '데이터 없음'}
-      </div>
-    )
-  }
-
-  return (
-    <div style={{ overflowX: 'auto' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-        <thead>
-          <tr style={{ background: SURFACE, borderBottom: `1px solid ${BORDER}` }}>
-            <th style={{ padding: '8px 8px', width: 32 }} />
-            {['품목명', '평균가(원)', '최저가', '최고가', '거래량'].map((h, i) => (
-              <th key={h} style={{
-                padding: '8px 12px',
-                textAlign: i === 0 ? 'left' : 'right',
-                color: DIM, fontWeight: 600, fontSize: 12, whiteSpace: 'nowrap',
-              }}>{h}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {filtered.map((row, i) => {
-            const isSelected = selectedProduct?.itemCode === row.itemCode
-            const isWatched  = watchlist.has(row.itemCode)
-            return (
-              <tr
-                key={`${row.itemCode}-${i}`}
-                onClick={() => onSelect(row)}
-                style={{
-                  borderBottom: '1px solid #21262d',
-                  cursor: 'pointer',
-                  background: isSelected ? '#21262d' : 'transparent',
-                }}
-                onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = '#1c2128' }}
-                onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = 'transparent' }}
-              >
-                <td style={{ padding: '8px 8px', textAlign: 'center' }}
-                  onClick={e => { e.stopPropagation(); onToggleWatch(row.itemCode) }}>
-                  <span style={{ fontSize: 14, cursor: 'pointer', color: isWatched ? '#f0a202' : BORDER,
-                    transition: 'color 0.15s' }}>★</span>
-                </td>
-                <td style={{ padding: '8px 12px' }}>
-                  <div style={{ fontWeight: 700, color: isSelected ? ACCENT : TEXT }}>{row.itemName}</div>
-                  <div style={{ fontSize: 11, color: DIM }}>{row.category}</div>
-                </td>
-                <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 700, color: TEXT }}>
-                  {Number(row.avgPrice).toLocaleString()}
-                </td>
-                <td style={{ padding: '8px 12px', textAlign: 'right', color: DIM }}>
-                  {Number(row.minPrice).toLocaleString()}
-                </td>
-                <td style={{ padding: '8px 12px', textAlign: 'right', color: DIM }}>
-                  {Number(row.maxPrice).toLocaleString()}
-                </td>
-                <td style={{ padding: '8px 12px', textAlign: 'right', color: DIM }}>
-                  {Number(row.volume).toLocaleString()}
-                </td>
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
-    </div>
-  )
-}
-
-// ─── Right Panel ──────────────────────────────────────────────────────────────
-const FILTERS = [
-  { key: 'all',       label: '전체' },
-  { key: 'seasonal',  label: '제철' },
-  { key: 'watchlist', label: '관심 품목' },
-]
-
-function RightPanel({ selectedMarket, selectedDate, products, selectedProduct, trendData, loadingProducts, loadingTrend, onSelectProduct, onCloseTrend, watchlist, onToggleWatch }) {
-  const [filter, setFilter] = useState('all')
-
-  if (!selectedMarket) {
-    return (
-      <div style={{
-        flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        color: DIM, fontSize: 14,
-      }}>
-        ← 왼쪽에서 시장을 선택하세요
-      </div>
-    )
-  }
-
-  return (
     <div style={{ flex: 1, overflowY: 'auto', padding: 16, minWidth: 0 }}>
-      {/* Market header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10, flexWrap: 'wrap' }}>
-        <span style={{ fontSize: 16, fontWeight: 700, color: TEXT }}>{selectedMarket.name}</span>
-        <span style={{ fontSize: 13, color: DIM }}>기준일: {selectedDate}</span>
-
-        {/* Filter tabs */}
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
-          {FILTERS.map(f => (
-            <button
-              key={f.key}
-              onClick={() => setFilter(f.key)}
-              style={{
-                padding: '4px 12px', fontSize: 12, borderRadius: 12, cursor: 'pointer',
-                background: filter === f.key ? GREEN : SURFACE,
-                border: `1px solid ${filter === f.key ? GREEN : BORDER}`,
-                color: filter === f.key ? '#fff' : DIM,
-                fontWeight: filter === f.key ? 700 : 400,
-                transition: 'all 0.15s',
-              }}
-            >
-              {f.key === 'watchlist'
-                ? `★ ${f.label}${watchlist.size > 0 ? ` (${watchlist.size})` : ''}`
-                : f.label}
-            </button>
-          ))}
-        </div>
+      <div style={{ marginBottom: 12 }}>
+        <span style={{ fontSize: 16, fontWeight: 700, color: TEXT }}>{selectedProduct.itemName}</span>
+        <span style={{ fontSize: 12, color: DIM, marginLeft: 8 }}>{selectedProduct.category}</span>
+        <span style={{ fontSize: 13, color: DIM, marginLeft: 12 }}>기준일: {selectedDate}</span>
       </div>
 
-      {/* Products */}
-      <div style={{
-        background: SURFACE, border: `1px solid ${BORDER}`,
-        borderRadius: 8, overflow: 'hidden',
-      }}>
-        {loadingProducts ? (
-          <div style={{ padding: 40, textAlign: 'center', color: DIM, fontSize: 13 }}>불러오는 중...</div>
+      {/* Market comparison table */}
+      <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 8,
+        overflow: 'hidden', marginBottom: 16 }}>
+        {loadingMarkets ? (
+          <div style={{ padding: 32, textAlign: 'center', color: DIM, fontSize: 13 }}>불러오는 중...</div>
+        ) : marketPrices.length === 0 ? (
+          <div style={{ padding: 32, textAlign: 'center', color: DIM, fontSize: 13 }}>데이터 없음</div>
         ) : (
-          <ProductTable
-            products={products}
-            selectedProduct={selectedProduct}
-            onSelect={onSelectProduct}
-            watchlist={watchlist}
-            onToggleWatch={onToggleWatch}
-            filter={filter}
-            selectedDate={selectedDate}
-          />
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+            <thead>
+              <tr style={{ background: SURFACE, borderBottom: `1px solid ${BORDER}` }}>
+                {['시장명', '평균가(원)', '거래량'].map((h, i) => (
+                  <th key={h} style={{ padding: '8px 12px', textAlign: i === 0 ? 'left' : 'right',
+                    color: DIM, fontWeight: 600, fontSize: 12 }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {marketPrices.map((row, i) => {
+                const isActive = selectedMarketCode === row.marketCode
+                return (
+                  <tr key={`${row.marketCode}-${i}`}
+                    onClick={() => onSelectMarket(row.marketCode)}
+                    style={{ borderBottom: '1px solid #21262d', cursor: 'pointer',
+                      background: isActive ? '#21262d' : 'transparent' }}
+                    onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = '#1c2128' }}
+                    onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
+                  >
+                    <td style={{ padding: '8px 12px', fontWeight: 700,
+                      color: isActive ? ACCENT : TEXT }}>{row.marketName}</td>
+                    <td style={{ padding: '8px 12px', textAlign: 'right', color: TEXT }}>
+                      {Number(row.avgPrice).toLocaleString()}</td>
+                    <td style={{ padding: '8px 12px', textAlign: 'right', color: DIM }}>
+                      {Number(row.volume).toLocaleString()}</td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
         )}
       </div>
 
-      {/* Trend panel */}
-      {selectedProduct && (
-        <TrendPanel
-          market={selectedMarket}
-          product={selectedProduct}
-          trendData={trendData}
-          loadingTrend={loadingTrend}
-          onClose={onCloseTrend}
-        />
-      )}
-    </div>
-  )
-}
-
-// ─── Left Panel ───────────────────────────────────────────────────────────────
-function LeftPanel({ markets, selectedMarket, onSelectMarket }) {
-  const grouped = groupByRegion(markets)
-
-  return (
-    <div style={{
-      width: 260,
-      flexShrink: 0,
-      borderRight: `1px solid ${BORDER}`,
-      overflowY: 'auto',
-      padding: 12,
-    }}>
-      {grouped.length === 0 ? (
-        <div style={{ color: DIM, fontSize: 13, padding: 16, textAlign: 'center' }}>불러오는 중...</div>
-      ) : (
-        grouped.map(([region, items]) => (
-          <div key={region}>
-            <div style={{
-              fontSize: 11, color: GREEN, fontWeight: 700,
-              marginBottom: 4, marginTop: 10,
-            }}>
-              {region}
-            </div>
-            <div>
-              {items.map(m => {
-                const isActive = selectedMarket?.code === m.code
-                return (
-                  <span
-                    key={m.code}
-                    onClick={() => onSelectMarket(m)}
-                    style={{
-                      display: 'inline-block',
-                      margin: 2,
-                      padding: '3px 10px',
-                      borderRadius: 12,
-                      fontSize: 12,
-                      cursor: 'pointer',
-                      background: isActive ? GREEN : SURFACE,
-                      border: isActive ? 'none' : `1px solid ${BORDER}`,
-                      color: isActive ? '#fff' : TEXT,
-                    }}
-                  >
-                    {m.name}
-                  </span>
-                )
-              })}
-            </div>
+      {/* Trend chart */}
+      {chartData.length > 0 && (
+        <div style={{ background: SURFACE, border: `1px solid ${BORDER}`,
+          borderRadius: 8, padding: '12px 16px' }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: TEXT, marginBottom: 10 }}>
+            {selectedProduct.itemName} 30일 가격 추이
           </div>
-        ))
+          {loadingTrend ? (
+            <div style={{ padding: 24, textAlign: 'center', color: DIM, fontSize: 13 }}>불러오는 중...</div>
+          ) : (
+            <div style={{ height: 180 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={chartData} margin={{ top: 4, right: 40, bottom: 4, left: 8 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#21262d" />
+                  <XAxis dataKey="date" tick={{ fill: DIM, fontSize: 10 }}
+                    axisLine={{ stroke: BORDER }} tickLine={false} />
+                  <YAxis yAxisId="price" orientation="left"
+                    tick={{ fill: DIM, fontSize: 10 }} axisLine={{ stroke: BORDER }} tickLine={false}
+                    tickFormatter={v => v.toLocaleString()} />
+                  <YAxis yAxisId="vol" orientation="right"
+                    tick={{ fill: DIM, fontSize: 10 }} axisLine={{ stroke: BORDER }} tickLine={false}
+                    tickFormatter={v => v >= 1000 ? `${(v/1000).toFixed(0)}k` : v} />
+                  <Tooltip content={<TrendTooltip />} />
+                  <Bar yAxisId="vol" dataKey="volume" name="거래량"
+                    fill="#30363d" opacity={0.5} radius={[2,2,0,0]} />
+                  <Line yAxisId="price" type="monotone" dataKey="avgPrice" name="평균가"
+                    stroke={ACCENT} strokeWidth={2} dot={false}
+                    activeDot={{ r: 4, fill: ACCENT }} />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </div>
       )}
     </div>
   )
@@ -462,14 +356,10 @@ function LeftPanel({ markets, selectedMarket, onSelectMarket }) {
 // ─── Page Toolbar ─────────────────────────────────────────────────────────────
 function PageToolbar({ selectedDate, setSelectedDate }) {
   return (
-    <div style={{
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       padding: '10px 16px', background: SURFACE,
-      borderBottom: `1px solid ${BORDER}`, flexShrink: 0, flexWrap: 'wrap', gap: 8,
-    }}>
-      <h1 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: TEXT }}>
-        시장별 현황
-      </h1>
+      borderBottom: `1px solid ${BORDER}`, flexShrink: 0 }}>
+      <h1 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: TEXT }}>시장별 현황</h1>
       <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: DIM }}>
         기준일:
         <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
@@ -484,21 +374,62 @@ function PageToolbar({ selectedDate, setSelectedDate }) {
   )
 }
 
+// ─── Mock market prices for a product ────────────────────────────────────────
+function mockMarketPrices(itemCode) {
+  const base = MOCK_DAILY.find(d => d.itemCode === itemCode)?.avgPrice || 10000
+  return MOCK_MARKETS.slice(0, 10).map(m => ({
+    marketCode: m.code,
+    marketName: m.name,
+    avgPrice: Math.round(base * (0.85 + Math.random() * 0.3)),
+    volume: Math.round(100 + Math.random() * 900),
+  }))
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function MarketsAnalysisPage() {
-  const [selectedDate, setSelectedDate]     = useState(getYesterday)
-  const [markets, setMarkets]               = useState([])
-  const [selectedMarket, setSelectedMarket] = useState(null)
-  const [products, setProducts]             = useState([])
+  const [selectedDate, setSelectedDate]       = useState(getYesterday)
+  const [products, setProducts]               = useState([])
   const [selectedProduct, setSelectedProduct] = useState(null)
-  const [trendData, setTrendData]           = useState([])
-  const [loadingMarkets, setLoadingMarkets] = useState(false)
+  const [marketPrices, setMarketPrices]       = useState([])
+  const [trendData, setTrendData]             = useState([])
   const [loadingProducts, setLoadingProducts] = useState(false)
-  const [loadingTrend, setLoadingTrend]     = useState(false)
-  const [watchlist, setWatchlist]           = useState(() => {
+  const [loadingMarkets, setLoadingMarkets]   = useState(false)
+  const [loadingTrend, setLoadingTrend]       = useState(false)
+  const [selectedMarketCode, setSelectedMarketCode] = useState(null)
+  const [watchlist, setWatchlist]             = useState(() => {
     try { return new Set(JSON.parse(localStorage.getItem('market_watchlist') || '[]')) }
     catch { return new Set() }
   })
+
+  // Fetch product list
+  useEffect(() => {
+    setLoadingProducts(true)
+    client.get(`/analysis/daily?date=${selectedDate}`)
+      .then(r => setProducts(r.data?.length ? r.data : MOCK_DAILY))
+      .catch(() => setProducts(MOCK_DAILY))
+      .finally(() => setLoadingProducts(false))
+  }, [selectedDate])
+
+  // Fetch market prices when product changes
+  useEffect(() => {
+    if (!selectedProduct) { setMarketPrices([]); return }
+    setLoadingMarkets(true)
+    setSelectedMarketCode(null)
+    client.get(`/analysis/markets?itemCode=${selectedProduct.itemCode}&date=${selectedDate}`)
+      .then(r => setMarketPrices(r.data?.length ? r.data : mockMarketPrices(selectedProduct.itemCode)))
+      .catch(() => setMarketPrices(mockMarketPrices(selectedProduct.itemCode)))
+      .finally(() => setLoadingMarkets(false))
+  }, [selectedProduct, selectedDate])
+
+  // Fetch trend when product changes
+  useEffect(() => {
+    if (!selectedProduct) { setTrendData([]); return }
+    setLoadingTrend(true)
+    client.get(`/analysis/trend?itemCode=${selectedProduct.itemCode}&days=30`)
+      .then(r => setTrendData(r.data?.length ? r.data : MOCK_TREND(selectedProduct.itemCode)))
+      .catch(() => setTrendData(MOCK_TREND(selectedProduct.itemCode)))
+      .finally(() => setLoadingTrend(false))
+  }, [selectedProduct])
 
   const toggleWatch = useCallback((itemCode) => {
     setWatchlist(prev => {
@@ -509,90 +440,46 @@ export default function MarketsAnalysisPage() {
     })
   }, [])
 
-  // Fetch markets on mount
-  useEffect(() => {
-    setLoadingMarkets(true)
-    client.get('/analysis/market-list')
-      .then(r => setMarkets(r.data?.length ? r.data : MOCK_MARKETS))
-      .catch(() => setMarkets(MOCK_MARKETS))
-      .finally(() => setLoadingMarkets(false))
-  }, [])
-
-  // Fetch products when market or date changes
-  useEffect(() => {
-    if (!selectedMarket) {
-      setProducts([])
-      return
-    }
-    setLoadingProducts(true)
-    setSelectedProduct(null)
-    setTrendData([])
-    client.get(`/analysis/market-products?marketCode=${selectedMarket.code}&date=${selectedDate}`)
-      .then(r => setProducts(r.data?.length ? r.data : MOCK_MARKET_PRODUCTS(selectedMarket.code)))
-      .catch(() => setProducts(MOCK_MARKET_PRODUCTS(selectedMarket.code)))
-      .finally(() => setLoadingProducts(false))
-  }, [selectedMarket, selectedDate])
-
-  // Fetch trend when product selected
-  useEffect(() => {
-    if (!selectedProduct) {
-      setTrendData([])
-      return
-    }
-    setLoadingTrend(true)
-    client.get(`/analysis/trend?itemCode=${selectedProduct.itemCode}&days=30`)
-      .then(r => setTrendData(r.data?.length ? r.data : MOCK_TREND(selectedProduct.itemCode)))
-      .catch(() => setTrendData(MOCK_TREND(selectedProduct.itemCode)))
-      .finally(() => setLoadingTrend(false))
-  }, [selectedProduct])
-
-  const selectMarket = useCallback((market) => {
-    setSelectedMarket(market)
-  }, [])
-
-  const selectProduct = useCallback((product) => {
-    setSelectedProduct({ itemCode: product.itemCode, itemName: product.itemName })
-  }, [])
-
-  const closeTrend = useCallback(() => {
-    setSelectedProduct(null)
-  }, [])
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: BG, overflow: 'hidden', color: TEXT }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh',
+      background: BG, overflow: 'hidden', color: TEXT }}>
       <Header />
       <AnalysisNav />
       <PageToolbar selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
 
-      {/* Map + Body */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
-        <div style={{ padding: '12px 16px 0', flexShrink: 0 }}>
-          <MarketMap
-            markets={markets}
-            selectedMarket={selectedMarket}
-            onSelect={setSelectedMarket}
-          />
-        </div>
-        {/* Body: left + right */}
-        <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 0 }}>
+      <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 0 }}>
+        {/* Left: product filter + list */}
         <LeftPanel
-          markets={loadingMarkets ? [] : markets}
-          selectedMarket={selectedMarket}
-          onSelectMarket={selectMarket}
-        />
-        <RightPanel
-          selectedMarket={selectedMarket}
-          selectedDate={selectedDate}
-          products={products}
+          products={loadingProducts ? [] : products}
           selectedProduct={selectedProduct}
-          trendData={trendData}
-          loadingProducts={loadingProducts}
-          loadingTrend={loadingTrend}
-          onSelectProduct={selectProduct}
-          onCloseTrend={closeTrend}
+          onSelect={setSelectedProduct}
           watchlist={watchlist}
           onToggleWatch={toggleWatch}
         />
+
+        {/* Center+Right: map + market table + trend */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
+          {/* Map */}
+          <div style={{ padding: '12px 12px 0', flexShrink: 0 }}>
+            <MarketMap
+              marketPrices={marketPrices}
+              selectedMarket={selectedMarketCode ? { marketCode: selectedMarketCode } : null}
+              onSelect={setSelectedMarketCode}
+            />
+          </div>
+          {/* Right content */}
+          <div style={{ flex: 1, overflow: 'hidden' }}>
+            <RightPanel
+              selectedProduct={selectedProduct}
+              selectedDate={selectedDate}
+              marketPrices={marketPrices}
+              trendData={trendData}
+              loadingMarkets={loadingMarkets}
+              loadingTrend={loadingTrend}
+              selectedMarketCode={selectedMarketCode}
+              onSelectMarket={setSelectedMarketCode}
+            />
+          </div>
         </div>
       </div>
     </div>
