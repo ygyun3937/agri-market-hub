@@ -1,5 +1,6 @@
 using Google.Apis.Auth;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 using AgriHub.Api.Dto;
 using AgriHub.Api.Services;
 
@@ -7,8 +8,9 @@ namespace AgriHub.Api.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-public class AuthController(AuthService auth, GoogleCalendarService gcal, IConfiguration config) : ControllerBase
+public class AuthController(AuthService auth, IConfiguration config, IHttpClientFactory http) : ControllerBase
 {
+    private string RedirectUri => config["Google:RedirectUri"] ?? "https://agri.dooyg.store/api/auth/google/callback";
     [HttpPost("register")]
     public async Task<ActionResult<AuthResponse>> Register(RegisterRequest req)
     {
@@ -33,30 +35,52 @@ public class AuthController(AuthService auth, GoogleCalendarService gcal, IConfi
     [HttpGet("google/redirect")]
     public IActionResult GoogleRedirect()
     {
-        var url = gcal.GetAuthUrl();
-        if (url == null) return BadRequest("Google not configured");
+        var clientId = config["Google:ClientId"];
+        if (string.IsNullOrEmpty(clientId)) return BadRequest("Google not configured");
+        var url = "https://accounts.google.com/o/oauth2/v2/auth" +
+            $"?client_id={Uri.EscapeDataString(clientId)}" +
+            $"&redirect_uri={Uri.EscapeDataString(RedirectUri)}" +
+            "&response_type=code" +
+            "&scope=openid%20email%20profile" +
+            "&access_type=offline";
         return Redirect(url);
     }
 
     [HttpGet("google/callback")]
     public async Task<IActionResult> GoogleCallback([FromQuery] string code)
     {
-        GoogleCalendarService.LoginTokenResult? tokens;
-        try { tokens = await gcal.ExchangeLoginCodeAsync(code); }
-        catch { return Redirect("/login?error=1"); }
-        if (tokens == null) return Redirect("/login?error=1");
+        var clientId = config["Google:ClientId"];
+        var clientSecret = config["Google:ClientSecret"];
+        if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret))
+            return Redirect("/login?error=1");
+
+        var client = http.CreateClient();
+        var tokenResp = await client.PostAsync("https://oauth2.googleapis.com/token",
+            new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                ["code"] = code,
+                ["client_id"] = clientId,
+                ["client_secret"] = clientSecret,
+                ["redirect_uri"] = RedirectUri,
+                ["grant_type"] = "authorization_code",
+            }));
+        if (!tokenResp.IsSuccessStatusCode) return Redirect("/login?error=1");
+
+        var tokenJson = await tokenResp.Content.ReadFromJsonAsync<JsonElement>();
+        var idToken = tokenJson.GetProperty("id_token").GetString();
+        var refreshToken = tokenJson.TryGetProperty("refresh_token", out var rt) ? rt.GetString() : null;
 
         GoogleJsonWebSignature.Payload payload;
         try
         {
-            payload = await GoogleJsonWebSignature.ValidateAsync(tokens.IdToken,
-                new GoogleJsonWebSignature.ValidationSettings { Audience = [config["Google:ClientId"]!] });
+            payload = await GoogleJsonWebSignature.ValidateAsync(idToken,
+                new GoogleJsonWebSignature.ValidationSettings { Audience = [clientId] });
         }
         catch { return Redirect("/login?error=1"); }
 
         var user = await auth.GoogleLoginAsync(
             payload.Subject, payload.Email,
-            payload.Name ?? payload.Email.Split('@')[0], tokens.RefreshToken);
+            payload.Name ?? payload.Email.Split('@')[0], refreshToken);
         var jwt = auth.GenerateToken(user);
         var name = Uri.EscapeDataString(user.Name);
         return Redirect($"/login?token={jwt}&name={name}");
