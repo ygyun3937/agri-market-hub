@@ -17,11 +17,17 @@ export function useAuth() {
     return res.data
   }
 
+  function setSession(token, name) {
+    localStorage.setItem('token', token)
+    localStorage.setItem('userName', name)
+    setUser({ token, name })
+  }
+
   function logout() {
     localStorage.removeItem('token')
     localStorage.removeItem('userName')
     setUser(null)
   }
 
-  return { user, login, logout }
+  return { user, login, setSession, logout }
 }

@@ -37,6 +37,25 @@ public class AuthService(AppDbContext db, IConfiguration config)
         return user;
     }
 
+    public async Task<User> GoogleLoginAsync(string googleId, string email, string name, string? refreshToken)
+    {
+        var user = await db.Users.FirstOrDefaultAsync(u => u.GoogleId == googleId || u.Email == email);
+        if (user == null)
+        {
+            user = new User { Email = email, PasswordHash = "", Name = name, GoogleId = googleId, GoogleRefreshToken = refreshToken, CreatedAt = DateTime.UtcNow };
+            db.Users.Add(user);
+            await db.SaveChangesAsync();
+            db.UserSettings.Add(new UserSetting { UserId = user.Id, UpdatedAt = DateTime.UtcNow });
+        }
+        else
+        {
+            user.GoogleId = googleId;
+            if (refreshToken != null) user.GoogleRefreshToken = refreshToken;
+        }
+        await db.SaveChangesAsync();
+        return user;
+    }
+
     public string GenerateToken(User user)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Secret"]!));

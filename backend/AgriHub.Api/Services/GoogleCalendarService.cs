@@ -36,6 +36,15 @@ public class GoogleCalendarService(IConfiguration config, ILogger<GoogleCalendar
         return token.AccessToken;
     }
 
+    public record LoginTokenResult(string AccessToken, string? RefreshToken, string? IdToken);
+
+    public async Task<LoginTokenResult?> ExchangeLoginCodeAsync(string code)
+    {
+        if (_flow == null) return null;
+        var token = await _flow.ExchangeCodeForTokenAsync("login", code, "postmessage", CancellationToken.None);
+        return new LoginTokenResult(token.AccessToken, token.RefreshToken, token.IdToken);
+    }
+
     public async Task SyncSchedulesAsync(int userId, List<Schedule> schedules)
     {
         logger.LogInformation("GCal sync for user {UserId}: {Count} schedules", userId, schedules.Count);

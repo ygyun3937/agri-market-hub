@@ -1,3 +1,4 @@
+using Google.Apis.Auth;
 using Microsoft.AspNetCore.Mvc;
 using AgriHub.Api.Dto;
 using AgriHub.Api.Services;
@@ -6,7 +7,7 @@ namespace AgriHub.Api.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-public class AuthController(AuthService auth, GoogleCalendarService gcal) : ControllerBase
+public class AuthController(AuthService auth, GoogleCalendarService gcal, IConfiguration config) : ControllerBase
 {
     [HttpPost("register")]
     public async Task<ActionResult<AuthResponse>> Register(RegisterRequest req)
@@ -28,6 +29,25 @@ public class AuthController(AuthService auth, GoogleCalendarService gcal) : Cont
 
     [HttpPost("logout")]
     public IActionResult Logout() => Ok();
+
+    [HttpPost("google")]
+    public async Task<ActionResult<AuthResponse>> GoogleLogin([FromBody] GoogleAuthRequest req)
+    {
+        var tokens = await gcal.ExchangeLoginCodeAsync(req.Code);
+        if (tokens == null) return BadRequest("Google not configured");
+        GoogleJsonWebSignature.Payload payload;
+        try
+        {
+            payload = await GoogleJsonWebSignature.ValidateAsync(tokens.IdToken,
+                new GoogleJsonWebSignature.ValidationSettings { Audience = [config["Google:ClientId"]!] });
+        }
+        catch { return Unauthorized("Invalid Google token"); }
+        var user = await auth.GoogleLoginAsync(
+            payload.Subject, payload.Email,
+            payload.Name ?? payload.Email.Split('@')[0],
+            tokens.RefreshToken);
+        return Ok(new AuthResponse(auth.GenerateToken(user), user.Name, user.Id));
+    }
 
     [HttpGet("google/callback")]
     public async Task<IActionResult> GoogleCallback([FromQuery] string code, [FromQuery] string state)

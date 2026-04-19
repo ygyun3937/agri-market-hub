@@ -5,6 +5,8 @@ public class User
     public string Email { get; set; } = "";
     public string PasswordHash { get; set; } = "";
     public string Name { get; set; } = "";
+    public string? GoogleId { get; set; }
+    public string? GoogleRefreshToken { get; set; }
     public DateTime CreatedAt { get; set; }
     public UserSetting? Settings { get; set; }
     public ICollection<WatchItem> WatchItems { get; set; } = [];
