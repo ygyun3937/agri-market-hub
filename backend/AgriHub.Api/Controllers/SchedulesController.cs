@@ -40,16 +40,20 @@ public class SchedulesController(AppDbContext db, GoogleCalendarService gcal) : 
         db.Schedules.Add(schedule);
         await db.SaveChangesAsync();
 
-        var user = await db.Users.FindAsync(UserId);
-        if (user?.GoogleRefreshToken != null)
+        try
         {
-            var eventId = await gcal.CreateEventAsync(user, schedule);
-            if (eventId != null)
+            var user = await db.Users.FindAsync(UserId);
+            if (user?.GoogleRefreshToken != null)
             {
-                schedule.GcalEventId = eventId;
-                await db.SaveChangesAsync();
+                var eventId = await gcal.CreateEventAsync(user, schedule);
+                if (eventId != null)
+                {
+                    schedule.GcalEventId = eventId;
+                    await db.SaveChangesAsync();
+                }
             }
         }
+        catch { /* gcal sync is non-critical */ }
 
         return CreatedAtAction(nameof(GetSchedules), new { }, schedule);
     }
@@ -73,11 +77,15 @@ public class SchedulesController(AppDbContext db, GoogleCalendarService gcal) : 
         var schedule = await db.Schedules.FirstOrDefaultAsync(s => s.Id == id && s.UserId == UserId);
         if (schedule == null) return NotFound();
 
-        if (schedule.GcalEventId != null)
+        try
         {
-            var user = await db.Users.FindAsync(UserId);
-            if (user != null) await gcal.DeleteEventAsync(user, schedule.GcalEventId);
+            if (schedule.GcalEventId != null)
+            {
+                var user = await db.Users.FindAsync(UserId);
+                if (user != null) await gcal.DeleteEventAsync(user, schedule.GcalEventId);
+            }
         }
+        catch { /* gcal sync is non-critical */ }
 
         db.Schedules.Remove(schedule);
         await db.SaveChangesAsync();
