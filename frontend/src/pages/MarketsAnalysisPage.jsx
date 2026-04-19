@@ -459,6 +459,7 @@ export default function MarketsAnalysisPage() {
 
   // Fetch product list
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoadingProducts(true)
     client.get(`/analysis/daily?date=${selectedDate}`)
       .then(r => setProducts(r.data?.length ? r.data : MOCK_DAILY))
@@ -468,6 +469,7 @@ export default function MarketsAnalysisPage() {
 
   // Fetch market prices when product changes
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!selectedProduct) { setMarketPrices([]); return }
     setLoadingMarkets(true)
     setSelectedMarketCode(null)
@@ -479,6 +481,7 @@ export default function MarketsAnalysisPage() {
 
   // Fetch trend when product changes
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!selectedProduct) { setTrendData([]); return }
     setLoadingTrend(true)
     client.get(`/analysis/trend?itemCode=${selectedProduct.itemCode}&days=30`)

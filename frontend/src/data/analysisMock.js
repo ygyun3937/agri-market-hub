@@ -64,7 +64,7 @@ export const MOCK_MARKETS = [
   { code: '390001', name: '제주' },
 ]
 
-export const MOCK_MARKET_PRODUCTS = (marketCode) =>
+export const MOCK_MARKET_PRODUCTS = () =>
   MOCK_DAILY.slice(0, 10).map(d => ({
     ...d,
     avgPrice: Math.round(d.avgPrice * (0.9 + Math.random() * 0.2)),

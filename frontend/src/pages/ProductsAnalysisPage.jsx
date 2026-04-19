@@ -555,6 +555,7 @@ export default function ProductsAnalysisPage() {
 
   // Fetch daily data on date change
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true)
     client.get(`/analysis/daily?date=${selectedDate}`)
       .then(r => setDailyData(r.data?.length ? r.data : MOCK_DAILY))
@@ -565,6 +566,7 @@ export default function ProductsAnalysisPage() {
   // Fetch detail data when selected item changes
   useEffect(() => {
     if (!selectedItem) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTrendData([])
       setVarietyData([])
       setOriginData([])

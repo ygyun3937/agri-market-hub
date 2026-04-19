@@ -10,6 +10,7 @@ export default function PestPanel() {
   const { user } = useAuth()
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true)
     client.get('/alerts/pest').then(r => setPests(r.data || [])).catch(() => setPests([])).finally(() => setLoading(false))
     if (user) {

@@ -86,7 +86,7 @@ function ChangeBadge({ change }) {
 }
 
 // ─── Top Movers ───────────────────────────────────────────────────────────────
-function MoversCard({ title, items, color, onSelect }) {
+function MoversCard({ title, items, onSelect }) {
   return (
     <div style={{
       background: SURFACE, border: `1px solid ${BORDER}`,
@@ -656,6 +656,7 @@ export default function AnalysisPage() {
 
   // Fetch daily on date change
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true)
     client.get(`/analysis/daily?date=${selectedDate}`)
       .then(r => setDailyData(r.data?.length ? r.data : MOCK_DAILY))
@@ -666,6 +667,7 @@ export default function AnalysisPage() {
   // Fetch trend when item selected
   useEffect(() => {
     if (!selectedItem) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTrendData([])
       return
     }
