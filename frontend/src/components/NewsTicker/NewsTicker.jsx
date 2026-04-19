@@ -17,7 +17,7 @@ export default function NewsTicker() {
 
   if (items.length === 0) return null
   const clean = s => (s || '').replace(/[.…·]+$/, '').replace(/\s+/g, ' ').trim()
-  const text = items.map(n => clean(n.summary) || clean(n.title)).join('  　·　  ')
+  const text = items.map(n => clean(n.title)).join('  　·　  ')
 
   return (
     <div style={{
@@ -28,7 +28,7 @@ export default function NewsTicker() {
     }}>
       <span style={{ color: '#3fb950', fontWeight: 700, flexShrink: 0 }}>● LIVE</span>
       <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', flex: 1 }}>
-        <span style={{ display: 'inline-block', animation: 'ticker 80s linear infinite' }}>
+        <span style={{ display: 'inline-block', animation: 'ticker 150s linear infinite' }}>
           {text}
         </span>
       </div>
