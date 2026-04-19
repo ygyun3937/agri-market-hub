@@ -16,7 +16,8 @@ export default function NewsTicker() {
   }, [])
 
   if (items.length === 0) return null
-  const text = items.map(n => n.title).join('  ·  ')
+  const clean = s => (s || '').replace(/[.…·]+$/, '').replace(/\s+/g, ' ').trim()
+  const text = items.map(n => clean(n.summary) || clean(n.title)).join('  　·　  ')
 
   return (
     <div style={{

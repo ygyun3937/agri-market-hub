@@ -28,6 +28,7 @@ const ALL_REGIONS = [
   { code: '11F20301', name: '여수' },
   { code: '11F20401', name: '광주' },
   { code: '11F20501', name: '목포' },
+  { code: '11F20601', name: '해남' },
   { code: '11H10201', name: '안동' },
   { code: '11H10501', name: '포항' },
   { code: '11H10601', name: '경주' },
