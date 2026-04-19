@@ -12,13 +12,12 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
 
   const handleGoogleLogin = useGoogleLogin({
-    flow: 'auth-code',
-    scope: 'openid email profile https://www.googleapis.com/auth/calendar',
-    onSuccess: async ({ code }) => {
+    scope: 'openid email profile',
+    onSuccess: async ({ access_token }) => {
       setLoading(true)
       setError('')
       try {
-        const res = await client.post('/auth/google', { code })
+        const res = await client.post('/auth/google', { accessToken: access_token })
         setSession(res.data.token, res.data.name)
         navigate('/')
       } catch {

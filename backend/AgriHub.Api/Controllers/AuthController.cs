@@ -1,4 +1,5 @@
-using Google.Apis.Auth;
+using System.Net.Http.Headers;
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using AgriHub.Api.Dto;
 using AgriHub.Api.Services;
@@ -7,7 +8,7 @@ namespace AgriHub.Api.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-public class AuthController(AuthService auth, GoogleCalendarService gcal, IConfiguration config) : ControllerBase
+public class AuthController(AuthService auth, GoogleCalendarService gcal, IConfiguration config, IHttpClientFactory httpClientFactory) : ControllerBase
 {
     [HttpPost("register")]
     public async Task<ActionResult<AuthResponse>> Register(RegisterRequest req)
@@ -33,21 +34,15 @@ public class AuthController(AuthService auth, GoogleCalendarService gcal, IConfi
     [HttpPost("google")]
     public async Task<ActionResult<AuthResponse>> GoogleLogin([FromBody] GoogleAuthRequest req)
     {
-        GoogleCalendarService.LoginTokenResult? tokens;
-        try { tokens = await gcal.ExchangeLoginCodeAsync(req.Code); }
-        catch (Exception ex) { return StatusCode(500, new { error = "Google token exchange failed", detail = ex.Message }); }
-        if (tokens == null) return BadRequest("Google not configured");
-        GoogleJsonWebSignature.Payload payload;
-        try
-        {
-            payload = await GoogleJsonWebSignature.ValidateAsync(tokens.IdToken,
-                new GoogleJsonWebSignature.ValidationSettings { Audience = [config["Google:ClientId"]!] });
-        }
-        catch { return Unauthorized("Invalid Google token"); }
-        var user = await auth.GoogleLoginAsync(
-            payload.Subject, payload.Email,
-            payload.Name ?? payload.Email.Split('@')[0],
-            tokens.RefreshToken);
+        var http = httpClientFactory.CreateClient();
+        http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", req.AccessToken);
+        var resp = await http.GetAsync("https://www.googleapis.com/oauth2/v3/userinfo");
+        if (!resp.IsSuccessStatusCode) return Unauthorized("Invalid Google token");
+        var info = await resp.Content.ReadFromJsonAsync<JsonElement>();
+        var googleId = info.GetProperty("sub").GetString()!;
+        var email = info.GetProperty("email").GetString()!;
+        var name = info.TryGetProperty("name", out var n) ? n.GetString() ?? email.Split('@')[0] : email.Split('@')[0];
+        var user = await auth.GoogleLoginAsync(googleId, email, name, null);
         return Ok(new AuthResponse(auth.GenerateToken(user), user.Name, user.Id));
     }
 

@@ -50,6 +50,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+builder.Services.AddHttpClient();
 builder.Services.AddAuthorization();
 builder.Services.AddSignalR();
 builder.Services.AddControllers();
