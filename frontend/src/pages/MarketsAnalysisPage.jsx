@@ -28,6 +28,26 @@ const DIM     = '#8b949e'
 const ACCENT  = '#58a6ff'
 const GREEN   = '#3fb950'
 
+// ─── 제철 품목 (월별 item name 목록) ────────────────────────────────────────
+const SEASONAL_BY_MONTH = {
+  1:  ['시금치', '무', '배추', '당근', '사과', '배', '딸기', '굴'],
+  2:  ['시금치', '무', '배추', '당근', '딸기', '한라봉'],
+  3:  ['봄배추', '시금치', '딸기', '냉이', '달래'],
+  4:  ['봄배추', '시금치', '오이', '파프리카', '딸기', '장미', '두릅'],
+  5:  ['봄배추', '양파', '오이', '상추', '딸기', '참외'],
+  6:  ['양파', '감자', '수박', '참외', '오이', '토마토'],
+  7:  ['감자', '수박', '참외', '복숭아', '토마토', '고추'],
+  8:  ['수박', '감자', '복숭아', '포도', '토마토', '고추'],
+  9:  ['배', '사과', '포도', '고등어', '고구마'],
+  10: ['사과', '배', '밤', '쌀', '고등어', '콩', '감자'],
+  11: ['사과', '배', '김장배추', '무', '쌀', '콩', '고등어'],
+  12: ['김장배추', '무', '사과', '배', '딸기', '굴', '방어'],
+}
+function isSeasonalItem(itemName, month) {
+  const list = SEASONAL_BY_MONTH[month] || []
+  return list.some(s => itemName.includes(s) || s.includes(itemName.slice(0, 2)))
+}
+
 // ─── Market coordinates ───────────────────────────────────────────────────────
 const MARKET_COORDS = {
   '110001': { lat: 37.4932, lng: 127.1222, name: '서울가락' },
@@ -221,13 +241,20 @@ function TrendPanel({ market, product, trendData, loadingTrend, onClose }) {
 }
 
 // ─── Product Table ────────────────────────────────────────────────────────────
-function ProductTable({ products, selectedProduct, onSelect }) {
-  const sorted = [...products].sort((a, b) => Number(b.volume) - Number(a.volume))
+function ProductTable({ products, selectedProduct, onSelect, watchlist, onToggleWatch, filter, selectedDate }) {
+  const month = new Date(selectedDate).getMonth() + 1
+  const filtered = [...products]
+    .filter(row => {
+      if (filter === 'seasonal')  return isSeasonalItem(row.itemName, month)
+      if (filter === 'watchlist') return watchlist.has(row.itemCode)
+      return true
+    })
+    .sort((a, b) => Number(b.volume) - Number(a.volume))
 
-  if (sorted.length === 0) {
+  if (filtered.length === 0) {
     return (
       <div style={{ padding: 40, textAlign: 'center', color: DIM, fontSize: 14 }}>
-        데이터 없음
+        {filter === 'watchlist' ? '관심 품목이 없습니다. ★을 눌러 추가하세요.' : '데이터 없음'}
       </div>
     )
   }
@@ -237,6 +264,7 @@ function ProductTable({ products, selectedProduct, onSelect }) {
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
         <thead>
           <tr style={{ background: SURFACE, borderBottom: `1px solid ${BORDER}` }}>
+            <th style={{ padding: '8px 8px', width: 32 }} />
             {['품목명', '평균가(원)', '최저가', '최고가', '거래량'].map((h, i) => (
               <th key={h} style={{
                 padding: '8px 12px',
@@ -247,8 +275,9 @@ function ProductTable({ products, selectedProduct, onSelect }) {
           </tr>
         </thead>
         <tbody>
-          {sorted.map((row, i) => {
+          {filtered.map((row, i) => {
             const isSelected = selectedProduct?.itemCode === row.itemCode
+            const isWatched  = watchlist.has(row.itemCode)
             return (
               <tr
                 key={`${row.itemCode}-${i}`}
@@ -261,6 +290,11 @@ function ProductTable({ products, selectedProduct, onSelect }) {
                 onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = '#1c2128' }}
                 onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = 'transparent' }}
               >
+                <td style={{ padding: '8px 8px', textAlign: 'center' }}
+                  onClick={e => { e.stopPropagation(); onToggleWatch(row.itemCode) }}>
+                  <span style={{ fontSize: 14, cursor: 'pointer', color: isWatched ? '#f0a202' : BORDER,
+                    transition: 'color 0.15s' }}>★</span>
+                </td>
                 <td style={{ padding: '8px 12px' }}>
                   <div style={{ fontWeight: 700, color: isSelected ? ACCENT : TEXT }}>{row.itemName}</div>
                   <div style={{ fontSize: 11, color: DIM }}>{row.category}</div>
@@ -287,7 +321,15 @@ function ProductTable({ products, selectedProduct, onSelect }) {
 }
 
 // ─── Right Panel ──────────────────────────────────────────────────────────────
-function RightPanel({ selectedMarket, selectedDate, products, selectedProduct, trendData, loadingProducts, loadingTrend, onSelectProduct, onCloseTrend }) {
+const FILTERS = [
+  { key: 'all',       label: '전체' },
+  { key: 'seasonal',  label: '제철' },
+  { key: 'watchlist', label: '관심 품목' },
+]
+
+function RightPanel({ selectedMarket, selectedDate, products, selectedProduct, trendData, loadingProducts, loadingTrend, onSelectProduct, onCloseTrend, watchlist, onToggleWatch }) {
+  const [filter, setFilter] = useState('all')
+
   if (!selectedMarket) {
     return (
       <div style={{
@@ -302,9 +344,31 @@ function RightPanel({ selectedMarket, selectedDate, products, selectedProduct, t
   return (
     <div style={{ flex: 1, overflowY: 'auto', padding: 16, minWidth: 0 }}>
       {/* Market header */}
-      <div style={{ marginBottom: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10, flexWrap: 'wrap' }}>
         <span style={{ fontSize: 16, fontWeight: 700, color: TEXT }}>{selectedMarket.name}</span>
-        <span style={{ fontSize: 13, color: DIM, marginLeft: 10 }}>기준일: {selectedDate}</span>
+        <span style={{ fontSize: 13, color: DIM }}>기준일: {selectedDate}</span>
+
+        {/* Filter tabs */}
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
+          {FILTERS.map(f => (
+            <button
+              key={f.key}
+              onClick={() => setFilter(f.key)}
+              style={{
+                padding: '4px 12px', fontSize: 12, borderRadius: 12, cursor: 'pointer',
+                background: filter === f.key ? GREEN : SURFACE,
+                border: `1px solid ${filter === f.key ? GREEN : BORDER}`,
+                color: filter === f.key ? '#fff' : DIM,
+                fontWeight: filter === f.key ? 700 : 400,
+                transition: 'all 0.15s',
+              }}
+            >
+              {f.key === 'watchlist'
+                ? `★ ${f.label}${watchlist.size > 0 ? ` (${watchlist.size})` : ''}`
+                : f.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Products */}
@@ -319,6 +383,10 @@ function RightPanel({ selectedMarket, selectedDate, products, selectedProduct, t
             products={products}
             selectedProduct={selectedProduct}
             onSelect={onSelectProduct}
+            watchlist={watchlist}
+            onToggleWatch={onToggleWatch}
+            filter={filter}
+            selectedDate={selectedDate}
           />
         )}
       </div>
@@ -427,6 +495,19 @@ export default function MarketsAnalysisPage() {
   const [loadingMarkets, setLoadingMarkets] = useState(false)
   const [loadingProducts, setLoadingProducts] = useState(false)
   const [loadingTrend, setLoadingTrend]     = useState(false)
+  const [watchlist, setWatchlist]           = useState(() => {
+    try { return new Set(JSON.parse(localStorage.getItem('market_watchlist') || '[]')) }
+    catch { return new Set() }
+  })
+
+  const toggleWatch = useCallback((itemCode) => {
+    setWatchlist(prev => {
+      const next = new Set(prev)
+      next.has(itemCode) ? next.delete(itemCode) : next.add(itemCode)
+      localStorage.setItem('market_watchlist', JSON.stringify([...next]))
+      return next
+    })
+  }, [])
 
   // Fetch markets on mount
   useEffect(() => {
@@ -509,6 +590,8 @@ export default function MarketsAnalysisPage() {
           loadingTrend={loadingTrend}
           onSelectProduct={selectProduct}
           onCloseTrend={closeTrend}
+          watchlist={watchlist}
+          onToggleWatch={toggleWatch}
         />
         </div>
       </div>
