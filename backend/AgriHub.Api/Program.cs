@@ -78,6 +78,17 @@ if (!app.Environment.IsDevelopment())
     }));
 }
 
+if (!app.Environment.IsEnvironment("Testing"))
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.ExecuteSqlRaw(@"
+        ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL;
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id VARCHAR(255);
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS google_refresh_token TEXT;
+    ");
+}
+
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
