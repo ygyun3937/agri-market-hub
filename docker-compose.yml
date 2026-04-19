@@ -22,6 +22,7 @@ services:
       - VapidPrivateKey=${VAPID_PRIVATE_KEY}
       - Google__ClientId=${GOOGLE_CLIENT_ID}
       - Google__ClientSecret=${GOOGLE_CLIENT_SECRET}
+      - Google__RedirectUri=${GOOGLE_REDIRECT_URI:-https://agri.dooyg.store/api/auth/google/callback}
       - DOTNET_GCConserveMemory=9
       - ASPNETCORE_ENVIRONMENT=Production
       - Cors__AllowedOrigins=${CORS_ORIGINS:-https://agri.dooyg.store}

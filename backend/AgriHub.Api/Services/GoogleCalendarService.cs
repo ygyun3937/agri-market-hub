@@ -21,19 +21,12 @@ public class GoogleCalendarService(IConfiguration config, ILogger<GoogleCalendar
         });
     }
 
-    public string? GetAuthUrl(string userId)
-    {
-        if (_flow == null) return null;
-        return _flow.CreateAuthorizationCodeRequest(config["Google:RedirectUri"]!)
-            .Build().AbsoluteUri + $"&state={userId}";
-    }
+    private string RedirectUri => config["Google:RedirectUri"] ?? "https://agri.dooyg.store/api/auth/google/callback";
 
-    public async Task<string?> ExchangeCodeAsync(string code)
+    public string? GetAuthUrl()
     {
         if (_flow == null) return null;
-        var token = await _flow.ExchangeCodeForTokenAsync("user", code,
-            config["Google:RedirectUri"]!, CancellationToken.None);
-        return token.AccessToken;
+        return _flow.CreateAuthorizationCodeRequest(RedirectUri).Build().AbsoluteUri;
     }
 
     public record LoginTokenResult(string AccessToken, string? RefreshToken, string? IdToken);
@@ -41,7 +34,7 @@ public class GoogleCalendarService(IConfiguration config, ILogger<GoogleCalendar
     public async Task<LoginTokenResult?> ExchangeLoginCodeAsync(string code)
     {
         if (_flow == null) return null;
-        var token = await _flow.ExchangeCodeForTokenAsync("login", code, "postmessage", CancellationToken.None);
+        var token = await _flow.ExchangeCodeForTokenAsync("login", code, RedirectUri, CancellationToken.None);
         return new LoginTokenResult(token.AccessToken, token.RefreshToken, token.IdToken);
     }
 

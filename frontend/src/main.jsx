@@ -1,7 +1,6 @@
 // src/main.jsx
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { GoogleOAuthProvider } from '@react-oauth/google'
 import App from './App'
 
 document.body.style.margin = '0'
@@ -9,8 +8,6 @@ document.body.style.fontFamily = "'Segoe UI', sans-serif"
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || ''}>
-      <App />
-    </GoogleOAuthProvider>
+    <App />
   </React.StrictMode>
 )
