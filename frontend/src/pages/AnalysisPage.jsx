@@ -6,6 +6,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip,
 } from 'recharts'
 import Header from '../components/Header/Header'
+import NewsTicker from '../components/NewsTicker/NewsTicker'
 import AnalysisNav from '../components/Analysis/AnalysisNav'
 import client from '../api/client'
 import { MOCK_DAILY, MOCK_TREND } from '../data/analysisMock'
@@ -685,6 +686,7 @@ export default function AnalysisPage() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: BG, overflow: 'hidden', color: TEXT }}>
       <Header />
+      <NewsTicker />
       <PageHeader selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
       <AnalysisNav />
       <HolidayBanner selectedDate={selectedDate} hasData={dailyData.length > 0} />

@@ -8,6 +8,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 import Header from '../components/Header/Header'
+import NewsTicker from '../components/NewsTicker/NewsTicker'
 import AnalysisNav from '../components/Analysis/AnalysisNav'
 import client from '../api/client'
 import { MOCK_DAILY, MOCK_MARKETS, MOCK_TREND } from '../data/analysisMock'
@@ -522,6 +523,7 @@ export default function MarketsAnalysisPage() {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh',
       background: BG, overflow: 'hidden', color: TEXT }}>
       <Header />
+      <NewsTicker />
       <PageToolbar selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
       <AnalysisNav />
       <HolidayBanner selectedDate={selectedDate} hasData={products.length > 0} />
