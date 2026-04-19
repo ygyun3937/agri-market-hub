@@ -12,7 +12,7 @@
 ### 날씨 패널
 - 기상청 단기예보 API — 현재 기온·습도·바람·강수량
 - 5일 예보 + 강수확률 시각화 바
-- 16개 지역 선택 (localStorage 저장)
+- 94개 시·군 즐겨찾기 — 검색으로 추가·삭제, localStorage 저장
 
 ### 농산물 가격 패널 (KAMIS)
 - 4월 제철 품목 실시간 시세
@@ -39,8 +39,8 @@
 - Web Push 알림 (VAPID)
 
 ### 인증
-- JWT 기반 로그인/회원가입
-- Google Calendar 연동 (OAuth2)
+- Google OAuth 2.0 로그인 (auth-code flow, popup)
+- Google Calendar 자동 연동 (로그인 시 refresh token 저장)
 
 ---
 
@@ -188,20 +188,28 @@ flowchart LR
 
 ## 환경 변수
 
-`.env` 파일에 아래 값을 설정합니다.
+`.env.example`을 참고하여 `.env` 파일을 작성합니다. 형식은 동일하며 실제 값만 채우면 됩니다.
+
+| 변수 | 설명 |
+|------|------|
+| `DB_PASS` | PostgreSQL 비밀번호 |
+| `JWT_SECRET` | JWT 서명 키 (32자 이상) |
+| `WEATHER_KEY` | 기상청 API 키 (data.go.kr) |
+| `KAMIS_KEY` | KAMIS 농산물가격 API 키 |
+| `NAVER_CLIENT_ID` | 네이버 검색 API Client ID |
+| `NAVER_CLIENT_SECRET` | 네이버 검색 API Secret |
+| `VAPID_PUBLIC_KEY` | Web Push 공개 키 |
+| `VAPID_PRIVATE_KEY` | Web Push 비밀 키 |
+| `GOOGLE_CLIENT_ID` | Google OAuth Client ID |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth Client Secret |
+| `PEST_KEY` | 농촌진흥청 병해충 API 키 |
+| `OPINET_KEY` | 오피넷 유가 API 키 |
+| `CORS_ORIGINS` | 허용 도메인 (기본값: https://agri.dooyg.store) |
+
+프론트엔드 빌드에는 `frontend/.env`도 필요합니다.
 
 ```env
-DB_PASS=
-JWT_SECRET=
-WEATHER_KEY=          # 기상청 API 키
-KAMIS_KEY=            # KAMIS API 키
-NAVER_CLIENT_ID=      # 네이버 개발자센터
-NAVER_CLIENT_SECRET=
-PEST_KEY=             # 병해충 API 키
-OPINET_KEY=           # 오피넷 API 키
-VAPID_PUBLIC_KEY=
-VAPID_PRIVATE_KEY=
-CORS_ORIGINS=https://your-domain.com
+VITE_GOOGLE_CLIENT_ID=...
 ```
 
 ---
@@ -222,7 +230,17 @@ cd frontend && npm install && npm run dev
 
 `main` 브랜치 푸시 시 GitHub Actions가 자동 실행됩니다.
 
-1. **CI** — 프론트엔드 빌드·린트, 백엔드 dotnet build, 크롤러 pytest
-2. **Deploy** — SSH + rsync로 빌드 결과물을 서버에 전송 후 `docker compose up -d`
+1. **빌드** — 프론트엔드 `npm run build`, 백엔드 `dotnet publish`, 크롤러 `pip install`
+2. **배포** — SSH + rsync로 결과물 전송 → 서버에 `.env` 자동 생성 → `docker compose up -d`
 
-필요한 GitHub Secrets: `SSH_HOST`, `SSH_USER`, `SSH_PRIVATE_KEY`, `DEPLOY_PATH`, `STATIC_PATH`
+### 필요한 GitHub Secrets
+
+| Secret | 설명 |
+|--------|------|
+| `SSH_HOST` | 서버 IP 또는 도메인 |
+| `SSH_USER` | SSH 접속 사용자명 |
+| `SSH_PRIVATE_KEY` | SSH 비밀 키 |
+| `DEPLOY_PATH` | 서버의 배포 디렉토리 경로 |
+| `STATIC_PATH` | Caddy가 서빙하는 프론트엔드 정적 파일 경로 |
+| `GOOGLE_CLIENT_ID` | 프론트엔드 빌드 시 주입 |
+| `ENV_FILE` | `.env` 파일 내용 전체 (멀티라인) — 배포 시 서버에 자동 생성 |

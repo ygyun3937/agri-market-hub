@@ -57,6 +57,11 @@ jobs:
             mkdir -p ${{ secrets.STATIC_PATH }}
           "
 
+      # ── .env 파일 생성 ───────────────────────────────────────
+      - name: Create .env on server
+        run: |
+          echo "${{ secrets.ENV_FILE }}" | ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cat > ${{ secrets.DEPLOY_PATH }}/.env"
+
       # ── SCP: 백엔드 + 크롤러 + compose ────────────────────────
       - name: Upload backend, crawler, compose
         run: |
