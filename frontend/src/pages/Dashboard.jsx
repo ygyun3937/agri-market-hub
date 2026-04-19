@@ -111,7 +111,7 @@ export default function Dashboard() {
       client.get('/notifications').then(r => setNotifications(r.data)).catch(() => {})
       Promise.all([
         client.get('/schedules').catch(() => ({ data: [] })),
-        client.get('/schedules/gcal').catch(() => ({ data: [] })),
+        client.get('/schedules/gcal-events').catch(() => ({ data: [] })),
       ]).then(([siteRes, gcalRes]) => {
         const siteSchedules = siteRes.data || []
         const gcalEvents = (gcalRes.data || []).filter(
