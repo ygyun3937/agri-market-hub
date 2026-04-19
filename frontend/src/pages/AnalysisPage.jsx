@@ -605,7 +605,7 @@ function HolidayBanner({ selectedDate, hasData }) {
   return (
     <div style={{
       background: '#d2992222', border: '1px solid #d29922',
-      borderRadius: 6, padding: '8px 14px', marginBottom: 12,
+      borderRadius: 6, padding: '8px 14px', margin: '12px 16px 0',
       fontSize: 13, color: '#d29922', display: 'flex', alignItems: 'center', gap: 8,
     }}>
       ⚠️ {msg} 가장 가까운 거래일을 선택해주세요.
@@ -687,6 +687,7 @@ export default function AnalysisPage() {
       <Header />
       <PageHeader selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
       <AnalysisNav />
+      <HolidayBanner selectedDate={selectedDate} hasData={dailyData.length > 0} />
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px 16px' }}>
         {loading ? (
@@ -695,7 +696,6 @@ export default function AnalysisPage() {
           </div>
         ) : (
           <>
-            <HolidayBanner selectedDate={selectedDate} hasData={dailyData.length > 0} />
             <KpiRow data={dailyData} selectedDate={selectedDate} />
             <TopMovers data={dailyData} onSelect={selectItem} />
             <MainSection

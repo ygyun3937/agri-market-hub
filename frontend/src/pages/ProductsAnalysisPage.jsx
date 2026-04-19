@@ -624,13 +624,13 @@ export default function ProductsAnalysisPage() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: BG, overflow: 'hidden', color: TEXT }}>
       <Header />
-      <AnalysisNav />
       <PageToolbar
         selectedDate={selectedDate}
         setSelectedDate={setSelectedDate}
         viewMode={viewMode}
         setViewMode={setViewMode}
       />
+      <AnalysisNav />
       <HolidayBanner selectedDate={selectedDate} hasData={dailyData.length > 0} />
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px 16px' }}>

@@ -522,8 +522,8 @@ export default function MarketsAnalysisPage() {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh',
       background: BG, overflow: 'hidden', color: TEXT }}>
       <Header />
-      <AnalysisNav />
       <PageToolbar selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
+      <AnalysisNav />
       <HolidayBanner selectedDate={selectedDate} hasData={products.length > 0} />
 
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 0 }}>
