@@ -84,6 +84,15 @@ public class SchedulesController(AppDbContext db, GoogleCalendarService gcal) : 
         return NoContent();
     }
 
+    [HttpGet("gcal")]
+    public async Task<IActionResult> GetGcalEvents()
+    {
+        var user = await db.Users.FindAsync(UserId);
+        if (user == null) return Ok(new List<object>());
+        var events = await gcal.GetUpcomingEventsAsync(user);
+        return Ok(events);
+    }
+
     [HttpPost("sync-gcal")]
     public async Task<IActionResult> SyncGoogleCalendar()
     {

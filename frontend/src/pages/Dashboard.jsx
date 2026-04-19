@@ -109,7 +109,16 @@ export default function Dashboard() {
     client.get('/alerts/disaster').then(r => setDisasterAlerts(r.data)).catch(() => {})
     if (isLoggedIn) {
       client.get('/notifications').then(r => setNotifications(r.data)).catch(() => {})
-      client.get('/schedules').then(r => setSchedules(r.data)).catch(() => {})
+      Promise.all([
+        client.get('/schedules').catch(() => ({ data: [] })),
+        client.get('/schedules/gcal').catch(() => ({ data: [] })),
+      ]).then(([siteRes, gcalRes]) => {
+        const siteSchedules = siteRes.data || []
+        const gcalEvents = (gcalRes.data || []).filter(
+          g => !siteSchedules.some(s => s.gcalEventId === g.gcalEventId)
+        )
+        setSchedules([...siteSchedules, ...gcalEvents])
+      })
     }
   }, [])
 

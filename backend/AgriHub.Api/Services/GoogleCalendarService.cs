@@ -71,6 +71,38 @@ public class GoogleCalendarService(IConfiguration config, ILogger<GoogleCalendar
         }
     }
 
+    public async Task<List<object>> GetUpcomingEventsAsync(User user, int days = 30)
+    {
+        if (string.IsNullOrEmpty(user.GoogleRefreshToken)) return [];
+        var svc = GetCalendarService(user.GoogleRefreshToken);
+        if (svc == null) return [];
+        try
+        {
+            var req = svc.Events.List("primary");
+            req.TimeMinDateTimeOffset = DateTimeOffset.UtcNow;
+            req.TimeMaxDateTimeOffset = DateTimeOffset.UtcNow.AddDays(days);
+            req.SingleEvents = true;
+            req.OrderBy = EventsResource.ListRequest.OrderByEnum.StartTime;
+            req.MaxResults = 50;
+            var result = await req.ExecuteAsync();
+            return result.Items?
+                .Where(e => e.Start?.Date != null || e.Start?.DateTime != null)
+                .Select(e => (object)new {
+                    id = "gcal_" + e.Id,
+                    title = e.Summary ?? "(제목 없음)",
+                    date = e.Start?.Date ?? e.Start?.DateTimeDateTimeOffset?.ToString("yyyy-MM-dd"),
+                    memo = e.Description,
+                    gcalEventId = e.Id,
+                    fromGcal = true
+                }).ToList() ?? [];
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "GCal get events failed for user {UserId}", user.Id);
+            return [];
+        }
+    }
+
     public async Task SyncSchedulesAsync(int userId, List<Schedule> schedules)
     {
         logger.LogInformation("GCal sync for user {UserId}: {Count} schedules", userId, schedules.Count);
