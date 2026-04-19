@@ -5,8 +5,8 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/api': 'http://localhost:5000',
-      '/hub': { target: 'http://localhost:5000', ws: true }
+      '/api': 'http://localhost:5031',
+      '/hub': { target: 'http://localhost:5031', ws: true }
     }
   }
 })
