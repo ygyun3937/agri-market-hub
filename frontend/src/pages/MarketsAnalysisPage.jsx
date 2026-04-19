@@ -1,5 +1,5 @@
 // src/pages/MarketsAnalysisPage.jsx
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import {
   ResponsiveContainer, ComposedChart, Line, Bar,
   XAxis, YAxis, CartesianGrid, Tooltip,
@@ -29,6 +29,49 @@ const DIM     = '#8b949e'
 const ACCENT  = '#58a6ff'
 const GREEN   = '#3fb950'
 const RED     = '#f85149'
+
+// ─── Resize handles ──────────────────────────────────────────────────────────
+function ColHandle({ onDelta }) {
+  const dragging = useRef(false)
+  const lastX = useRef(0)
+  const [active, setActive] = useState(false)
+  const onMouseDown = (e) => {
+    e.preventDefault()
+    dragging.current = true; lastX.current = e.clientX; setActive(true)
+    const move = (e) => { if (!dragging.current) return; onDelta(e.clientX - lastX.current); lastX.current = e.clientX }
+    const up = () => { dragging.current = false; setActive(false); document.removeEventListener('mousemove', move); document.removeEventListener('mouseup', up) }
+    document.addEventListener('mousemove', move)
+    document.addEventListener('mouseup', up)
+  }
+  return (
+    <div onMouseDown={onMouseDown}
+      onMouseEnter={e => e.currentTarget.style.background = '#388bfd'}
+      onMouseLeave={e => { if (!dragging.current) e.currentTarget.style.background = '#21262d' }}
+      style={{ width: 4, flexShrink: 0, cursor: 'col-resize', zIndex: 10,
+        background: active ? '#388bfd' : '#21262d', transition: 'background 0.15s' }} />
+  )
+}
+
+function RowHandle({ onDelta }) {
+  const dragging = useRef(false)
+  const lastY = useRef(0)
+  const [active, setActive] = useState(false)
+  const onMouseDown = (e) => {
+    e.preventDefault()
+    dragging.current = true; lastY.current = e.clientY; setActive(true)
+    const move = (e) => { if (!dragging.current) return; onDelta(e.clientY - lastY.current); lastY.current = e.clientY }
+    const up = () => { dragging.current = false; setActive(false); document.removeEventListener('mousemove', move); document.removeEventListener('mouseup', up) }
+    document.addEventListener('mousemove', move)
+    document.addEventListener('mouseup', up)
+  }
+  return (
+    <div onMouseDown={onMouseDown}
+      onMouseEnter={e => e.currentTarget.style.background = '#388bfd'}
+      onMouseLeave={e => { if (!dragging.current) e.currentTarget.style.background = '#21262d' }}
+      style={{ height: 4, flexShrink: 0, cursor: 'row-resize', zIndex: 10,
+        background: active ? '#388bfd' : '#21262d', transition: 'background 0.15s' }} />
+  )
+}
 
 // ─── 제철 품목 (월별 item name 목록) ────────────────────────────────────────
 const SEASONAL_BY_MONTH = {
@@ -400,6 +443,12 @@ export default function MarketsAnalysisPage() {
     try { return new Set(JSON.parse(localStorage.getItem('market_watchlist') || '[]')) }
     catch { return new Set() }
   })
+  const [leftW, setLeftW] = useState(() => {
+    try { return Number(localStorage.getItem('markets_leftW') || 200) } catch { return 200 }
+  })
+  const [mapH, setMapH] = useState(() => {
+    try { return Number(localStorage.getItem('markets_mapH') || 240) } catch { return 240 }
+  })
 
   // Fetch product list
   useEffect(() => {
@@ -449,24 +498,39 @@ export default function MarketsAnalysisPage() {
 
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 0 }}>
         {/* Left: product filter + list */}
-        <LeftPanel
-          products={loadingProducts ? [] : products}
-          selectedProduct={selectedProduct}
-          onSelect={setSelectedProduct}
-          watchlist={watchlist}
-          onToggleWatch={toggleWatch}
-        />
+        <div style={{ width: leftW, flexShrink: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <LeftPanel
+            products={loadingProducts ? [] : products}
+            selectedProduct={selectedProduct}
+            onSelect={setSelectedProduct}
+            watchlist={watchlist}
+            onToggleWatch={toggleWatch}
+          />
+        </div>
+
+        <ColHandle onDelta={d => setLeftW(w => {
+          const next = Math.max(150, Math.min(380, w + d))
+          localStorage.setItem('markets_leftW', next)
+          return next
+        })} />
 
         {/* Center+Right: map + market table + trend */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
           {/* Map */}
-          <div style={{ padding: '12px 12px 0', flexShrink: 0 }}>
+          <div style={{ height: mapH, flexShrink: 0, padding: '12px 12px 0' }}>
             <MarketMap
               marketPrices={marketPrices}
               selectedMarket={selectedMarketCode ? { marketCode: selectedMarketCode } : null}
               onSelect={setSelectedMarketCode}
             />
           </div>
+
+          <RowHandle onDelta={d => setMapH(h => {
+            const next = Math.max(150, Math.min(420, h + d))
+            localStorage.setItem('markets_mapH', next)
+            return next
+          })} />
+
           {/* Right content */}
           <div style={{ flex: 1, overflow: 'hidden' }}>
             <RightPanel
