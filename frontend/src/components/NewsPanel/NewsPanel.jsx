@@ -16,17 +16,21 @@ export default function NewsPanel() {
   const [news, setNews] = useState([])
 
   useEffect(() => {
-    if (tab === 'headline') {
-      Promise.all([client.get('/news?tab=pest'), client.get('/news?tab=crop')])
-        .then(([pest, crop]) => {
-          const combined = [...pest.data, ...crop.data]
-            .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
-            .slice(0, 6)
-          setNews(combined)
-        }).catch(() => {})
-    } else {
-      client.get(`/news?tab=${tab}`).then(r => setNews(r.data)).catch(() => {})
+    const fetch = () => {
+      if (tab === 'headline') {
+        Promise.all([client.get('/news?tab=pest'), client.get('/news?tab=crop')])
+          .then(([pest, crop]) => {
+            setNews([...pest.data, ...crop.data]
+              .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
+              .slice(0, 6))
+          }).catch(() => {})
+      } else {
+        client.get(`/news?tab=${tab}`).then(r => setNews(r.data)).catch(() => {})
+      }
     }
+    fetch()
+    const timer = setInterval(fetch, 5 * 60 * 1000)
+    return () => clearInterval(timer)
   }, [tab])
 
   return (
