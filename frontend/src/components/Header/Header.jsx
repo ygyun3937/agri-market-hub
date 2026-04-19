@@ -1,10 +1,11 @@
 // src/components/Header/Header.jsx
 import { useAuth } from '../../hooks/useAuth'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 
 export default function Header({ alertCount = 0, hasDisasterAlert = false }) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
 
   function handleLogout() {
     logout()
@@ -42,10 +43,12 @@ export default function Header({ alertCount = 0, hasDisasterAlert = false }) {
         </span>
       )}
       <nav style={{ display: 'flex', gap: 8, marginLeft: 8 }}>
-        <button style={{ background: 'none', border: 'none', color: '#e6edf3',
-          fontSize: 14, cursor: 'pointer' }}>대시보드</button>
-        <button style={{ background: 'none', border: 'none', color: '#8b949e',
-          fontSize: 14, cursor: 'pointer' }}>분석</button>
+        <button onClick={() => navigate('/')}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14,
+            color: location.pathname === '/' ? '#e6edf3' : '#8b949e' }}>대시보드</button>
+        <button onClick={() => navigate('/analysis')}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14,
+            color: location.pathname === '/analysis' ? '#e6edf3' : '#8b949e' }}>경매분석</button>
       </nav>
       <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 12 }}>
         <span style={{ fontSize: 14, color: '#8b949e' }}>

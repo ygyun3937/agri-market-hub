@@ -134,3 +134,44 @@ CREATE INDEX idx_auction_prices_date ON auction_prices(date DESC);
 CREATE INDEX idx_news_articles_tag ON news_articles(tag);
 CREATE INDEX idx_disaster_alerts_expires ON disaster_alerts(expires_at);
 CREATE INDEX idx_notifications_user ON notifications(user_id, is_read);
+
+CREATE TABLE IF NOT EXISTS markets (
+    code VARCHAR(20) PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    region VARCHAR(50)
+);
+
+CREATE TABLE IF NOT EXISTS auction_raw (
+    id SERIAL PRIMARY KEY,
+    market_code VARCHAR(20),
+    market_name VARCHAR(100),
+    item_code VARCHAR(50),
+    item_name VARCHAR(100),
+    category VARCHAR(50),
+    variety VARCHAR(100),
+    origin VARCHAR(100),
+    grade VARCHAR(20),
+    price NUMERIC(10,0),
+    volume NUMERIC(12,2),
+    unit VARCHAR(20),
+    date DATE NOT NULL,
+    UNIQUE(market_code, item_code, variety, origin, grade, date)
+);
+
+CREATE TABLE IF NOT EXISTS daily_auction (
+    id SERIAL PRIMARY KEY,
+    item_code VARCHAR(50) NOT NULL,
+    item_name VARCHAR(100),
+    category VARCHAR(50),
+    date DATE NOT NULL,
+    avg_price NUMERIC(10,0),
+    min_price NUMERIC(10,0),
+    max_price NUMERIC(10,0),
+    volume NUMERIC(12,0),
+    UNIQUE(item_code, date)
+);
+
+CREATE INDEX IF NOT EXISTS idx_auction_raw_date ON auction_raw(date DESC);
+CREATE INDEX IF NOT EXISTS idx_auction_raw_item ON auction_raw(item_code, date);
+CREATE INDEX IF NOT EXISTS idx_daily_auction_date ON daily_auction(date DESC);
+CREATE INDEX IF NOT EXISTS idx_daily_auction_item ON daily_auction(item_code, date);

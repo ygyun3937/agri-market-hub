@@ -80,3 +80,75 @@ def upsert_fuel_price(fuel_type, price):
             "INSERT INTO fuel_prices (type, price, collected_at) VALUES (%s, %s, NOW())",
             (fuel_type, price),
         )
+
+
+def upsert_market(code, name, region=None):
+    with get_conn() as conn, conn.cursor() as cur:
+        cur.execute(
+            """INSERT INTO markets (code, name, region)
+               VALUES (%s, %s, %s)
+               ON CONFLICT (code) DO UPDATE SET name=EXCLUDED.name""",
+            (code, name, region),
+        )
+
+def upsert_auction_raw_batch(date_str, items):
+    rows = []
+    markets = {}
+    for item in items:
+        mcode = item.get("whsl_mrkt_cd", "").strip()
+        mname = item.get("whsl_mrkt_nm", "").strip()
+        icode = item.get("gds_mclsf_cd", "").strip()
+        iname = item.get("gds_mclsf_nm", "").strip()
+        category = item.get("gds_lclsf_nm", "").strip()
+        variety = item.get("gds_sclsf_nm", "").strip()
+        origin = item.get("plor_nm", "").strip()
+        grade = ""  # katRealTime2 doesn't have grade field
+        unit = item.get("unit_nm", "").strip()
+        try:
+            price = int(float(item.get("scsbd_prc", 0) or 0))
+            volume = float(item.get("qty", 0) or 0)
+        except (ValueError, TypeError):
+            continue
+        if not mcode or not icode or price <= 0:
+            continue
+        if mcode not in markets:
+            markets[mcode] = mname
+        rows.append((mcode, mname, icode, iname, category, variety, origin, grade, price, volume, unit, date_str))
+
+    if not rows:
+        return
+
+    with get_conn() as conn, conn.cursor() as cur:
+        for mcode, mname in markets.items():
+            cur.execute(
+                """INSERT INTO markets (code, name) VALUES (%s, %s)
+                   ON CONFLICT (code) DO UPDATE SET name=EXCLUDED.name""",
+                (mcode, mname)
+            )
+        execute_values(
+            cur,
+            """INSERT INTO auction_raw (market_code, market_name, item_code, item_name,
+               category, variety, origin, grade, price, volume, unit, date)
+               VALUES %s
+               ON CONFLICT (market_code, item_code, variety, origin, grade, date)
+               DO UPDATE SET price=EXCLUDED.price, volume=EXCLUDED.volume""",
+            rows,
+        )
+
+def aggregate_daily_auction(date_str):
+    with get_conn() as conn, conn.cursor() as cur:
+        cur.execute(
+            """INSERT INTO daily_auction (item_code, item_name, category, date, avg_price, min_price, max_price, volume)
+               SELECT item_code, MAX(item_name), MAX(category), date,
+                      ROUND(AVG(price))::NUMERIC(10,0),
+                      MIN(price), MAX(price),
+                      SUM(volume)::NUMERIC(12,0)
+               FROM auction_raw
+               WHERE date = %s AND price > 0
+               GROUP BY item_code, date
+               ON CONFLICT (item_code, date)
+               DO UPDATE SET avg_price=EXCLUDED.avg_price, min_price=EXCLUDED.min_price,
+                             max_price=EXCLUDED.max_price, volume=EXCLUDED.volume,
+                             item_name=EXCLUDED.item_name""",
+            (date_str,),
+        )

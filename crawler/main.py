@@ -7,6 +7,7 @@ from crawlers.kamis import run_prices
 from crawlers.news import run_news
 from crawlers.pest import run_pest
 from crawlers.fuel import run_fuel
+from crawlers.auction import run_auction
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger(__name__)
@@ -28,6 +29,7 @@ schedule.every(1).hours.do(safe(run_weather))
 schedule.every(3).hours.do(safe(run_forecast))
 schedule.every(6).hours.do(safe(run_pest))
 schedule.every().day.at("06:00").do(safe(run_fuel))
+schedule.every().day.at("07:00").do(safe(run_auction))
 
 if __name__ == "__main__":
     log.info("Crawler starting — running all jobs once on boot")
@@ -37,6 +39,7 @@ if __name__ == "__main__":
     safe(run_news)()
     safe(run_pest)()
     safe(run_fuel)()
+    safe(run_auction)()
     log.info("Initial run complete, entering schedule loop")
     while True:
         schedule.run_pending()
