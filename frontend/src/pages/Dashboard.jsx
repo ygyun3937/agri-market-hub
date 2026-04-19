@@ -11,6 +11,7 @@ import WeatherPanel from '../components/WeatherPanel/WeatherPanel'
 import CalendarPanel from '../components/CalendarPanel/CalendarPanel'
 import ScheduleList from '../components/CalendarPanel/ScheduleList'
 import FuelPanel from '../components/FuelPanel/FuelPanel'
+import PestPanel from '../components/PestPanel/PestPanel'
 import { useSignalR } from '../hooks/useSignalR'
 
 const LAYER_LABELS = ['도매시장', '산지', '기상특보', '병해충']
@@ -170,6 +171,7 @@ export default function Dashboard() {
             </label>
           ))}
           <FuelPanel />
+          <PestPanel />
         </div>
 
         <ColHandle onDelta={dx => updateLayout('col1', dx, C)} />
