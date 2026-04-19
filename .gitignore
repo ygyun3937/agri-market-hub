@@ -13,3 +13,4 @@ frontend/.omc/
 crawler/debug_*.py
 crawler/fetch_friday.py
 backend/publish/
+backend/AgriHub.Api/appsettings.Development.json
