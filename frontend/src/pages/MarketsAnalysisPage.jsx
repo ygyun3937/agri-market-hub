@@ -524,15 +524,13 @@ export default function MarketsAnalysisPage() {
         {/* Center+Right: map + market table + trend */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
           {/* Map */}
-          <div style={{ padding: '12px 12px 0', flexShrink: 0 }}>
-            <div style={{ height: mapH }}>
+          <div style={{ height: mapH, flexShrink: 0, margin: '12px 12px 0' }}>
             <MarketMap
               marketPrices={marketPrices}
               selectedMarket={selectedMarketCode ? { marketCode: selectedMarketCode } : null}
               onSelect={setSelectedMarketCode}
               mapH={mapH}
             />
-            </div>
           </div>
 
           <RowHandle onDelta={d => setMapH(h => {
