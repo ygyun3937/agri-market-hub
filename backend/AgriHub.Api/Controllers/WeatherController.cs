@@ -8,7 +8,6 @@ namespace AgriHub.Api.Controllers;
 
 [ApiController]
 [Route("api/weather")]
-[Authorize]
 public class WeatherController(AppDbContext db) : ControllerBase
 {
     [HttpGet("{regionCode}")]

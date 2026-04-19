@@ -8,7 +8,6 @@ namespace AgriHub.Api.Controllers;
 
 [ApiController]
 [Route("api/news")]
-[Authorize]
 public class NewsController(AppDbContext db) : ControllerBase
 {
     [HttpGet]

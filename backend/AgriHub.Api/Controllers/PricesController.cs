@@ -8,7 +8,6 @@ namespace AgriHub.Api.Controllers;
 
 [ApiController]
 [Route("api/prices")]
-[Authorize]
 public class PricesController(AppDbContext db) : ControllerBase
 {
     [HttpGet]

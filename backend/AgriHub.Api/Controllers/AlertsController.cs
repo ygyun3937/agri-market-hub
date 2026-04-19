@@ -8,7 +8,6 @@ namespace AgriHub.Api.Controllers;
 
 [ApiController]
 [Route("api/alerts")]
-[Authorize]
 public class AlertsController(AppDbContext db) : ControllerBase
 {
     [HttpGet("disaster")]

@@ -8,7 +8,6 @@ namespace AgriHub.Api.Controllers;
 
 [ApiController]
 [Route("api/fuel")]
-[Authorize]
 public class FuelController(AppDbContext db) : ControllerBase
 {
     [HttpGet]
