@@ -8,7 +8,7 @@ namespace AgriHub.Api.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-public class AuthController(AuthService auth, IConfiguration config, IHttpClientFactory http) : ControllerBase
+public class AuthController(AuthService auth, IConfiguration config, IHttpClientFactory http, ILogger<AuthController> logger) : ControllerBase
 {
     private string RedirectUri => config["Google:RedirectUri"] ?? "https://agri.dooyg.store/api/auth/google/callback";
     [HttpPost("register")]
@@ -48,6 +48,16 @@ public class AuthController(AuthService auth, IConfiguration config, IHttpClient
 
     [HttpGet("google/callback")]
     public async Task<IActionResult> GoogleCallback([FromQuery] string code)
+    {
+        try { return await GoogleCallbackCore(code); }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Google OAuth callback failed");
+            return Redirect("/login?error=1");
+        }
+    }
+
+    private async Task<IActionResult> GoogleCallbackCore(string code)
     {
         var clientId = config["Google:ClientId"];
         var clientSecret = config["Google:ClientSecret"];
