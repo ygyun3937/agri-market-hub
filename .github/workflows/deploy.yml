@@ -82,6 +82,7 @@ jobs:
             cd ${{ secrets.DEPLOY_PATH }}
             chmod +x backend/publish/AgriHub.Api
             docker compose up -d
+            docker compose restart api
           "
 
       # ── DB 마이그레이션 ───────────────────────────────────────
