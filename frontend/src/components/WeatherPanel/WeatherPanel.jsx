@@ -2,24 +2,56 @@
 import { useEffect, useState } from 'react'
 import client from '../../api/client'
 
-const REGIONS = [
+const ALL_REGIONS = [
   { code: '11B10101', name: '서울' },
   { code: '11B20201', name: '인천' },
   { code: '11B20601', name: '수원' },
+  { code: '11B20701', name: '고양' },
+  { code: '11B20401', name: '성남' },
+  { code: '11B20501', name: '용인' },
+  { code: '11B20301', name: '의정부' },
   { code: '11D10301', name: '춘천' },
+  { code: '11D10401', name: '원주' },
+  { code: '11D20401', name: '속초' },
+  { code: '11D20501', name: '강릉' },
+  { code: '11D20601', name: '동해' },
+  { code: '11C10101', name: '천안' },
+  { code: '11C10201', name: '서산' },
   { code: '11C10301', name: '청주' },
   { code: '11C20401', name: '대전' },
   { code: '11C20404', name: '세종' },
+  { code: '11F10101', name: '군산' },
   { code: '11F10201', name: '전주' },
+  { code: '11F10301', name: '익산' },
+  { code: '11F20101', name: '나주' },
+  { code: '11F20201', name: '순천' },
+  { code: '11F20301', name: '여수' },
   { code: '11F20401', name: '광주' },
   { code: '11F20501', name: '목포' },
   { code: '11H10201', name: '안동' },
+  { code: '11H10501', name: '포항' },
+  { code: '11H10601', name: '경주' },
   { code: '11H10701', name: '대구' },
   { code: '11H20101', name: '울산' },
   { code: '11H20201', name: '부산' },
   { code: '11H20301', name: '창원' },
+  { code: '11H20401', name: '진주' },
+  { code: '11H20601', name: '김해' },
   { code: '11G00201', name: '제주' },
+  { code: '11G00401', name: '서귀포' },
 ]
+
+const DEFAULT_FAVORITES = ['11B10101']
+const LS_KEY = 'weather_favorites'
+const LS_SEL = 'weather_region'
+
+function loadFavorites() {
+  try {
+    const v = JSON.parse(localStorage.getItem(LS_KEY) || 'null')
+    return Array.isArray(v) && v.length > 0 ? v : DEFAULT_FAVORITES
+  } catch { return DEFAULT_FAVORITES }
+}
+
 const ICON = { sunny: '☀️', cloudy: '⛅', rainy: '🌧️', snowy: '❄️' }
 
 function RainBar({ prob = 0 }) {
@@ -34,42 +66,134 @@ function RainBar({ prob = 0 }) {
   )
 }
 
+function AddRegionModal({ favorites, onAdd, onClose }) {
+  const [query, setQuery] = useState('')
+  const available = ALL_REGIONS.filter(r =>
+    !favorites.includes(r.code) && (!query.trim() || r.name.includes(query.trim()))
+  )
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 1000,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: 'rgba(0,0,0,0.5)'
+    }} onClick={onClose}>
+      <div style={{
+        background: '#161b22', border: '1px solid #30363d', borderRadius: 10,
+        padding: '14px 16px', width: 220, boxShadow: '0 8px 32px #000a'
+      }} onClick={e => e.stopPropagation()}>
+        <div style={{ fontSize: 12, color: '#8b949e', marginBottom: 8 }}>지역 추가</div>
+        <input
+          autoFocus
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+          onKeyDown={e => e.key === 'Escape' && onClose()}
+          placeholder="지역명 검색..."
+          style={{
+            width: '100%', boxSizing: 'border-box',
+            background: '#0d1117', border: '1px solid #30363d', borderRadius: 5,
+            color: '#e6edf3', fontSize: 13, padding: '6px 8px', marginBottom: 8, outline: 'none'
+          }}
+        />
+        <div style={{ maxHeight: 200, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {available.map(r => (
+            <button key={r.code} onClick={() => onAdd(r.code)} style={{
+              background: '#21262d', border: '1px solid #30363d', borderRadius: 5,
+              color: '#c9d1d9', fontSize: 13, padding: '6px 10px',
+              textAlign: 'left', cursor: 'pointer'
+            }}>{r.name}</button>
+          ))}
+          {available.length === 0 && (
+            <div style={{ fontSize: 12, color: '#8b949e', padding: 4 }}>추가할 지역 없음</div>
+          )}
+        </div>
+        <button onClick={onClose} style={{
+          marginTop: 10, width: '100%', padding: 4, background: 'none',
+          border: '1px solid #30363d', borderRadius: 4, color: '#8b949e',
+          fontSize: 12, cursor: 'pointer'
+        }}>닫기 (Esc)</button>
+      </div>
+    </div>
+  )
+}
+
 export default function WeatherPanel() {
+  const [favorites, setFavorites] = useState(loadFavorites)
   const [region, setRegion] = useState(
-    () => localStorage.getItem('weather_region') || '11B10101'
+    () => {
+      const sel = localStorage.getItem(LS_SEL)
+      const favs = loadFavorites()
+      return favs.includes(sel) ? sel : favs[0]
+    }
   )
   const [weather, setWeather] = useState(null)
   const [forecast, setForecast] = useState([])
+  const [showModal, setShowModal] = useState(false)
 
-  const regionName = REGIONS.find(r => r.code === region)?.name || '서울'
+  const regionName = ALL_REGIONS.find(r => r.code === region)?.name || ''
 
   useEffect(() => {
     client.get(`/weather/${region}`).then(r => setWeather(r.data)).catch(() => setWeather(null))
     client.get(`/weather/${region}/forecast`).then(r => setForecast(r.data)).catch(() => setForecast([]))
   }, [region])
 
-  const handleRegionChange = (e) => {
-    localStorage.setItem('weather_region', e.target.value)
-    setRegion(e.target.value)
+  const selectRegion = (code) => {
+    setRegion(code)
+    localStorage.setItem(LS_SEL, code)
+  }
+
+  const addFavorite = (code) => {
+    const next = [...favorites, code]
+    setFavorites(next)
+    localStorage.setItem(LS_KEY, JSON.stringify(next))
+    selectRegion(code)
+    setShowModal(false)
+  }
+
+  const removeFavorite = (code) => {
+    if (favorites.length <= 1) return
+    const next = favorites.filter(c => c !== code)
+    setFavorites(next)
+    localStorage.setItem(LS_KEY, JSON.stringify(next))
+    if (region === code) selectRegion(next[0])
   }
 
   return (
     <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 0 }}>
 
       {/* 헤더 */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-        <div style={{ fontSize: 11, color: '#8b949e', textTransform: 'uppercase',
-          letterSpacing: 0.8, fontWeight: 600 }}>
-          ⛅ 날씨 · {regionName}
-        </div>
-        <select value={region} onChange={handleRegionChange} style={{
-          background: '#21262d', border: '1px solid #30363d', borderRadius: 4,
-          color: '#c9d1d9', fontSize: 11, padding: '2px 4px', cursor: 'pointer', outline: 'none'
-        }}>
-          {REGIONS.map(r => (
-            <option key={r.code} value={r.code}>{r.name}</option>
-          ))}
-        </select>
+      <div style={{ fontSize: 11, color: '#8b949e', textTransform: 'uppercase',
+        letterSpacing: 0.8, fontWeight: 600, marginBottom: 6 }}>
+        ⛅ 날씨 · {regionName}
+      </div>
+
+      {/* 즐겨찾기 탭 */}
+      <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 10 }}>
+        {favorites.map(code => {
+          const name = ALL_REGIONS.find(r => r.code === code)?.name || code
+          const active = code === region
+          return (
+            <div key={code} style={{
+              display: 'flex', alignItems: 'center', gap: 3,
+              background: active ? '#1f6feb' : '#21262d',
+              border: `1px solid ${active ? '#388bfd' : '#30363d'}`,
+              borderRadius: 12, padding: '2px 8px 2px 10px',
+              cursor: 'pointer', fontSize: 12,
+              color: active ? '#fff' : '#c9d1d9',
+            }}>
+              <span onClick={() => selectRegion(code)}>{name}</span>
+              {favorites.length > 1 && (
+                <span onClick={() => removeFavorite(code)} style={{
+                  fontSize: 10, color: active ? '#ffffffaa' : '#8b949e',
+                  marginLeft: 2, lineHeight: 1, cursor: 'pointer'
+                }}>×</span>
+              )}
+            </div>
+          )
+        })}
+        <button onClick={() => setShowModal(true)} style={{
+          background: 'none', border: '1px dashed #30363d', borderRadius: 12,
+          color: '#58a6ff', fontSize: 12, padding: '2px 10px', cursor: 'pointer'
+        }}>+ 추가</button>
       </div>
 
       {/* 현재 날씨 */}
@@ -152,6 +276,14 @@ export default function WeatherPanel() {
           <div style={{ fontSize: 12, color: '#8b949e', padding: '8px 0' }}>예보 없음</div>
         )}
       </div>
+
+      {showModal && (
+        <AddRegionModal
+          favorites={favorites}
+          onAdd={addFavorite}
+          onClose={() => setShowModal(false)}
+        />
+      )}
     </div>
   )
 }
