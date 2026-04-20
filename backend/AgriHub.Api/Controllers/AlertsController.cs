@@ -28,27 +28,6 @@ public class AlertsController(AppDbContext db) : ControllerBase
             .OrderByDescending(a => a.ReportedAt)
             .Take(10)
             .ToListAsync();
-
-        if (alerts.Count > 0)
-            return Ok(alerts);
-
-        // Fallback: map recent pest-tagged news to PestAlert shape
-        var news = await db.NewsArticles
-            .Where(n => n.Tag == "pest")
-            .OrderByDescending(n => n.PublishedAt)
-            .Take(10)
-            .ToListAsync();
-
-        var fallback = news.Select(n => new PestAlert
-        {
-            Id = n.Id,
-            Region = n.Source ?? "",
-            ItemName = n.Title,
-            Severity = "",
-            Description = n.Summary ?? "",
-            ReportedAt = n.PublishedAt ?? DateTime.UtcNow,
-        }).ToList();
-
-        return Ok(fallback);
+        return Ok(alerts);
     }
 }
