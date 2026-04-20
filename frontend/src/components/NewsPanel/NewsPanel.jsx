@@ -38,9 +38,9 @@ export default function NewsPanel() {
       <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
         {TABS.map(t => (
           <button key={t.key} onClick={() => setTab(t.key)} style={{
-            background: tab === t.key ? '#238636' : '#21262d',
-            border: '1px solid ' + (tab === t.key ? '#2ea043' : '#30363d'),
-            color: tab === t.key ? '#fff' : '#8b949e',
+            background: tab === t.key ? '#1e9070' : '#2d4255',
+            border: '1px solid ' + (tab === t.key ? '#22a882' : '#354d65'),
+            color: tab === t.key ? '#fff' : '#87b8d4',
             fontSize: 12, padding: '3px 8px', borderRadius: 4, cursor: 'pointer'
           }}>{t.label}</button>
         ))}
@@ -51,21 +51,21 @@ export default function NewsPanel() {
             style={{
               display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
               flexShrink: 0, width: 220,
-              background: '#161b22', border: '1px solid #30363d', borderRadius: 8,
+              background: '#253748', border: '1px solid #354d65', borderRadius: 8,
               padding: '8px 10px', textDecoration: 'none'
             }}>
-            <div style={{ fontSize: 14, color: '#e6edf3', lineHeight: 1.5,
+            <div style={{ fontSize: 14, color: '#eef5fb', lineHeight: 1.5,
               overflow: 'hidden', display: '-webkit-box',
               WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', flex: 1 }}>
               {n.title}
             </div>
-            <div style={{ fontSize: 12, color: '#8b949e', marginTop: 8, flexShrink: 0 }}>
+            <div style={{ fontSize: 12, color: '#87b8d4', marginTop: 8, flexShrink: 0 }}>
               {(() => { try { return new URL(n.source || n.url).hostname.replace('www.', '') } catch { return '' } })()} · {n.publishedAt ? new Date(n.publishedAt).toLocaleDateString('ko') : ''}
             </div>
           </a>
         ))}
         {news.length === 0 && (
-          <div style={{ fontSize: 12, color: '#8b949e', padding: 8 }}>뉴스 없음</div>
+          <div style={{ fontSize: 12, color: '#87b8d4', padding: 8 }}>뉴스 없음</div>
         )}
       </div>
     </div>

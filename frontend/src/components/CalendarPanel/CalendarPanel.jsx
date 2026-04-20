@@ -59,15 +59,15 @@ export default function CalendarPanel({ schedules = [], setSchedules }) {
   return (
     <div style={{ padding: '10px 14px', position: 'relative' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-        <span style={{ fontSize: 14, color: '#c9d1d9', fontWeight: 600 }}>
+        <span style={{ fontSize: 14, color: '#ddeaf5', fontWeight: 600 }}>
           📅 {year}.{String(month + 1).padStart(2, '0')}
         </span>
-        <span style={{ fontSize: 11, color: '#8b949e' }}>날짜 클릭 → 추가</span>
+        <span style={{ fontSize: 11, color: '#87b8d4' }}>날짜 클릭 → 추가</span>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2 }}>
         {['일', '월', '화', '수', '목', '금', '토'].map(d => (
-          <div key={d} style={{ fontSize: 11, color: '#8b949e', textAlign: 'center', padding: '2px 0' }}>{d}</div>
+          <div key={d} style={{ fontSize: 11, color: '#87b8d4', textAlign: 'center', padding: '2px 0' }}>{d}</div>
         ))}
         {cells.map((day, i) => {
           const isToday = day === today
@@ -78,14 +78,14 @@ export default function CalendarPanel({ schedules = [], setSchedules }) {
               style={{
                 fontSize: 13, textAlign: 'center', padding: '3px 1px',
                 borderRadius: 4, cursor: day ? 'pointer' : 'default', minHeight: 30,
-                color: isToday ? '#0d1117' : isSelected ? '#fff' : day ? '#c9d1d9' : 'transparent',
-                background: isToday ? '#3fb950' : isSelected ? '#1f6feb' : 'transparent',
-                border: isSelected && !isToday ? '1px solid #388bfd' : '1px solid transparent',
+                color: isToday ? '#1c2a36' : isSelected ? '#fff' : day ? '#ddeaf5' : 'transparent',
+                background: isToday ? '#56e890' : isSelected ? '#1a7fd4' : 'transparent',
+                border: isSelected && !isToday ? '1px solid #6ab8ff' : '1px solid transparent',
               }}>
               {day || ''}
               {daySchedules && daySchedules.map((s, si) => (
                 <div key={si} style={{
-                  fontSize: 9, color: isToday ? '#0d1117' : '#58a6ff',
+                  fontSize: 9, color: isToday ? '#1c2a36' : '#82cfff',
                   whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                   lineHeight: 1.2, textAlign: 'left', paddingLeft: 1,
                 }}>{s.title}</div>
@@ -96,13 +96,13 @@ export default function CalendarPanel({ schedules = [], setSchedules }) {
       </div>
 
       {selectedDay && (
-        <div style={{ marginTop: 8, background: '#161b22', border: '1px solid #30363d', borderRadius: 6, padding: '8px 10px' }}>
-          <div style={{ fontSize: 12, color: '#8b949e', marginBottom: 6 }}>{dateStr(selectedDay)} 일정</div>
+        <div style={{ marginTop: 8, background: '#253748', border: '1px solid #354d65', borderRadius: 6, padding: '8px 10px' }}>
+          <div style={{ fontSize: 12, color: '#87b8d4', marginBottom: 6 }}>{dateStr(selectedDay)} 일정</div>
           {(schedulesByDay[selectedDay] || []).map(s => (
             <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-              <span style={{ fontSize: 12, color: '#c9d1d9', flex: 1 }}>{s.title}</span>
+              <span style={{ fontSize: 12, color: '#ddeaf5', flex: 1 }}>{s.title}</span>
               <a href={gcalLink(s)} target="_blank" rel="noreferrer"
-                style={{ fontSize: 11, color: '#58a6ff', textDecoration: 'none' }}>GCal</a>
+                style={{ fontSize: 11, color: '#82cfff', textDecoration: 'none' }}>GCal</a>
             </div>
           ))}
           {user ? (
@@ -111,26 +111,26 @@ export default function CalendarPanel({ schedules = [], setSchedules }) {
                 onKeyDown={e => e.key === 'Enter' && handleSave()}
                 placeholder="일정 제목..."
                 style={{
-                  width: '100%', boxSizing: 'border-box', background: '#0d1117',
-                  border: '1px solid #30363d', borderRadius: 4, color: '#e6edf3',
+                  width: '100%', boxSizing: 'border-box', background: '#1c2a36',
+                  border: '1px solid #354d65', borderRadius: 4, color: '#eef5fb',
                   fontSize: 12, padding: '4px 6px', marginBottom: 4, outline: 'none'
                 }} />
               <div style={{ display: 'flex', gap: 4 }}>
                 <button onClick={handleSave} disabled={saving} style={{
-                  flex: 1, background: '#238636', border: 'none', borderRadius: 4,
+                  flex: 1, background: '#1e9070', border: 'none', borderRadius: 4,
                   color: '#fff', fontSize: 12, padding: '4px 0', cursor: 'pointer'
                 }}>추가</button>
                 <button onClick={() => setSelectedDay(null)} style={{
-                  background: '#21262d', border: '1px solid #30363d', borderRadius: 4,
-                  color: '#8b949e', fontSize: 12, padding: '4px 8px', cursor: 'pointer'
+                  background: '#2d4255', border: '1px solid #354d65', borderRadius: 4,
+                  color: '#87b8d4', fontSize: 12, padding: '4px 8px', cursor: 'pointer'
                 }}>닫기</button>
               </div>
             </>
           ) : (
             <div style={{ textAlign: 'center', padding: '6px 0' }}>
-              <div style={{ fontSize: 12, color: '#8b949e', marginBottom: 6 }}>일정 추가는 로그인이 필요합니다</div>
+              <div style={{ fontSize: 12, color: '#87b8d4', marginBottom: 6 }}>일정 추가는 로그인이 필요합니다</div>
               <button onClick={() => navigate('/login')} style={{
-                background: '#238636', border: 'none', borderRadius: 4,
+                background: '#1e9070', border: 'none', borderRadius: 4,
                 color: '#fff', fontSize: 12, padding: '5px 16px', cursor: 'pointer', fontWeight: 600
               }}>로그인하기</button>
             </div>

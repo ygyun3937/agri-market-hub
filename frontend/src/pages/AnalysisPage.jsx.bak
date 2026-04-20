@@ -12,15 +12,15 @@ import client from '../api/client'
 import { MOCK_DAILY, MOCK_TREND } from '../data/analysisMock'
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
-const BG      = '#1c2a36'
-const SURFACE = '#253748'
-const BORDER  = '#354d65'
-const TEXT    = '#ddeaf5'
-const DIM     = '#87b8d4'
-const ACCENT  = '#82cfff'
-const GREEN   = '#56e890'
+const BG      = '#0d1117'
+const SURFACE = '#161b22'
+const BORDER  = '#30363d'
+const TEXT    = '#c9d1d9'
+const DIM     = '#8b949e'
+const ACCENT  = '#58a6ff'
+const GREEN   = '#3fb950'
 const RED     = '#f85149'
-const BLUE    = '#82cfff'
+const BLUE    = '#58a6ff'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function getYesterday() {
@@ -34,14 +34,14 @@ function fmtDate(dateStr) {
 }
 
 function getChangeColor(change) {
-  if (change == null) return '#354d65'
+  if (change == null) return '#30363d'
   if (change >= 5)    return '#b91c1c'
   if (change >= 2)    return '#ef4444'
   if (change >= 0.5)  return '#fca5a5'
-  if (change > -0.5)  return '#4a6278'
-  if (change > -2)    return '#a8d4ff'
-  if (change > -5)    return '#5ba3f5'
-  return '#1a69c4'
+  if (change > -0.5)  return '#4b5563'
+  if (change > -2)    return '#93c5fd'
+  if (change > -5)    return '#3b82f6'
+  return '#1d4ed8'
 }
 
 // ─── KPI Row ──────────────────────────────────────────────────────────────────
@@ -51,7 +51,7 @@ function StatCard({ label, value }) {
       background: SURFACE, border: `1px solid ${BORDER}`,
       borderRadius: 8, padding: '12px 16px', flex: 1, minWidth: 0,
     }}>
-      <div style={{ fontSize: 12, color: DIM, marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 11, color: DIM, marginBottom: 4 }}>{label}</div>
       <div style={{ fontSize: 22, fontWeight: 700, color: TEXT }}>{value}</div>
     </div>
   )
@@ -71,14 +71,14 @@ function KpiRow({ data, selectedDate }) {
 
 // ─── Change Badge ─────────────────────────────────────────────────────────────
 function ChangeBadge({ change }) {
-  if (change == null) return <span style={{ color: DIM, fontSize: 13 }}>-</span>
+  if (change == null) return <span style={{ color: DIM, fontSize: 12 }}>-</span>
   const up = change > 0
   const zero = change === 0
   return (
     <span style={{
-      fontSize: 13, fontWeight: 600,
+      fontSize: 12, fontWeight: 600,
       color: zero ? DIM : up ? RED : BLUE,
-      background: zero ? 'transparent' : up ? '#f8514920' : '#82cfff20',
+      background: zero ? 'transparent' : up ? '#f8514920' : '#58a6ff20',
       padding: '2px 6px', borderRadius: 4,
     }}>
       {up ? '▲' : zero ? '–' : '▼'} {Math.abs(change).toFixed(1)}%
@@ -93,9 +93,9 @@ function MoversCard({ title, items, onSelect }) {
       background: SURFACE, border: `1px solid ${BORDER}`,
       borderRadius: 8, padding: '12px 16px', marginBottom: 12,
     }}>
-      <div style={{ fontSize: 14, fontWeight: 700, color: TEXT, marginBottom: 10 }}>{title}</div>
+      <div style={{ fontSize: 13, fontWeight: 700, color: TEXT, marginBottom: 10 }}>{title}</div>
       {items.length === 0
-        ? <div style={{ fontSize: 13, color: DIM }}>7일 데이터 수집 중...</div>
+        ? <div style={{ fontSize: 12, color: DIM }}>7일 데이터 수집 중...</div>
         : items.map(item => (
           <div
             key={item.itemCode}
@@ -105,10 +105,10 @@ function MoversCard({ title, items, onSelect }) {
               padding: '6px 0', borderBottom: `1px solid ${BORDER}`,
               cursor: 'pointer',
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = '#2d4255' }}
+            onMouseEnter={e => { e.currentTarget.style.background = '#21262d' }}
             onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
           >
-            <span style={{ fontSize: 14, color: TEXT }}>{item.itemName}</span>
+            <span style={{ fontSize: 13, color: TEXT }}>{item.itemName}</span>
             <ChangeBadge change={item.change7d} />
           </div>
         ))
@@ -151,17 +151,17 @@ function PriceRangeBar({ min, avg, max }) {
       <span style={{ fontSize: 10, color: DIM, width: 40, textAlign: 'right' }}>
         {Number(min).toLocaleString()}
       </span>
-      <div style={{ position: 'relative', flex: 1, height: 6, background: '#2d4255', borderRadius: 3 }}>
+      <div style={{ position: 'relative', flex: 1, height: 6, background: '#21262d', borderRadius: 3 }}>
         <div style={{
           position: 'absolute', left: 0, top: 0, height: 6,
-          background: '#22a882', borderRadius: 3, width: `${pct}%`,
+          background: '#2ea043', borderRadius: 3, width: `${pct}%`,
         }} />
         <div style={{
           position: 'absolute', top: '50%',
           transform: 'translateY(-50%) translateX(-50%)',
           left: `${pct}%`, width: 10, height: 10,
           background: GREEN, borderRadius: '50%',
-          border: '2px solid #1c2a36',
+          border: '2px solid #0d1117',
         }} />
       </div>
       <span style={{ fontSize: 10, color: DIM, width: 40 }}>
@@ -175,20 +175,20 @@ function PriceRangeBar({ min, avg, max }) {
 function TableView({ rows, onSelect }) {
   if (rows.length === 0) {
     return (
-      <div style={{ padding: 40, textAlign: 'center', color: DIM, fontSize: 15 }}>
+      <div style={{ padding: 40, textAlign: 'center', color: DIM, fontSize: 14 }}>
         데이터 없음
       </div>
     )
   }
   return (
     <div style={{ overflowX: 'auto' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
         <thead>
           <tr style={{ background: SURFACE, borderBottom: `1px solid ${BORDER}` }}>
             {['품목명', '전국 평균가', '7일 대비', '거래량', '가격 범위(최저~최고)'].map(h => (
               <th key={h} style={{
                 padding: '8px 12px', textAlign: h === '품목명' ? 'left' : 'right',
-                color: DIM, fontWeight: 600, fontSize: 13, whiteSpace: 'nowrap',
+                color: DIM, fontWeight: 600, fontSize: 12, whiteSpace: 'nowrap',
               }}>{h}</th>
             ))}
           </tr>
@@ -198,13 +198,13 @@ function TableView({ rows, onSelect }) {
             <tr
               key={`${row.itemCode}-${i}`}
               onClick={() => onSelect(row)}
-              style={{ borderBottom: `1px solid #2d4255`, cursor: 'pointer' }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#2d4255' }}
+              style={{ borderBottom: `1px solid #21262d`, cursor: 'pointer' }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#21262d' }}
               onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
             >
               <td style={{ padding: '8px 12px' }}>
                 <div style={{ fontWeight: 700, color: TEXT }}>{row.itemName}</div>
-                <div style={{ fontSize: 12, color: DIM }}>{row.category}</div>
+                <div style={{ fontSize: 11, color: DIM }}>{row.category}</div>
               </td>
               <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 700, color: TEXT }}>
                 {Number(row.avgPrice).toLocaleString()}원
@@ -286,7 +286,7 @@ function TreemapView({ data, onSelect }) {
       rect.setAttribute('y', catNode.y0)
       rect.setAttribute('width', catNode.x1 - catNode.x0)
       rect.setAttribute('height', catNode.y1 - catNode.y0)
-      rect.setAttribute('fill', '#243444')
+      rect.setAttribute('fill', '#1f2937')
       rect.setAttribute('rx', '4')
       g.appendChild(rect)
 
@@ -329,7 +329,7 @@ function TreemapView({ data, onSelect }) {
           lt.setAttribute('y', leaf.y0 + h / 2 - (h > 40 ? 8 : 0))
           lt.setAttribute('text-anchor', 'middle')
           lt.setAttribute('dominant-baseline', 'middle')
-          lt.setAttribute('fill', '#eef5fb')
+          lt.setAttribute('fill', '#e6edf3')
           lt.setAttribute('font-size', Math.min(12, w / 6))
           lt.setAttribute('font-weight', '600')
           lt.textContent = leaf.data.name
@@ -352,7 +352,7 @@ function TreemapView({ data, onSelect }) {
               ct.setAttribute('y', leaf.y0 + h / 2 + 23)
               ct.setAttribute('text-anchor', 'middle')
               ct.setAttribute('dominant-baseline', 'middle')
-              ct.setAttribute('fill', '#eef5fb')
+              ct.setAttribute('fill', '#e6edf3')
               ct.setAttribute('font-size', Math.min(9, w / 8))
               const ch = leaf.data.change7d
               ct.textContent = `${ch > 0 ? '▲' : '▼'} ${Math.abs(ch).toFixed(1)}%`
@@ -376,7 +376,7 @@ function TreemapView({ data, onSelect }) {
 
   if (data.length === 0) {
     return (
-      <div style={{ padding: 40, textAlign: 'center', color: DIM, fontSize: 15 }}>
+      <div style={{ padding: 40, textAlign: 'center', color: DIM, fontSize: 14 }}>
         데이터 없음
       </div>
     )
@@ -386,10 +386,10 @@ function TreemapView({ data, onSelect }) {
     { label: '급등 ↑5%+', color: '#b91c1c' },
     { label: '상승',      color: '#ef4444' },
     { label: '소폭상승',  color: '#fca5a5' },
-    { label: '보합',      color: '#4a6278' },
-    { label: '소폭하락',  color: '#a8d4ff' },
-    { label: '하락',      color: '#5ba3f5' },
-    { label: '급락 ↓5%+', color: '#1a69c4' },
+    { label: '보합',      color: '#4b5563' },
+    { label: '소폭하락',  color: '#93c5fd' },
+    { label: '하락',      color: '#3b82f6' },
+    { label: '급락 ↓5%+', color: '#1d4ed8' },
   ]
 
   return (
@@ -399,7 +399,7 @@ function TreemapView({ data, onSelect }) {
       </div>
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', padding: '8px 0', flexShrink: 0 }}>
         {legendItems.map(({ label, color }) => (
-          <span key={label} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: TEXT }}>
+          <span key={label} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: TEXT }}>
             <span style={{ width: 10, height: 10, borderRadius: 2, background: color, display: 'inline-block' }} />
             {label}
           </span>
@@ -443,7 +443,7 @@ function MainSection({ data, viewMode, setViewMode, activeCategory, setActiveCat
               key={mode}
               onClick={() => setViewMode(mode)}
               style={{
-                padding: '4px 14px', border: 'none', cursor: 'pointer', fontSize: 13,
+                padding: '4px 14px', border: 'none', cursor: 'pointer', fontSize: 12,
                 background: viewMode === mode ? ACCENT : 'transparent',
                 color: viewMode === mode ? '#fff' : DIM,
                 fontWeight: viewMode === mode ? 600 : 400,
@@ -462,9 +462,9 @@ function MainSection({ data, viewMode, setViewMode, activeCategory, setActiveCat
               key={cat}
               onClick={() => setActiveCategory(cat)}
               style={{
-                padding: '4px 12px', borderRadius: 16, fontSize: 13,
-                border: `1px solid ${activeCategory === cat ? '#1e9070' : BORDER}`,
-                background: activeCategory === cat ? '#1e9070' : SURFACE,
+                padding: '4px 12px', borderRadius: 16, fontSize: 12,
+                border: `1px solid ${activeCategory === cat ? '#238636' : BORDER}`,
+                background: activeCategory === cat ? '#238636' : SURFACE,
                 color: activeCategory === cat ? '#fff' : DIM,
                 cursor: 'pointer', fontWeight: activeCategory === cat ? 600 : 400,
                 transition: 'all 0.15s',
@@ -494,8 +494,8 @@ function TrendTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null
   return (
     <div style={{
-      background: '#253748', border: `1px solid #354d65`,
-      borderRadius: 6, color: TEXT, fontSize: 13, padding: '8px 12px',
+      background: '#161b22', border: `1px solid #30363d`,
+      borderRadius: 6, color: TEXT, fontSize: 12, padding: '8px 12px',
     }}>
       <div style={{ color: DIM, marginBottom: 4 }}>{label}</div>
       {payload.map(p => (
@@ -525,36 +525,36 @@ function TrendPanel({ item, data, trendLoading, onClose }) {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
         <span style={{ fontSize: 15, fontWeight: 700, color: TEXT }}>{item.itemName}</span>
-        <span style={{ fontSize: 13, color: DIM }}>30일 가격 추이</span>
+        <span style={{ fontSize: 12, color: DIM }}>30일 가격 추이</span>
         <button
           onClick={onClose}
           style={{
             marginLeft: 'auto', background: 'none', border: `1px solid ${BORDER}`,
-            color: DIM, fontSize: 14, width: 24, height: 24,
+            color: DIM, fontSize: 13, width: 24, height: 24,
             borderRadius: 4, cursor: 'pointer', lineHeight: 1,
           }}
         >×</button>
       </div>
 
       {trendLoading ? (
-        <div style={{ padding: 40, textAlign: 'center', color: DIM, fontSize: 14 }}>불러오는 중...</div>
+        <div style={{ padding: 40, textAlign: 'center', color: DIM, fontSize: 13 }}>불러오는 중...</div>
       ) : chartData.length === 0 ? (
-        <div style={{ padding: 40, textAlign: 'center', color: DIM, fontSize: 14 }}>데이터 없음</div>
+        <div style={{ padding: 40, textAlign: 'center', color: DIM, fontSize: 13 }}>데이터 없음</div>
       ) : (
         <div style={{ height: 240 }}>
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={chartData} margin={{ top: 8, right: 40, bottom: 8, left: 16 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#2d4255" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#21262d" />
               <XAxis
                 dataKey="date"
-                tick={{ fill: DIM, fontSize: 12 }}
+                tick={{ fill: DIM, fontSize: 11 }}
                 axisLine={{ stroke: BORDER }}
                 tickLine={false}
               />
               <YAxis
                 yAxisId="price"
                 orientation="left"
-                tick={{ fill: DIM, fontSize: 12 }}
+                tick={{ fill: DIM, fontSize: 11 }}
                 axisLine={{ stroke: BORDER }}
                 tickLine={false}
                 tickFormatter={v => v.toLocaleString()}
@@ -562,7 +562,7 @@ function TrendPanel({ item, data, trendLoading, onClose }) {
               <YAxis
                 yAxisId="vol"
                 orientation="right"
-                tick={{ fill: DIM, fontSize: 12 }}
+                tick={{ fill: DIM, fontSize: 11 }}
                 axisLine={{ stroke: BORDER }}
                 tickLine={false}
                 tickFormatter={v => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}
@@ -572,7 +572,7 @@ function TrendPanel({ item, data, trendLoading, onClose }) {
                 yAxisId="vol"
                 dataKey="volume"
                 name="거래량"
-                fill="#354d65"
+                fill="#30363d"
                 opacity={0.6}
                 radius={[2, 2, 0, 0]}
               />
@@ -607,7 +607,7 @@ function HolidayBanner({ selectedDate, hasData }) {
     <div style={{
       background: '#d2992222', border: '1px solid #d29922',
       borderRadius: 6, padding: '8px 14px', margin: '12px 16px 0',
-      fontSize: 14, color: '#d29922', display: 'flex', alignItems: 'center', gap: 8,
+      fontSize: 13, color: '#d29922', display: 'flex', alignItems: 'center', gap: 8,
     }}>
       ⚠️ {msg} 가장 가까운 거래일을 선택해주세요.
     </div>
@@ -624,7 +624,7 @@ function PageHeader({ selectedDate, setSelectedDate }) {
       <h1 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: TEXT }}>
         전국 농수산물 경매 현황
       </h1>
-      <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, color: DIM }}>
+      <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: DIM }}>
         기준일:
         <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
           <input
@@ -634,10 +634,10 @@ function PageHeader({ selectedDate, setSelectedDate }) {
             onChange={e => setSelectedDate(e.target.value)}
             style={{
               background: BG, border: `1px solid ${BORDER}`, borderRadius: 5,
-              color: TEXT, fontSize: 14, padding: '4px 28px 4px 8px', outline: 'none', cursor: 'pointer',
+              color: TEXT, fontSize: 13, padding: '4px 28px 4px 8px', outline: 'none', cursor: 'pointer',
             }}
           />
-          <span style={{ position: 'absolute', right: 6, pointerEvents: 'none', fontSize: 15 }}>📅</span>
+          <span style={{ position: 'absolute', right: 6, pointerEvents: 'none', fontSize: 14 }}>📅</span>
         </div>
       </label>
     </div>
@@ -693,7 +693,7 @@ export default function AnalysisPage() {
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px 16px' }}>
         {loading ? (
-          <div style={{ padding: 60, textAlign: 'center', color: DIM, fontSize: 15 }}>
+          <div style={{ padding: 60, textAlign: 'center', color: DIM, fontSize: 14 }}>
             불러오는 중...
           </div>
         ) : (

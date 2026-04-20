@@ -51,11 +51,11 @@ function ColHandle({ onDelta }) {
   return (
     <div onMouseDown={onMouseDown} style={{
       width: 4, flexShrink: 0, cursor: 'col-resize', zIndex: 10,
-      background: active ? '#388bfd' : '#21262d',
+      background: active ? '#6ab8ff' : '#2d4255',
       transition: 'background 0.15s',
     }}
-    onMouseEnter={e => e.currentTarget.style.background = '#388bfd'}
-    onMouseLeave={e => { if (!dragging.current) e.currentTarget.style.background = '#21262d' }}
+    onMouseEnter={e => e.currentTarget.style.background = '#6ab8ff'}
+    onMouseLeave={e => { if (!dragging.current) e.currentTarget.style.background = '#2d4255' }}
     />
   )
 }
@@ -88,11 +88,11 @@ function RowHandle({ onDelta }) {
   return (
     <div onMouseDown={onMouseDown} style={{
       height: 4, flexShrink: 0, cursor: 'row-resize', zIndex: 10,
-      background: active ? '#388bfd' : '#21262d',
+      background: active ? '#6ab8ff' : '#2d4255',
       transition: 'background 0.15s',
     }}
-    onMouseEnter={e => e.currentTarget.style.background = '#388bfd'}
-    onMouseLeave={e => { if (!dragging.current) e.currentTarget.style.background = '#21262d' }}
+    onMouseEnter={e => e.currentTarget.style.background = '#6ab8ff'}
+    onMouseLeave={e => { if (!dragging.current) e.currentTarget.style.background = '#2d4255' }}
     />
   )
 }
@@ -146,12 +146,12 @@ export default function Dashboard() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh',
-      background: '#0d1117', color: '#e6edf3', overflow: 'hidden' }}>
+      background: '#1c2a36', color: '#eef5fb', overflow: 'hidden' }}>
       <Header alertCount={unreadCount} hasDisasterAlert={disasterAlerts.length > 0} />
       <AlertBanner alerts={disasterAlerts} />
       <NewsTicker />
 
-      <div style={{ padding: '8px 12px', borderBottom: '1px solid #21262d',
+      <div style={{ padding: '8px 12px', borderBottom: '1px solid #2d4255',
         flexShrink: 0, overflow: 'hidden', height: 115 }}>
         <NewsPanel />
       </div>
@@ -162,9 +162,9 @@ export default function Dashboard() {
         <div style={{ width: layout.col1, flexShrink: 0,
           display: 'flex', flexDirection: 'column', gap: 8,
           padding: 10, overflow: 'auto' }}>
-          <div style={{ fontSize: 11, color: '#8b949e', textTransform: 'uppercase', letterSpacing: 0.8 }}>레이어</div>
+          <div style={{ fontSize: 11, color: '#87b8d4', textTransform: 'uppercase', letterSpacing: 0.8 }}>레이어</div>
           {LAYER_LABELS.map(l => (
-            <label key={l} style={{ fontSize: 14, color: layers[l] ? '#c9d1d9' : '#555',
+            <label key={l} style={{ fontSize: 14, color: layers[l] ? '#ddeaf5' : '#555',
               display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
               <input type="checkbox" checked={layers[l]} onChange={() => toggleLayer(l)} />
               {l}

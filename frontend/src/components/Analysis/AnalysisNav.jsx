@@ -12,15 +12,15 @@ export default function AnalysisNav() {
   const { pathname } = useLocation()
   return (
     <div style={{
-      display: 'flex', gap: 0, borderBottom: '1px solid #30363d',
-      background: '#161b22', padding: '0 16px', flexShrink: 0,
+      display: 'flex', gap: 0, borderBottom: '1px solid #354d65',
+      background: '#253748', padding: '0 16px', flexShrink: 0,
     }}>
       {TABS.map(({ path, label }) => {
         const active = pathname === path
         return (
           <button key={path} onClick={() => navigate(path)} style={{
-            background: 'none', border: 'none', borderBottom: active ? '2px solid #3fb950' : '2px solid transparent',
-            color: active ? '#e6edf3' : '#8b949e', fontSize: 13, fontWeight: active ? 600 : 400,
+            background: 'none', border: 'none', borderBottom: active ? '2px solid #56e890' : '2px solid transparent',
+            color: active ? '#eef5fb' : '#87b8d4', fontSize: 13, fontWeight: active ? 600 : 400,
             padding: '10px 16px', cursor: 'pointer', marginBottom: -1,
           }}>
             {label}

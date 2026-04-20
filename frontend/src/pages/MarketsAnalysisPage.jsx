@@ -22,13 +22,13 @@ L.Icon.Default.mergeOptions({
 })
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
-const BG      = '#0d1117'
-const SURFACE = '#161b22'
-const BORDER  = '#30363d'
-const TEXT    = '#c9d1d9'
-const DIM     = '#8b949e'
-const ACCENT  = '#58a6ff'
-const GREEN   = '#3fb950'
+const BG      = '#1c2a36'
+const SURFACE = '#253748'
+const BORDER  = '#354d65'
+const TEXT    = '#ddeaf5'
+const DIM     = '#87b8d4'
+const ACCENT  = '#82cfff'
+const GREEN   = '#56e890'
 const RED     = '#f85149'
 
 // ─── Resize handles ──────────────────────────────────────────────────────────
@@ -46,10 +46,10 @@ function ColHandle({ onDelta }) {
   }
   return (
     <div onMouseDown={onMouseDown}
-      onMouseEnter={e => e.currentTarget.style.background = '#388bfd'}
-      onMouseLeave={e => { if (!dragging.current) e.currentTarget.style.background = '#21262d' }}
+      onMouseEnter={e => e.currentTarget.style.background = '#6ab8ff'}
+      onMouseLeave={e => { if (!dragging.current) e.currentTarget.style.background = '#2d4255' }}
       style={{ width: 4, flexShrink: 0, cursor: 'col-resize', zIndex: 10,
-        background: active ? '#388bfd' : '#21262d', transition: 'background 0.15s' }} />
+        background: active ? '#6ab8ff' : '#2d4255', transition: 'background 0.15s' }} />
   )
 }
 
@@ -67,10 +67,10 @@ function RowHandle({ onDelta }) {
   }
   return (
     <div onMouseDown={onMouseDown}
-      onMouseEnter={e => e.currentTarget.style.background = '#388bfd'}
-      onMouseLeave={e => { if (!dragging.current) e.currentTarget.style.background = '#21262d' }}
+      onMouseEnter={e => e.currentTarget.style.background = '#6ab8ff'}
+      onMouseLeave={e => { if (!dragging.current) e.currentTarget.style.background = '#2d4255' }}
       style={{ height: 4, flexShrink: 0, cursor: 'row-resize', zIndex: 10,
-        background: active ? '#388bfd' : '#21262d', transition: 'background 0.15s' }} />
+        background: active ? '#6ab8ff' : '#2d4255', transition: 'background 0.15s' }} />
   )
 }
 
@@ -156,12 +156,12 @@ function MarketMap({ marketPrices, selectedMarket, onSelect, mapH }) {
     const ratio = (price - minP) / (maxP - minP + 1)
     if (ratio > 0.66) return '#f85149'
     if (ratio > 0.33) return '#f0a202'
-    return '#3fb950'
+    return '#56e890'
   }
 
   return (
     <div style={{ height: '100%', borderRadius: 8, overflow: 'hidden',
-      border: '1px solid #30363d' }}>
+      border: '1px solid #354d65' }}>
       <MapContainer center={[36.5, 127.8]} zoom={7}
         style={{ height: '100%', width: '100%' }} zoomControl={true}>
         <TileLayer
@@ -250,10 +250,10 @@ function LeftPanel({ products, selectedProduct, onSelect, watchlist, onToggleWat
               style={{
                 display: 'flex', alignItems: 'center', gap: 6,
                 padding: '7px 10px', cursor: 'pointer',
-                background: isActive ? '#21262d' : 'transparent',
-                borderBottom: '1px solid #21262d',
+                background: isActive ? '#2d4255' : 'transparent',
+                borderBottom: '1px solid #2d4255',
               }}
-              onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = '#1c2128' }}
+              onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = '#223040' }}
               onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
             >
               {/* Star */}
@@ -287,7 +287,7 @@ function LeftPanel({ products, selectedProduct, onSelect, watchlist, onToggleWat
 function TrendTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null
   return (
-    <div style={{ background: '#161b22', border: '1px solid #30363d',
+    <div style={{ background: '#253748', border: '1px solid #354d65',
       borderRadius: 6, color: TEXT, fontSize: 12, padding: '8px 12px' }}>
       <div style={{ color: DIM, marginBottom: 4 }}>{label}</div>
       {payload.map(p => (
@@ -347,9 +347,9 @@ function RightPanel({ selectedProduct, selectedDate, marketPrices, trendData, lo
                 return (
                   <tr key={`${row.marketCode}-${i}`}
                     onClick={() => onSelectMarket(row.marketCode)}
-                    style={{ borderBottom: '1px solid #21262d', cursor: 'pointer',
-                      background: isActive ? '#21262d' : 'transparent' }}
-                    onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = '#1c2128' }}
+                    style={{ borderBottom: '1px solid #2d4255', cursor: 'pointer',
+                      background: isActive ? '#2d4255' : 'transparent' }}
+                    onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = '#223040' }}
                     onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
                   >
                     <td style={{ padding: '8px 12px', fontWeight: 700,
@@ -379,7 +379,7 @@ function RightPanel({ selectedProduct, selectedDate, marketPrices, trendData, lo
             <div style={{ height: 180 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={chartData} margin={{ top: 4, right: 40, bottom: 4, left: 8 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#21262d" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#2d4255" />
                   <XAxis dataKey="date" tick={{ fill: DIM, fontSize: 10 }}
                     axisLine={{ stroke: BORDER }} tickLine={false} />
                   <YAxis yAxisId="price" orientation="left"
@@ -390,7 +390,7 @@ function RightPanel({ selectedProduct, selectedDate, marketPrices, trendData, lo
                     tickFormatter={v => v >= 1000 ? `${(v/1000).toFixed(0)}k` : v} />
                   <Tooltip content={<TrendTooltip />} />
                   <Bar yAxisId="vol" dataKey="volume" name="거래량"
-                    fill="#30363d" opacity={0.5} radius={[2,2,0,0]} />
+                    fill="#354d65" opacity={0.5} radius={[2,2,0,0]} />
                   <Line yAxisId="price" type="monotone" dataKey="avgPrice" name="평균가"
                     stroke={ACCENT} strokeWidth={2} dot={false}
                     activeDot={{ r: 4, fill: ACCENT }} />

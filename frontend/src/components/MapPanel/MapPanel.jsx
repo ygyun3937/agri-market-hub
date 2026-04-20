@@ -48,8 +48,8 @@ function makeIcon(color) {
 }
 
 const ICONS = {
-  '도매시장': makeIcon('#58a6ff'),
-  '산지': makeIcon('#3fb950'),
+  '도매시장': makeIcon('#82cfff'),
+  '산지': makeIcon('#56e890'),
   '기상특보': makeIcon('#f85149'),
   '병해충': makeIcon('#d29922'),
 }

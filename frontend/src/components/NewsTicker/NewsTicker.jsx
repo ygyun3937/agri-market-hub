@@ -21,12 +21,12 @@ export default function NewsTicker() {
 
   return (
     <div style={{
-      background: '#0f2318', borderBottom: '1px solid #1e3a28',
-      padding: '5px 16px', fontSize: 14, color: '#7ee8a2',
+      background: '#223347', borderBottom: '1px solid #354d65',
+      padding: '5px 16px', fontSize: 14, color: '#82cfff',
       display: 'flex', alignItems: 'center', gap: 8,
       overflow: 'hidden', flexShrink: 0
     }}>
-      <span style={{ color: '#3fb950', fontWeight: 700, flexShrink: 0 }}>● LIVE</span>
+      <span style={{ color: '#56e890', fontWeight: 700, flexShrink: 0 }}>● LIVE</span>
       <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', flex: 1 }}>
         <span style={{ display: 'inline-block', animation: 'ticker 150s linear infinite' }}>
           {text}

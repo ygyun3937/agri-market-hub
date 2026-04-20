@@ -119,13 +119,13 @@ function loadFavorites() {
 const ICON = { sunny: '☀️', cloudy: '⛅', rainy: '🌧️', snowy: '❄️' }
 
 function RainBar({ prob = 0 }) {
-  const color = prob >= 60 ? '#58a6ff' : prob >= 30 ? '#79c0ff' : '#30363d'
+  const color = prob >= 60 ? '#82cfff' : prob >= 30 ? '#8dd8ff' : '#354d65'
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 4, minWidth: 52 }}>
-      <div style={{ flex: 1, height: 4, borderRadius: 2, background: '#21262d', overflow: 'hidden' }}>
+      <div style={{ flex: 1, height: 4, borderRadius: 2, background: '#2d4255', overflow: 'hidden' }}>
         <div style={{ width: `${prob}%`, height: '100%', background: color, borderRadius: 2, transition: 'width 0.3s' }} />
       </div>
-      <span style={{ fontSize: 10, color: '#8b949e', width: 24, textAlign: 'right' }}>{prob}%</span>
+      <span style={{ fontSize: 10, color: '#87b8d4', width: 24, textAlign: 'right' }}>{prob}%</span>
     </div>
   )
 }
@@ -142,10 +142,10 @@ function AddRegionModal({ favorites, onAdd, onClose }) {
       background: 'rgba(0,0,0,0.5)'
     }} onClick={onClose}>
       <div style={{
-        background: '#161b22', border: '1px solid #30363d', borderRadius: 10,
+        background: '#253748', border: '1px solid #354d65', borderRadius: 10,
         padding: '14px 16px', width: 220, boxShadow: '0 8px 32px #000a'
       }} onClick={e => e.stopPropagation()}>
-        <div style={{ fontSize: 12, color: '#8b949e', marginBottom: 8 }}>지역 추가</div>
+        <div style={{ fontSize: 12, color: '#87b8d4', marginBottom: 8 }}>지역 추가</div>
         <input
           autoFocus
           value={query}
@@ -154,25 +154,25 @@ function AddRegionModal({ favorites, onAdd, onClose }) {
           placeholder="지역명 검색..."
           style={{
             width: '100%', boxSizing: 'border-box',
-            background: '#0d1117', border: '1px solid #30363d', borderRadius: 5,
-            color: '#e6edf3', fontSize: 13, padding: '6px 8px', marginBottom: 8, outline: 'none'
+            background: '#1c2a36', border: '1px solid #354d65', borderRadius: 5,
+            color: '#eef5fb', fontSize: 13, padding: '6px 8px', marginBottom: 8, outline: 'none'
           }}
         />
         <div style={{ maxHeight: 200, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
           {available.map(r => (
             <button key={r.code} onClick={() => onAdd(r.code)} style={{
-              background: '#21262d', border: '1px solid #30363d', borderRadius: 5,
-              color: '#c9d1d9', fontSize: 13, padding: '6px 10px',
+              background: '#2d4255', border: '1px solid #354d65', borderRadius: 5,
+              color: '#ddeaf5', fontSize: 13, padding: '6px 10px',
               textAlign: 'left', cursor: 'pointer'
             }}>{r.name}</button>
           ))}
           {available.length === 0 && (
-            <div style={{ fontSize: 12, color: '#8b949e', padding: 4 }}>추가할 지역 없음</div>
+            <div style={{ fontSize: 12, color: '#87b8d4', padding: 4 }}>추가할 지역 없음</div>
           )}
         </div>
         <button onClick={onClose} style={{
           marginTop: 10, width: '100%', padding: 4, background: 'none',
-          border: '1px solid #30363d', borderRadius: 4, color: '#8b949e',
+          border: '1px solid #354d65', borderRadius: 4, color: '#87b8d4',
           fontSize: 12, cursor: 'pointer'
         }}>닫기 (Esc)</button>
       </div>
@@ -225,7 +225,7 @@ export default function WeatherPanel() {
     <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 0 }}>
 
       {/* 헤더 */}
-      <div style={{ fontSize: 11, color: '#8b949e', textTransform: 'uppercase',
+      <div style={{ fontSize: 11, color: '#87b8d4', textTransform: 'uppercase',
         letterSpacing: 0.8, fontWeight: 600, marginBottom: 6 }}>
         ⛅ 날씨 · {regionName}
       </div>
@@ -238,16 +238,16 @@ export default function WeatherPanel() {
           return (
             <div key={code} style={{
               display: 'flex', alignItems: 'center', gap: 3,
-              background: active ? '#1f6feb' : '#21262d',
-              border: `1px solid ${active ? '#388bfd' : '#30363d'}`,
+              background: active ? '#1a7fd4' : '#2d4255',
+              border: `1px solid ${active ? '#6ab8ff' : '#354d65'}`,
               borderRadius: 12, padding: '2px 8px 2px 10px',
               cursor: 'pointer', fontSize: 12,
-              color: active ? '#fff' : '#c9d1d9',
+              color: active ? '#fff' : '#ddeaf5',
             }}>
               <span onClick={() => selectRegion(code)}>{name}</span>
               {favorites.length > 1 && (
                 <span onClick={() => removeFavorite(code)} style={{
-                  fontSize: 10, color: active ? '#ffffffaa' : '#8b949e',
+                  fontSize: 10, color: active ? '#ffffffaa' : '#87b8d4',
                   marginLeft: 2, lineHeight: 1, cursor: 'pointer'
                 }}>×</span>
               )}
@@ -255,17 +255,17 @@ export default function WeatherPanel() {
           )
         })}
         <button onClick={() => setShowModal(true)} style={{
-          background: 'none', border: '1px dashed #30363d', borderRadius: 12,
-          color: '#58a6ff', fontSize: 12, padding: '2px 10px', cursor: 'pointer'
+          background: 'none', border: '1px dashed #354d65', borderRadius: 12,
+          color: '#82cfff', fontSize: 12, padding: '2px 10px', cursor: 'pointer'
         }}>+ 추가</button>
       </div>
 
       {/* 현재 날씨 */}
       {weather ? (
-        <div style={{ background: '#161b22', border: '1px solid #30363d',
+        <div style={{ background: '#253748', border: '1px solid #354d65',
           borderRadius: 8, padding: '12px 14px', marginBottom: 10 }}>
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, marginBottom: 10 }}>
-            <span style={{ fontSize: 42, fontWeight: 700, color: '#e6edf3', lineHeight: 1 }}>
+            <span style={{ fontSize: 42, fontWeight: 700, color: '#eef5fb', lineHeight: 1 }}>
               {weather.temp ?? '--'}°
             </span>
             <span style={{ fontSize: 28, lineHeight: 1, paddingBottom: 2 }}>
@@ -276,34 +276,34 @@ export default function WeatherPanel() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
               <span style={{ fontSize: 13 }}>💧</span>
               <div>
-                <div style={{ fontSize: 10, color: '#8b949e' }}>습도</div>
-                <div style={{ fontSize: 13, color: '#c9d1d9', fontWeight: 600 }}>{weather.humidity ?? '--'}%</div>
+                <div style={{ fontSize: 10, color: '#87b8d4' }}>습도</div>
+                <div style={{ fontSize: 13, color: '#ddeaf5', fontWeight: 600 }}>{weather.humidity ?? '--'}%</div>
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
               <span style={{ fontSize: 13 }}>💨</span>
               <div>
-                <div style={{ fontSize: 10, color: '#8b949e' }}>바람</div>
-                <div style={{ fontSize: 13, color: '#c9d1d9', fontWeight: 600 }}>{weather.wind ?? '--'}m/s</div>
+                <div style={{ fontSize: 10, color: '#87b8d4' }}>바람</div>
+                <div style={{ fontSize: 13, color: '#ddeaf5', fontWeight: 600 }}>{weather.wind ?? '--'}m/s</div>
               </div>
             </div>
             {weather.rain > 0 && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 5, gridColumn: '1 / -1' }}>
                 <span style={{ fontSize: 13 }}>🌧️</span>
                 <div>
-                  <div style={{ fontSize: 10, color: '#8b949e' }}>강수량</div>
-                  <div style={{ fontSize: 13, color: '#58a6ff', fontWeight: 600 }}>{weather.rain}mm</div>
+                  <div style={{ fontSize: 10, color: '#87b8d4' }}>강수량</div>
+                  <div style={{ fontSize: 13, color: '#82cfff', fontWeight: 600 }}>{weather.rain}mm</div>
                 </div>
               </div>
             )}
           </div>
         </div>
       ) : (
-        <div style={{ fontSize: 12, color: '#8b949e', textAlign: 'center', padding: 20 }}>데이터 없음</div>
+        <div style={{ fontSize: 12, color: '#87b8d4', textAlign: 'center', padding: 20 }}>데이터 없음</div>
       )}
 
       {/* 5일 예보 */}
-      <div style={{ fontSize: 11, color: '#8b949e', textTransform: 'uppercase',
+      <div style={{ fontSize: 11, color: '#87b8d4', textTransform: 'uppercase',
         letterSpacing: 0.8, marginBottom: 6, fontWeight: 600 }}>
         5일 예보
       </div>
@@ -317,18 +317,18 @@ export default function WeatherPanel() {
             <div key={f.date} style={{
               display: 'flex', alignItems: 'center', gap: 6,
               padding: '5px 8px', borderRadius: 6,
-              background: isToday ? '#1f2937' : 'transparent',
-              border: `1px solid ${isToday ? '#374151' : 'transparent'}`,
+              background: isToday ? '#243444' : 'transparent',
+              border: `1px solid ${isToday ? '#3a5063' : 'transparent'}`,
             }}>
               <div style={{ width: 34, flexShrink: 0 }}>
-                <div style={{ fontSize: 11, color: isToday ? '#58a6ff' : '#c9d1d9', fontWeight: isToday ? 700 : 400 }}>{weekday}</div>
-                <div style={{ fontSize: 10, color: '#8b949e' }}>{date}</div>
+                <div style={{ fontSize: 11, color: isToday ? '#82cfff' : '#ddeaf5', fontWeight: isToday ? 700 : 400 }}>{weekday}</div>
+                <div style={{ fontSize: 10, color: '#87b8d4' }}>{date}</div>
               </div>
               <span style={{ fontSize: 16, flexShrink: 0 }}>{ICON[f.icon] || '☀️'}</span>
               <div style={{ display: 'flex', gap: 3, alignItems: 'center', flexShrink: 0 }}>
                 <span style={{ fontSize: 12, color: '#f85149', fontWeight: 600 }}>{f.high ?? '--'}°</span>
-                <span style={{ fontSize: 10, color: '#8b949e' }}>/</span>
-                <span style={{ fontSize: 12, color: '#79c0ff' }}>{f.low ?? '--'}°</span>
+                <span style={{ fontSize: 10, color: '#87b8d4' }}>/</span>
+                <span style={{ fontSize: 12, color: '#8dd8ff' }}>{f.low ?? '--'}°</span>
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <RainBar prob={f.rainProb ?? 0} />
@@ -337,7 +337,7 @@ export default function WeatherPanel() {
           )
         })}
         {forecast.length === 0 && (
-          <div style={{ fontSize: 12, color: '#8b949e', padding: '8px 0' }}>예보 없음</div>
+          <div style={{ fontSize: 12, color: '#87b8d4', padding: '8px 0' }}>예보 없음</div>
         )}
       </div>
 

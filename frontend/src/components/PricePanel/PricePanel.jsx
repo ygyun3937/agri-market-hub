@@ -36,25 +36,25 @@ function PriceRow({ price, onRemove }) {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 6,
-      padding: '4px 7px', background: '#0d1117',
-      border: '1px solid #30363d', borderRadius: 5,
-      borderLeft: `2px solid ${isSeasonal ? '#d2992266' : '#58a6ff66'}`
+      padding: '4px 7px', background: '#1c2a36',
+      border: '1px solid #354d65', borderRadius: 5,
+      borderLeft: `2px solid ${isSeasonal ? '#d2992266' : '#82cfff66'}`
     }}>
       <span style={{ fontSize: 15 }}>{ITEM_ICONS[price.itemCode] || '🌿'}</span>
-      <span style={{ fontSize: 12, color: '#c9d1d9', flex: 1 }}>
+      <span style={{ fontSize: 12, color: '#ddeaf5', flex: 1 }}>
         {price.itemName || ITEM_NAMES[price.itemCode] || price.itemCode}
       </span>
-      <span style={{ fontSize: 14, fontWeight: 700, color: price.price ? '#e6edf3' : '#8b949e' }}>
+      <span style={{ fontSize: 14, fontWeight: 700, color: price.price ? '#eef5fb' : '#87b8d4' }}>
         {price.price ? `₩${price.price.toLocaleString()}` : '가격 없음'}
       </span>
       {price.changePercent != null && (
-        <span style={{ fontSize: 12, fontWeight: 700, color: isUp ? '#f85149' : '#3fb950' }}>
+        <span style={{ fontSize: 12, fontWeight: 700, color: isUp ? '#f85149' : '#56e890' }}>
           {isUp ? '▲' : '▼'}{Math.abs(price.changePercent)}%
         </span>
       )}
       {onRemove && (
         <button onClick={() => onRemove(price.itemCode)} style={{
-          background: 'none', border: 'none', color: '#8b949e',
+          background: 'none', border: 'none', color: '#87b8d4',
           cursor: 'pointer', fontSize: 13, padding: '0 2px', lineHeight: 1
         }}>✕</button>
       )}
@@ -79,10 +79,10 @@ function AddItemModal({ onAdd, onClose, existing }) {
     <div style={{
       position: 'fixed', zIndex: 1000,
       bottom: 240, right: 230,
-      background: '#161b22', border: '1px solid #30363d', borderRadius: 8,
+      background: '#253748', border: '1px solid #354d65', borderRadius: 8,
       padding: '10px 12px', boxShadow: '0 4px 20px #0008', minWidth: 200
     }}>
-      <div style={{ fontSize: 12, color: '#8b949e', marginBottom: 8 }}>품목명 입력</div>
+      <div style={{ fontSize: 12, color: '#87b8d4', marginBottom: 8 }}>품목명 입력</div>
       <input
         autoFocus
         value={query}
@@ -97,15 +97,15 @@ function AddItemModal({ onAdd, onClose, existing }) {
         placeholder="예: 방울토마토, 청양고추..."
         style={{
           width: '100%', boxSizing: 'border-box',
-          background: '#0d1117', border: '1px solid #30363d', borderRadius: 5,
-          color: '#e6edf3', fontSize: 13, padding: '6px 8px', marginBottom: 6, outline: 'none'
+          background: '#1c2a36', border: '1px solid #354d65', borderRadius: 5,
+          color: '#eef5fb', fontSize: 13, padding: '6px 8px', marginBottom: 6, outline: 'none'
         }}
       />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 3, maxHeight: 200, overflowY: 'auto' }}>
         {suggestions.map(it => (
           <button key={it.code} onClick={() => onAdd(it)} style={{
-            background: '#21262d', border: '1px solid #30363d', borderRadius: 5,
-            color: '#c9d1d9', fontSize: 13, padding: '6px 10px',
+            background: '#2d4255', border: '1px solid #354d65', borderRadius: 5,
+            color: '#ddeaf5', fontSize: 13, padding: '6px 10px',
             textAlign: 'left', cursor: 'pointer', display: 'flex', gap: 8, alignItems: 'center'
           }}>
             <span>{it.icon || '🌿'}</span> {it.name}
@@ -113,20 +113,20 @@ function AddItemModal({ onAdd, onClose, existing }) {
         ))}
         {canAddCustom && (
           <button onClick={handleCustomAdd} style={{
-            background: '#0d1117', border: '1px dashed #30363d', borderRadius: 5,
-            color: '#58a6ff', fontSize: 13, padding: '6px 10px',
+            background: '#1c2a36', border: '1px dashed #354d65', borderRadius: 5,
+            color: '#82cfff', fontSize: 13, padding: '6px 10px',
             textAlign: 'left', cursor: 'pointer'
           }}>
             🌿 "{trimmed}" 직접 추가
           </button>
         )}
         {trimmed && suggestions.length === 0 && !canAddCustom && (
-          <div style={{ fontSize: 12, color: '#8b949e', padding: 4 }}>이미 추가된 품목입니다</div>
+          <div style={{ fontSize: 12, color: '#87b8d4', padding: 4 }}>이미 추가된 품목입니다</div>
         )}
       </div>
       <button onClick={onClose} style={{
         marginTop: 8, width: '100%', padding: 4, background: 'none',
-        border: '1px solid #30363d', borderRadius: 4, color: '#8b949e',
+        border: '1px solid #354d65', borderRadius: 4, color: '#87b8d4',
         fontSize: 12, cursor: 'pointer'
       }}>닫기 (Esc)</button>
     </div>
@@ -174,28 +174,28 @@ export default function PricePanel() {
       <div style={{ padding: '6px 12px 4px', fontSize: 12, color: '#d29922',
         textTransform: 'uppercase', letterSpacing: 0.8,
         display: 'flex', justifyContent: 'space-between',
-        borderBottom: '1px solid #21262d' }}>
+        borderBottom: '1px solid #2d4255' }}>
         <span>🌿 4월 제철</span>
-        <span style={{ color: '#8b949e' }}>KAMIS</span>
+        <span style={{ color: '#87b8d4' }}>KAMIS</span>
       </div>
       <div style={{ padding: '4px 10px', display: 'flex', flexDirection: 'column', gap: 3 }}>
         {seasonal.map(p => <PriceRow key={p.itemCode} price={p} />)}
-        {seasonal.length === 0 && <div style={{ fontSize: 13, color: '#8b949e', padding: 8 }}>데이터 없음</div>}
+        {seasonal.length === 0 && <div style={{ fontSize: 13, color: '#87b8d4', padding: 8 }}>데이터 없음</div>}
       </div>
 
-      <div style={{ height: 1, background: '#21262d', margin: '3px 0' }} />
+      <div style={{ height: 1, background: '#2d4255', margin: '3px 0' }} />
 
-      <div style={{ padding: '4px 12px 4px', fontSize: 12, color: '#58a6ff',
+      <div style={{ padding: '4px 12px 4px', fontSize: 12, color: '#82cfff',
         textTransform: 'uppercase', letterSpacing: 0.8,
         display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span>⭐ 내 관심 품목</span>
         <span
           onClick={() => setShowModal(v => !v)}
-          style={{ fontSize: 12, color: '#58a6ff', cursor: 'pointer' }}>+ 추가</span>
+          style={{ fontSize: 12, color: '#82cfff', cursor: 'pointer' }}>+ 추가</span>
       </div>
       <div style={{ padding: '4px 10px', display: 'flex', flexDirection: 'column', gap: 3 }}>
         {watchlist.map(p => <PriceRow key={p.itemCode} price={p} onRemove={handleRemove} />)}
-        {watchlist.length === 0 && <div style={{ fontSize: 13, color: '#8b949e', padding: 8 }}>설정한 품목 없음</div>}
+        {watchlist.length === 0 && <div style={{ fontSize: 13, color: '#87b8d4', padding: 8 }}>설정한 품목 없음</div>}
       </div>
 
       {showModal && (

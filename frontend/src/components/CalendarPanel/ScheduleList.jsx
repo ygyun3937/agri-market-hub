@@ -11,10 +11,10 @@ function gcalLink(s) {
 
 function daysLeft(dateStr) {
   const diff = Math.ceil((new Date(dateStr) - new Date(new Date().toDateString())) / 86400000)
-  if (diff === 0) return { label: '오늘', color: '#3fb950' }
+  if (diff === 0) return { label: '오늘', color: '#56e890' }
   if (diff === 1) return { label: '내일', color: '#d29922' }
-  if (diff > 0) return { label: `D-${diff}`, color: '#58a6ff' }
-  return { label: `D+${Math.abs(diff)}`, color: '#8b949e' }
+  if (diff > 0) return { label: `D-${diff}`, color: '#82cfff' }
+  return { label: `D+${Math.abs(diff)}`, color: '#87b8d4' }
 }
 
 export default function ScheduleList({ schedules = [], setSchedules }) {
@@ -62,8 +62,8 @@ export default function ScheduleList({ schedules = [], setSchedules }) {
       <div style={{
         display: 'flex', alignItems: 'center', gap: 8,
         padding: '7px 10px', marginBottom: 4, borderRadius: 6,
-        background: dim ? 'transparent' : '#161b22',
-        border: `1px solid ${dim ? 'transparent' : '#30363d'}`,
+        background: dim ? 'transparent' : '#253748',
+        border: `1px solid ${dim ? 'transparent' : '#354d65'}`,
         opacity: dim ? 0.45 : 1,
       }}>
         <div style={{
@@ -75,15 +75,15 @@ export default function ScheduleList({ schedules = [], setSchedules }) {
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {s.title}
           </div>
-          <div style={{ fontSize: 12, color: '#adbac7', marginTop: 2 }}>
+          <div style={{ fontSize: 12, color: '#aacde0', marginTop: 2 }}>
             {new Date(s.date).toLocaleDateString('ko', { month: 'long', day: 'numeric', weekday: 'short' })}
           </div>
         </div>
         <a href={gcalLink(s)} target="_blank" rel="noreferrer"
           title="Google Calendar에 추가"
-          style={{ fontSize: 12, color: '#79c0ff', textDecoration: 'none', flexShrink: 0, fontWeight: 500 }}>GCal</a>
+          style={{ fontSize: 12, color: '#8dd8ff', textDecoration: 'none', flexShrink: 0, fontWeight: 500 }}>GCal</a>
         <button onClick={() => handleDelete(s.id)} style={{
-          background: 'none', border: 'none', color: '#6e7681',
+          background: 'none', border: 'none', color: '#6a8fa8',
           cursor: 'pointer', fontSize: 14, padding: '0 2px', flexShrink: 0, lineHeight: 1
         }}>✕</button>
       </div>
@@ -93,7 +93,7 @@ export default function ScheduleList({ schedules = [], setSchedules }) {
   return (
     <div style={{ padding: '10px 12px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-        <div style={{ fontSize: 12, color: '#8b949e', textTransform: 'uppercase',
+        <div style={{ fontSize: 12, color: '#87b8d4', textTransform: 'uppercase',
           letterSpacing: 0.8, fontWeight: 600 }}>
           📋 출하 일정
         </div>
@@ -105,42 +105,42 @@ export default function ScheduleList({ schedules = [], setSchedules }) {
           </button>
         )}
         {user && gcalConnected === true && (
-          <span style={{ fontSize: 10, color: '#3fb950' }}>● GCal 연동됨</span>
+          <span style={{ fontSize: 10, color: '#56e890' }}>● GCal 연동됨</span>
         )}
       </div>
 
       {user ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 10 }}>
           <input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
-            style={{ width: '100%', boxSizing: 'border-box', background: '#0d1117',
-              border: '1px solid #30363d', borderRadius: 4, color: '#c9d1d9',
+            style={{ width: '100%', boxSizing: 'border-box', background: '#1c2a36',
+              border: '1px solid #354d65', borderRadius: 4, color: '#ddeaf5',
               fontSize: 11, padding: '3px 6px', outline: 'none' }} />
           <div style={{ display: 'flex', gap: 4 }}>
             <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
               onKeyDown={e => e.key === 'Enter' && handleAdd()}
               placeholder="일정 제목..."
-              style={{ flex: 1, background: '#0d1117', border: '1px solid #30363d', borderRadius: 4,
-                color: '#e6edf3', fontSize: 11, padding: '3px 6px', outline: 'none', minWidth: 0 }} />
+              style={{ flex: 1, background: '#1c2a36', border: '1px solid #354d65', borderRadius: 4,
+                color: '#eef5fb', fontSize: 11, padding: '3px 6px', outline: 'none', minWidth: 0 }} />
             <button onClick={handleAdd} disabled={saving}
-              style={{ background: '#238636', border: 'none', borderRadius: 4,
+              style={{ background: '#1e9070', border: 'none', borderRadius: 4,
                 color: '#fff', fontSize: 11, padding: '3px 10px', cursor: 'pointer', flexShrink: 0 }}>+</button>
           </div>
         </div>
       ) : (
-        <div style={{ marginBottom: 10, padding: '10px', background: '#161b22',
-          border: '1px solid #30363d', borderRadius: 6, textAlign: 'center' }}>
-          <div style={{ fontSize: 12, color: '#8b949e', marginBottom: 6 }}>
+        <div style={{ marginBottom: 10, padding: '10px', background: '#253748',
+          border: '1px solid #354d65', borderRadius: 6, textAlign: 'center' }}>
+          <div style={{ fontSize: 12, color: '#87b8d4', marginBottom: 6 }}>
             일정 관리 및 Google Calendar 연동은<br />로그인이 필요합니다
           </div>
           <button onClick={() => navigate('/login')} style={{
-            background: '#238636', border: 'none', borderRadius: 4,
+            background: '#1e9070', border: 'none', borderRadius: 4,
             color: '#fff', fontSize: 12, padding: '5px 16px', cursor: 'pointer', fontWeight: 600
           }}>Google로 로그인</button>
         </div>
       )}
 
       {upcoming.length === 0 && past.length === 0 && user && (
-        <div style={{ fontSize: 13, color: '#8b949e', padding: '12px 0', textAlign: 'center' }}>
+        <div style={{ fontSize: 13, color: '#87b8d4', padding: '12px 0', textAlign: 'center' }}>
           등록된 일정이 없습니다
         </div>
       )}
@@ -149,7 +149,7 @@ export default function ScheduleList({ schedules = [], setSchedules }) {
 
       {past.length > 0 && (
         <>
-          <div style={{ fontSize: 11, color: '#8b949e', margin: '10px 0 6px',
+          <div style={{ fontSize: 11, color: '#87b8d4', margin: '10px 0 6px',
             textTransform: 'uppercase', letterSpacing: 0.5 }}>지난 일정</div>
           {past.map(s => <Row key={s.id} s={s} dim={true} />)}
         </>

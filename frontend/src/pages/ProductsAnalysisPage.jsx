@@ -12,15 +12,15 @@ import client from '../api/client'
 import { MOCK_DAILY, MOCK_TREND, MOCK_VARIETY, MOCK_ORIGIN } from '../data/analysisMock'
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
-const BG      = '#0d1117'
-const SURFACE = '#161b22'
-const BORDER  = '#30363d'
-const TEXT    = '#c9d1d9'
-const DIM     = '#8b949e'
-const ACCENT  = '#58a6ff'
-const GREEN   = '#3fb950'
+const BG      = '#1c2a36'
+const SURFACE = '#253748'
+const BORDER  = '#354d65'
+const TEXT    = '#ddeaf5'
+const DIM     = '#87b8d4'
+const ACCENT  = '#82cfff'
+const GREEN   = '#56e890'
 const RED     = '#f85149'
-const BLUE    = '#58a6ff'
+const BLUE    = '#82cfff'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function getYesterday() {
@@ -34,14 +34,14 @@ function fmtDate(dateStr) {
 }
 
 function getChangeColor(change) {
-  if (change == null) return '#30363d'
+  if (change == null) return '#354d65'
   if (change >= 5)   return '#b91c1c'
   if (change >= 2)   return '#ef4444'
   if (change >= 0.5) return '#fca5a5'
-  if (change > -0.5) return '#4b5563'
-  if (change > -2)   return '#93c5fd'
-  if (change > -5)   return '#3b82f6'
-  return '#1d4ed8'
+  if (change > -0.5) return '#4a6278'
+  if (change > -2)   return '#a8d4ff'
+  if (change > -5)   return '#5ba3f5'
+  return '#1a69c4'
 }
 
 // ─── D3 Treemap ───────────────────────────────────────────────────────────────
@@ -97,7 +97,7 @@ function TreemapView({ data, onSelect }) {
       rect.setAttribute('y', catNode.y0)
       rect.setAttribute('width', catNode.x1 - catNode.x0)
       rect.setAttribute('height', catNode.y1 - catNode.y0)
-      rect.setAttribute('fill', '#1f2937')
+      rect.setAttribute('fill', '#243444')
       rect.setAttribute('rx', '4')
       g.appendChild(rect)
 
@@ -139,7 +139,7 @@ function TreemapView({ data, onSelect }) {
           lt.setAttribute('y', leaf.y0 + h / 2 - (h > 40 ? 8 : 0))
           lt.setAttribute('text-anchor', 'middle')
           lt.setAttribute('dominant-baseline', 'middle')
-          lt.setAttribute('fill', '#e6edf3')
+          lt.setAttribute('fill', '#eef5fb')
           lt.setAttribute('font-size', Math.min(12, w / 6))
           lt.setAttribute('font-weight', '600')
           lt.textContent = leaf.data.name
@@ -162,7 +162,7 @@ function TreemapView({ data, onSelect }) {
               ct.setAttribute('y', leaf.y0 + h / 2 + 23)
               ct.setAttribute('text-anchor', 'middle')
               ct.setAttribute('dominant-baseline', 'middle')
-              ct.setAttribute('fill', '#e6edf3')
+              ct.setAttribute('fill', '#eef5fb')
               ct.setAttribute('font-size', Math.min(9, w / 8))
               const ch = leaf.data.change7d
               ct.textContent = `${ch > 0 ? '▲' : '▼'} ${Math.abs(ch).toFixed(1)}%`
@@ -196,10 +196,10 @@ function TreemapView({ data, onSelect }) {
     { label: '급등 ↑5%+', color: '#b91c1c' },
     { label: '상승',      color: '#ef4444' },
     { label: '소폭상승',  color: '#fca5a5' },
-    { label: '보합',      color: '#4b5563' },
-    { label: '소폭하락',  color: '#93c5fd' },
-    { label: '하락',      color: '#3b82f6' },
-    { label: '급락 ↓5%+', color: '#1d4ed8' },
+    { label: '보합',      color: '#4a6278' },
+    { label: '소폭하락',  color: '#a8d4ff' },
+    { label: '하락',      color: '#5ba3f5' },
+    { label: '급락 ↓5%+', color: '#1a69c4' },
   ]
 
   return (
@@ -298,8 +298,8 @@ function ProductTable({ data, onSelect }) {
               <tr
                 key={`${row.itemCode}-${i}`}
                 onClick={() => onSelect(row)}
-                style={{ borderBottom: `1px solid #21262d`, cursor: 'pointer' }}
-                onMouseEnter={e => { e.currentTarget.style.background = '#21262d' }}
+                style={{ borderBottom: `1px solid #2d4255`, cursor: 'pointer' }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#2d4255' }}
                 onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
               >
                 <td style={{ padding: '8px 12px' }}>
@@ -315,7 +315,7 @@ function ProductTable({ data, onSelect }) {
                     : <span style={{
                         fontSize: 12, fontWeight: 600,
                         color: up ? RED : down ? BLUE : DIM,
-                        background: up ? '#f8514920' : down ? '#58a6ff20' : 'transparent',
+                        background: up ? '#f8514920' : down ? '#82cfff20' : 'transparent',
                         padding: '2px 6px', borderRadius: 4,
                       }}>
                         {up ? '▲' : down ? '▼' : '–'} {Math.abs(change).toFixed(1)}%
@@ -348,7 +348,7 @@ function SimpleBarChart({ data }) {
             <span>{d.label}</span>
             <span>{Number(d.volume).toLocaleString()}박스</span>
           </div>
-          <div style={{ height: 6, background: '#21262d', borderRadius: 3, marginTop: 2 }}>
+          <div style={{ height: 6, background: '#2d4255', borderRadius: 3, marginTop: 2 }}>
             <div style={{
               height: 6, borderRadius: 3, background: ACCENT,
               width: max > 0 ? `${(Number(d.volume) / max * 100).toFixed(1)}%` : '0%',
@@ -365,7 +365,7 @@ function TrendTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null
   return (
     <div style={{
-      background: '#161b22', border: `1px solid #30363d`,
+      background: '#253748', border: `1px solid #354d65`,
       borderRadius: 6, color: TEXT, fontSize: 12, padding: '8px 12px',
     }}>
       <div style={{ color: DIM, marginBottom: 4 }}>{label}</div>
@@ -425,7 +425,7 @@ function DetailPanel({ item, trendData, varietyData, originData, detailLoading, 
                 <div style={{ height: 200 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <ComposedChart data={chartData} margin={{ top: 4, right: 24, bottom: 4, left: 8 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#21262d" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#2d4255" />
                       <XAxis
                         dataKey="date"
                         tick={{ fill: DIM, fontSize: 10 }}
@@ -453,7 +453,7 @@ function DetailPanel({ item, trendData, varietyData, originData, detailLoading, 
                         yAxisId="vol"
                         dataKey="volume"
                         name="거래량"
-                        fill="#30363d"
+                        fill="#354d65"
                         opacity={0.5}
                         radius={[2, 2, 0, 0]}
                       />
@@ -669,8 +669,8 @@ export default function ProductsAnalysisPage() {
                     onClick={() => setActiveCategory(cat)}
                     style={{
                       padding: '4px 12px', borderRadius: 16, fontSize: 12,
-                      border: `1px solid ${activeCategory === cat ? '#238636' : BORDER}`,
-                      background: activeCategory === cat ? '#238636' : SURFACE,
+                      border: `1px solid ${activeCategory === cat ? '#1e9070' : BORDER}`,
+                      background: activeCategory === cat ? '#1e9070' : SURFACE,
                       color: activeCategory === cat ? '#fff' : DIM,
                       cursor: 'pointer', fontWeight: activeCategory === cat ? 600 : 400,
                       transition: 'all 0.15s',

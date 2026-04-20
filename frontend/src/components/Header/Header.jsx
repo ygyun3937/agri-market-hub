@@ -14,24 +14,24 @@ export default function Header({ alertCount = 0, hasDisasterAlert = false }) {
 
   return (
     <header style={{
-      background: '#161b22', borderBottom: '1px solid #30363d',
+      background: '#253748', borderBottom: '1px solid #354d65',
       padding: '0 16px', height: 44, display: 'flex',
       alignItems: 'center', gap: 12, flexShrink: 0
     }}>
       <svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
-        <rect width="32" height="32" rx="5" fill="#0d1117"/>
-        <path d="M4 9 L4 4 L9 4" fill="none" stroke="#3fb950" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M23 4 L28 4 L28 9" fill="none" stroke="#3fb950" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M4 23 L4 28 L9 28" fill="none" stroke="#58a6ff" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M23 28 L28 28 L28 23" fill="none" stroke="#58a6ff" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-        <line x1="7" y1="17" x2="25" y2="17" stroke="#21262d" strokeWidth="0.8"/>
-        <line x1="16" y1="17" x2="16" y2="9" stroke="#3fb950" strokeWidth="1.6" strokeLinecap="round"/>
-        <path d="M16 15 C14.2 13.2 10.5 13.8 10 11 C13.2 10.4 16.2 13 16 15Z" fill="#3fb950"/>
-        <path d="M16 12.5 C17.8 10.8 21.5 11.2 22 8.5 C18.8 7.8 15.8 10.5 16 12.5Z" fill="#3fb950" opacity="0.72"/>
+        <rect width="32" height="32" rx="5" fill="#1c2a36"/>
+        <path d="M4 9 L4 4 L9 4" fill="none" stroke="#56e890" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M23 4 L28 4 L28 9" fill="none" stroke="#56e890" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M4 23 L4 28 L9 28" fill="none" stroke="#82cfff" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M23 28 L28 28 L28 23" fill="none" stroke="#82cfff" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+        <line x1="7" y1="17" x2="25" y2="17" stroke="#2d4255" strokeWidth="0.8"/>
+        <line x1="16" y1="17" x2="16" y2="9" stroke="#56e890" strokeWidth="1.6" strokeLinecap="round"/>
+        <path d="M16 15 C14.2 13.2 10.5 13.8 10 11 C13.2 10.4 16.2 13 16 15Z" fill="#56e890"/>
+        <path d="M16 12.5 C17.8 10.8 21.5 11.2 22 8.5 C18.8 7.8 15.8 10.5 16 12.5Z" fill="#56e890" opacity="0.72"/>
         <path d="M7 21.5 Q9.5 19.2 12 21.5 Q14.5 23.8 17 21.5 Q19.5 19.2 22 21.5 Q23.5 22.8 25 21.5"
-              fill="none" stroke="#58a6ff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              fill="none" stroke="#82cfff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
-      <span style={{ fontWeight: 700, fontSize: 15, letterSpacing: 0.3, color: '#e6edf3' }}>
+      <span style={{ fontWeight: 700, fontSize: 15, letterSpacing: 0.3, color: '#eef5fb' }}>
         농수산 통합관제센터
       </span>
       {hasDisasterAlert && (
@@ -45,27 +45,27 @@ export default function Header({ alertCount = 0, hasDisasterAlert = false }) {
       <nav style={{ display: 'flex', gap: 8, marginLeft: 8 }}>
         <button onClick={() => navigate('/')}
           style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14,
-            color: location.pathname === '/' ? '#e6edf3' : '#8b949e' }}>대시보드</button>
+            color: location.pathname === '/' ? '#eef5fb' : '#87b8d4' }}>대시보드</button>
         <button onClick={() => navigate('/analysis')}
           style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14,
-            color: location.pathname === '/analysis' ? '#e6edf3' : '#8b949e' }}>경매분석</button>
+            color: location.pathname === '/analysis' ? '#eef5fb' : '#87b8d4' }}>경매분석</button>
       </nav>
       <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 12 }}>
-        <span style={{ fontSize: 14, color: '#8b949e' }}>
+        <span style={{ fontSize: 14, color: '#87b8d4' }}>
           🔔{alertCount > 0 && <span style={{ color: '#f85149', fontWeight: 700 }}>{alertCount}</span>}
         </span>
         {user ? (
           <>
-            <span style={{ fontSize: 14, color: '#c9d1d9' }}>{user.name}</span>
+            <span style={{ fontSize: 14, color: '#ddeaf5' }}>{user.name}</span>
             <button onClick={handleLogout}
-              style={{ background: 'none', border: '1px solid #30363d', color: '#8b949e',
+              style={{ background: 'none', border: '1px solid #354d65', color: '#87b8d4',
                 fontSize: 13, padding: '3px 10px', borderRadius: 5, cursor: 'pointer' }}>
               로그아웃
             </button>
           </>
         ) : (
           <button onClick={() => navigate('/login')}
-            style={{ background: '#238636', border: 'none', color: '#fff',
+            style={{ background: '#1e9070', border: 'none', color: '#fff',
               fontSize: 13, padding: '3px 12px', borderRadius: 5, cursor: 'pointer', fontWeight: 600 }}>
             로그인
           </button>
