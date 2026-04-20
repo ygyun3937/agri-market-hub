@@ -628,7 +628,7 @@ function PageHeader({ selectedDate, setSelectedDate }) {
           <input
             type="date"
             value={selectedDate}
-            max={getYesterday()}
+            max={getToday()}
             onChange={e => setSelectedDate(e.target.value)}
             style={{
               background: BG, border: `1px solid ${BORDER}`, borderRadius: 5,
