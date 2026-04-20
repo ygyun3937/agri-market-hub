@@ -9,7 +9,7 @@ import Header from '../components/Header/Header'
 import NewsTicker from '../components/NewsTicker/NewsTicker'
 import AnalysisNav from '../components/Analysis/AnalysisNav'
 import client from '../api/client'
-import { MOCK_DAILY, MOCK_TREND, MOCK_VARIETY, MOCK_ORIGIN } from '../data/analysisMock'
+import { MOCK_DAILY, MOCK_TREND } from '../data/analysisMock'
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const BG      = '#1c2a36'
@@ -23,10 +23,8 @@ const RED     = '#f85149'
 const BLUE    = '#82cfff'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-function getYesterday() {
-  const d = new Date()
-  d.setDate(d.getDate() - 1)
-  return d.toISOString().slice(0, 10)
+function getToday() {
+  return new Date().toISOString().slice(0, 10)
 }
 
 function fmtDate(dateStr) {
@@ -528,7 +526,7 @@ function PageToolbar({ selectedDate, setSelectedDate, viewMode, setViewMode }) {
             <input
               type="date"
               value={selectedDate}
-              max={getYesterday()}
+              max={getToday()}
               onChange={e => setSelectedDate(e.target.value)}
               style={{
                 background: BG, border: `1px solid ${BORDER}`, borderRadius: 5,
@@ -562,7 +560,7 @@ function PageToolbar({ selectedDate, setSelectedDate, viewMode, setViewMode }) {
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function ProductsAnalysisPage() {
-  const [selectedDate, setSelectedDate] = useState(getYesterday)
+  const [selectedDate, setSelectedDate] = useState(getToday)
   const [dailyData, setDailyData]       = useState([])
   const [viewMode, setViewMode]         = useState('treemap')
   const [activeCategory, setActiveCategory] = useState('전체')
@@ -600,13 +598,13 @@ export default function ProductsAnalysisPage() {
     ])
       .then(([trend, variety, origin]) => {
         setTrendData(trend.data?.length ? trend.data : MOCK_TREND(selectedItem.itemCode))
-        setVarietyData(variety.data?.length ? variety.data : MOCK_VARIETY)
-        setOriginData(origin.data?.length ? origin.data : MOCK_ORIGIN)
+        setVarietyData(variety.data || [])
+        setOriginData(origin.data || [])
       })
       .catch(() => {
         setTrendData(MOCK_TREND(selectedItem.itemCode))
-        setVarietyData(MOCK_VARIETY)
-        setOriginData(MOCK_ORIGIN)
+        setVarietyData([])
+        setOriginData([])
       })
       .finally(() => setDetailLoading(false))
   }, [selectedItem, selectedDate])
