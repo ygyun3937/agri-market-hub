@@ -23,10 +23,8 @@ const RED     = '#f85149'
 const BLUE    = '#82cfff'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-function getYesterday() {
-  const d = new Date()
-  d.setDate(d.getDate() - 1)
-  return d.toISOString().slice(0, 10)
+function getToday() {
+  return new Date().toISOString().slice(0, 10)
 }
 
 function fmtDate(dateStr) {
@@ -646,7 +644,7 @@ function PageHeader({ selectedDate, setSelectedDate }) {
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function AnalysisPage() {
-  const [selectedDate, setSelectedDate]       = useState(getYesterday)
+  const [selectedDate, setSelectedDate]       = useState(getToday)
   const [dailyData, setDailyData]             = useState([])
   const [trendData, setTrendData]             = useState([])
   const [selectedItem, setSelectedItem]       = useState(null)
