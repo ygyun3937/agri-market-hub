@@ -57,11 +57,6 @@ jobs:
             mkdir -p ${{ secrets.STATIC_PATH }}
           "
 
-      # ── .env 파일 생성 ───────────────────────────────────────
-      - name: Create .env on server
-        run: |
-          echo "${{ secrets.ENV_FILE }}" | ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cat > ${{ secrets.DEPLOY_PATH }}/.env"
-
       # ── SCP: 백엔드 + 크롤러 + compose ────────────────────────
       - name: Upload backend, crawler, compose
         run: |
@@ -75,14 +70,17 @@ jobs:
         run: |
           rsync -az --delete frontend/dist/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.STATIC_PATH }}/
 
-      # ── 서버 재시작 ───────────────────────────────────────────
+      # ── 서버 재시작 (.env는 /tmp에 잠깐 쓰고 즉시 삭제) ──────
       - name: Restart services
         run: |
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
+          echo "${{ secrets.ENV_FILE }}" | ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
+            cat > /tmp/.deploy.env
             cd ${{ secrets.DEPLOY_PATH }}
+            rm -f .env
             chmod +x backend/publish/AgriHub.Api
-            docker compose up -d
-            docker compose restart api crawler
+            docker compose --env-file /tmp/.deploy.env up -d
+            docker compose --env-file /tmp/.deploy.env restart api crawler
+            rm -f /tmp/.deploy.env
           "
 
       # ── DB 마이그레이션 ───────────────────────────────────────
