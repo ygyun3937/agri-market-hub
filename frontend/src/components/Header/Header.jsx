@@ -6,6 +6,7 @@ export default function Header({ alertCount = 0, hasDisasterAlert = false }) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
+  const isMobile = window.innerWidth <= 768
 
   function handleLogout() {
     logout()
@@ -15,8 +16,8 @@ export default function Header({ alertCount = 0, hasDisasterAlert = false }) {
   return (
     <header style={{
       background: '#253748', borderBottom: '1px solid #354d65',
-      padding: '0 16px', height: 44, display: 'flex',
-      alignItems: 'center', gap: 12, flexShrink: 0
+      padding: '0 12px', height: 44, display: 'flex',
+      alignItems: 'center', gap: 8, flexShrink: 0, overflow: 'hidden',
     }}>
       <svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
         <rect width="32" height="32" rx="5" fill="#1c2a36"/>
@@ -31,42 +32,49 @@ export default function Header({ alertCount = 0, hasDisasterAlert = false }) {
         <path d="M7 21.5 Q9.5 19.2 12 21.5 Q14.5 23.8 17 21.5 Q19.5 19.2 22 21.5 Q23.5 22.8 25 21.5"
               fill="none" stroke="#82cfff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
-      <span style={{ fontWeight: 700, fontSize: 15, letterSpacing: 0.3, color: '#eef5fb' }}>
-        농수산 통합관제센터
+
+      <span style={{ fontWeight: 700, fontSize: isMobile ? 13 : 15, letterSpacing: 0.3,
+        color: '#eef5fb', whiteSpace: 'nowrap', flexShrink: 0 }}>
+        {isMobile ? '농수산관제' : '농수산 통합관제센터'}
       </span>
+
       {hasDisasterAlert && (
         <span style={{
-          background: '#da3633', color: '#fff', fontSize: 12,
-          padding: '2px 8px', borderRadius: 4, fontWeight: 600
+          background: '#da3633', color: '#fff', fontSize: 11,
+          padding: '2px 6px', borderRadius: 4, fontWeight: 600, flexShrink: 0, whiteSpace: 'nowrap',
         }}>
-          🚨태풍특보
+          🚨{isMobile ? '특보' : '태풍특보'}
         </span>
       )}
-      <nav style={{ display: 'flex', gap: 8, marginLeft: 8 }}>
-        <button onClick={() => navigate('/')}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14,
-            color: location.pathname === '/' ? '#eef5fb' : '#87b8d4' }}>대시보드</button>
-        <button onClick={() => navigate('/analysis')}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14,
-            color: location.pathname === '/analysis' ? '#eef5fb' : '#87b8d4' }}>경매분석</button>
-      </nav>
-      <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 12 }}>
+
+      {!isMobile && (
+        <nav style={{ display: 'flex', gap: 8, marginLeft: 8, flexShrink: 0 }}>
+          <button onClick={() => navigate('/')}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14,
+              color: location.pathname === '/' ? '#eef5fb' : '#87b8d4', whiteSpace: 'nowrap' }}>대시보드</button>
+          <button onClick={() => navigate('/analysis')}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14,
+              color: location.pathname === '/analysis' ? '#eef5fb' : '#87b8d4', whiteSpace: 'nowrap' }}>경매분석</button>
+        </nav>
+      )}
+
+      <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
         <span style={{ fontSize: 14, color: '#87b8d4' }}>
           🔔{alertCount > 0 && <span style={{ color: '#f85149', fontWeight: 700 }}>{alertCount}</span>}
         </span>
         {user ? (
           <>
-            <span style={{ fontSize: 14, color: '#ddeaf5' }}>{user.name}</span>
+            {!isMobile && <span style={{ fontSize: 14, color: '#ddeaf5', whiteSpace: 'nowrap' }}>{user.name}</span>}
             <button onClick={handleLogout}
               style={{ background: 'none', border: '1px solid #354d65', color: '#87b8d4',
-                fontSize: 13, padding: '3px 10px', borderRadius: 5, cursor: 'pointer' }}>
-              로그아웃
+                fontSize: 12, padding: '3px 8px', borderRadius: 5, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              {isMobile ? '로그아웃' : '로그아웃'}
             </button>
           </>
         ) : (
           <button onClick={() => navigate('/login')}
             style={{ background: '#1e9070', border: 'none', color: '#fff',
-              fontSize: 13, padding: '3px 12px', borderRadius: 5, cursor: 'pointer', fontWeight: 600 }}>
+              fontSize: 13, padding: '3px 12px', borderRadius: 5, cursor: 'pointer', fontWeight: 600, whiteSpace: 'nowrap' }}>
             로그인
           </button>
         )}

@@ -29,13 +29,14 @@ export default function NewsPanel() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: 6 }}>
-      <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+      <div style={{ display: 'flex', gap: 4, flexShrink: 0, overflowX: 'auto', scrollbarWidth: 'none' }}>
         {TABS.map(t => (
           <button key={t.key} onClick={() => setTab(t.key)} style={{
             background: tab === t.key ? '#1e9070' : '#2d4255',
             border: '1px solid ' + (tab === t.key ? '#22a882' : '#354d65'),
             color: tab === t.key ? '#fff' : '#87b8d4',
-            fontSize: 12, padding: '3px 8px', borderRadius: 4, cursor: 'pointer'
+            fontSize: 12, padding: '3px 8px', borderRadius: 4, cursor: 'pointer',
+            whiteSpace: 'nowrap', flexShrink: 0,
           }}>{t.label}</button>
         ))}
       </div>

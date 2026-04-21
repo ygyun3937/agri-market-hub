@@ -57,8 +57,9 @@ function StatCard({ label, value }) {
 
 function KpiRow({ data, selectedDate }) {
   const totalVolume = data.reduce((s, r) => s + Number(r.volume || 0), 0)
+  const isMobile = window.innerWidth <= 768
   return (
-    <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: 12, marginBottom: 12 }}>
       <StatCard label="전국 도매시장" value={`${data.length}개`} />
       <StatCard label="모니터링 품목" value={`${data.length}개`} />
       <StatCard label="총 거래량" value={`${totalVolume.toLocaleString()}박스`} />
@@ -122,8 +123,9 @@ function TopMovers({ data, onSelect }) {
   const fallers = [...withChange].filter(d => d.change7d < 0)
     .sort((a, b) => a.change7d - b.change7d).slice(0, 4)
 
+  const isMobile = window.innerWidth <= 768
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12, marginBottom: 12 }}>
       <MoversCard
         title="🔴 급등 TOP (7일 대비)"
         items={risers}
@@ -613,17 +615,22 @@ function HolidayBanner({ selectedDate, hasData }) {
 }
 
 function PageHeader({ selectedDate, setSelectedDate }) {
+  const isMobile = window.innerWidth <= 768
   return (
     <div style={{
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: '12px 16px', background: SURFACE,
+      display: 'flex', alignItems: isMobile ? 'flex-start' : 'center',
+      flexDirection: isMobile ? 'column' : 'row',
+      justifyContent: 'space-between', gap: isMobile ? 6 : 0,
+      padding: isMobile ? '8px 12px' : '12px 16px', background: SURFACE,
       borderBottom: `1px solid ${BORDER}`, flexShrink: 0,
     }}>
-      <h1 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: TEXT }}>
-        전국 농수산물 경매 현황
-      </h1>
+      {!isMobile && (
+        <h1 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: TEXT }}>
+          전국 농수산물 경매 현황
+        </h1>
+      )}
       <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, color: DIM }}>
-        기준일:
+        {isMobile ? '📅 기준일:' : '기준일:'}
         <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
           <input
             type="date"
