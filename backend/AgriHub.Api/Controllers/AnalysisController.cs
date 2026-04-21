@@ -29,7 +29,8 @@ public record MarketSummaryDto(
     string MarketCode,
     string MarketName,
     decimal AvgPrice,
-    decimal Volume);
+    decimal Volume,
+    string? Unit);
 
 public record BreakdownDto(string Label, decimal AvgPrice, decimal Volume);
 
@@ -125,7 +126,8 @@ public class AnalysisController(AppDbContext db) : ControllerBase
                 SELECT market_code  AS "MarketCode",
                        market_name  AS "MarketName",
                        AVG(price)   AS "AvgPrice",
-                       SUM(volume)  AS "Volume"
+                       SUM(volume)  AS "Volume",
+                       MODE() WITHIN GROUP (ORDER BY unit) AS "Unit"
                 FROM   auction_raw
                 WHERE  item_code = {0}
                   AND  date      = {1}

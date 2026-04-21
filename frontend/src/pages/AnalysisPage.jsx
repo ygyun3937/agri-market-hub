@@ -740,14 +740,6 @@ export default function AnalysisPage() {
             <KpiRow data={dailyData} selectedDate={selectedDate} />
             <TopMovers data={dailyData} onSelect={selectItem} />
             <PriceHeatmap data={dailyData} onSelect={selectItem} />
-            <MainSection
-              data={dailyData}
-              viewMode={viewMode}
-              setViewMode={setViewMode}
-              activeCategory={activeCategory}
-              setActiveCategory={setActiveCategory}
-              onSelect={selectItem}
-            />
             {selectedItem && (
               <TrendPanel
                 item={selectedItem}
@@ -756,6 +748,14 @@ export default function AnalysisPage() {
                 onClose={() => setSelectedItem(null)}
               />
             )}
+            <MainSection
+              data={dailyData}
+              viewMode={viewMode}
+              setViewMode={setViewMode}
+              activeCategory={activeCategory}
+              setActiveCategory={setActiveCategory}
+              onSelect={selectItem}
+            />
           </>
         )}
       </div>

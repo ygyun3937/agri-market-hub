@@ -107,7 +107,16 @@ const MOBILE_TABS = [
 export default function Dashboard() {
   const [disasterAlerts, setDisasterAlerts] = useState([])
   const [notifications, setNotifications] = useState([])
-  const [layers, setLayers] = useState({ '도매시장': true, '기상특보': true, '병해충': true })
+  const [layers, setLayers] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('map_layers') || '{}')
+      return {
+        '도매시장': saved['도매시장'] ?? true,
+        '기상특보': saved['기상특보'] ?? true,
+        '병해충': saved['병해충'] ?? true,
+      }
+    } catch { return { '도매시장': true, '기상특보': true, '병해충': true } }
+  })
   const [schedules, setSchedules] = useState([])
   const [layout, setLayout] = useState(loadLayout)
   const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768)
@@ -150,7 +159,11 @@ export default function Dashboard() {
   )
 
   const toggleLayer = (label) =>
-    setLayers(prev => ({ ...prev, [label]: !prev[label] }))
+    setLayers(prev => {
+      const next = { ...prev, [label]: !prev[label] }
+      localStorage.setItem('map_layers', JSON.stringify(next))
+      return next
+    })
 
   const updateLayout = (key, delta, min = 0) =>
     setLayout(prev => {

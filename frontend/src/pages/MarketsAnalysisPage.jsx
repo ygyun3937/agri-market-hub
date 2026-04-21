@@ -322,52 +322,10 @@ function RightPanel({ selectedProduct, selectedDate, marketPrices, trendData, lo
         <span style={{ fontSize: 13, color: DIM, marginLeft: 12 }}>기준일: {selectedDate}</span>
       </div>
 
-      {/* Market comparison table */}
-      <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 8,
-        overflow: 'hidden', marginBottom: 16 }}>
-        {loadingMarkets ? (
-          <div style={{ padding: 32, textAlign: 'center', color: DIM, fontSize: 13 }}>불러오는 중...</div>
-        ) : marketPrices.length === 0 ? (
-          <div style={{ padding: 32, textAlign: 'center', color: DIM, fontSize: 13 }}>데이터 없음</div>
-        ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-            <thead>
-              <tr style={{ background: SURFACE, borderBottom: `1px solid ${BORDER}` }}>
-                {['시장명', '평균가(원)', '거래량'].map((h, i) => (
-                  <th key={h} style={{ padding: '8px 12px', textAlign: i === 0 ? 'left' : 'right',
-                    color: DIM, fontWeight: 600, fontSize: 12 }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {marketPrices.map((row, i) => {
-                const isActive = selectedMarketCode === row.marketCode
-                return (
-                  <tr key={`${row.marketCode}-${i}`}
-                    onClick={() => onSelectMarket(row.marketCode)}
-                    style={{ borderBottom: '1px solid #2d4255', cursor: 'pointer',
-                      background: isActive ? '#2d4255' : 'transparent' }}
-                    onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = '#223040' }}
-                    onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
-                  >
-                    <td style={{ padding: '8px 12px', fontWeight: 700,
-                      color: isActive ? ACCENT : TEXT }}>{row.marketName}</td>
-                    <td style={{ padding: '8px 12px', textAlign: 'right', color: TEXT }}>
-                      {Number(row.avgPrice).toLocaleString()}</td>
-                    <td style={{ padding: '8px 12px', textAlign: 'right', color: DIM }}>
-                      {Number(row.volume).toLocaleString()}</td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        )}
-      </div>
-
       {/* Trend chart */}
       {chartData.length > 0 && (
         <div style={{ background: SURFACE, border: `1px solid ${BORDER}`,
-          borderRadius: 8, padding: '12px 16px' }}>
+          borderRadius: 8, padding: '12px 16px', marginBottom: 16 }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: TEXT, marginBottom: 10 }}>
             {selectedProduct.itemName} 30일 가격 추이
           </div>
@@ -398,6 +356,50 @@ function RightPanel({ selectedProduct, selectedDate, marketPrices, trendData, lo
           )}
         </div>
       )}
+
+      {/* Market comparison table */}
+      <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 8,
+        overflow: 'hidden' }}>
+        {loadingMarkets ? (
+          <div style={{ padding: 32, textAlign: 'center', color: DIM, fontSize: 13 }}>불러오는 중...</div>
+        ) : marketPrices.length === 0 ? (
+          <div style={{ padding: 32, textAlign: 'center', color: DIM, fontSize: 13 }}>데이터 없음</div>
+        ) : (
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+            <thead>
+              <tr style={{ background: SURFACE, borderBottom: `1px solid ${BORDER}` }}>
+                {['시장명', '평균가', '거래량'].map((h, i) => (
+                  <th key={h} style={{ padding: '8px 12px', textAlign: i === 0 ? 'left' : 'right',
+                    color: DIM, fontWeight: 600, fontSize: 12 }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {marketPrices.map((row, i) => {
+                const isActive = selectedMarketCode === row.marketCode
+                return (
+                  <tr key={`${row.marketCode}-${i}`}
+                    onClick={() => onSelectMarket(row.marketCode)}
+                    style={{ borderBottom: '1px solid #2d4255', cursor: 'pointer',
+                      background: isActive ? '#2d4255' : 'transparent' }}
+                    onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = '#223040' }}
+                    onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
+                  >
+                    <td style={{ padding: '8px 12px', fontWeight: 700,
+                      color: isActive ? ACCENT : TEXT }}>{row.marketName}</td>
+                    <td style={{ padding: '8px 12px', textAlign: 'right', color: TEXT }}>
+                      <div style={{ fontWeight: 600 }}>{Number(row.avgPrice).toLocaleString()}원</div>
+                      {row.unit && <div style={{ fontSize: 10, color: DIM }}>{row.unit}</div>}
+                    </td>
+                    <td style={{ padding: '8px 12px', textAlign: 'right', color: DIM }}>
+                      {Number(row.volume).toLocaleString()}</td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
   )
 }
@@ -445,11 +447,14 @@ function PageToolbar({ selectedDate, setSelectedDate }) {
 // ─── Mock market prices for a product ────────────────────────────────────────
 function mockMarketPrices(itemCode) {
   const base = MOCK_DAILY.find(d => d.itemCode === itemCode)?.avgPrice || 10000
+  const units = { '111': '10kg', '112': '20kg', '211': '20kg', '214': '20kg', '215': '20kg', '311': '10kg', '312': '15kg', '313': '2kg', '314': '10kg', '411': '20kg', '421': '10kg', '511': '100본', '612': '10kg', '711': '10kg', '216': '4kg', '217': '10kg', '315': '10kg', '218': '5kg' }
+  const unit = units[itemCode] || '10kg'
   return MOCK_MARKETS.slice(0, 10).map(m => ({
     marketCode: m.code,
     marketName: m.name,
     avgPrice: Math.round(base * (0.85 + Math.random() * 0.3)),
     volume: Math.round(100 + Math.random() * 900),
+    unit,
   }))
 }
 

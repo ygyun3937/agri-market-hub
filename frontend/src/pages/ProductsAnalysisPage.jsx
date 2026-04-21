@@ -388,10 +388,10 @@ function DetailPanel({ item, trendData, varietyData, originData, detailLoading, 
   return (
     <div style={{
       background: SURFACE, border: `1px solid ${BORDER}`,
-      borderRadius: 8, padding: '12px 16px',
+      borderRadius: 8, padding: '12px 16px', marginTop: 12,
       animation: 'slideIn 0.2s ease-out',
     }}>
-      <style>{`@keyframes slideIn { from { opacity:0; transform:translateX(20px) } to { opacity:1; transform:translateX(0) } }`}</style>
+      <style>{`@keyframes slideIn { from { opacity:0; transform:translateY(16px) } to { opacity:1; transform:translateY(0) } }`}</style>
 
       {/* Panel header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
@@ -616,150 +616,80 @@ export default function ProductsAnalysisPage() {
       <AnalysisNav />
       <HolidayBanner selectedDate={selectedDate} hasData={dailyData.length > 0} />
 
-      <div style={{ flex: 1, overflow: 'hidden', display: 'flex', gap: 12, padding: '12px 16px 16px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px 16px' }}>
         {loading ? (
-          <div style={{ padding: 60, textAlign: 'center', color: DIM, fontSize: 14, flex: 1 }}>
+          <div style={{ padding: 60, textAlign: 'center', color: DIM, fontSize: 14 }}>
             불러오는 중...
           </div>
-        ) : (() => {
-          const isMobile = window.innerWidth <= 768
-          if (isMobile) {
-            // Stacked layout for mobile
-            return (
-              <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {/* Treemap section */}
-                {viewMode === 'treemap' && (
-                  <div style={{
-                    background: SURFACE, border: `1px solid ${BORDER}`,
-                    borderRadius: 8, overflow: 'hidden',
-                    height: 420, display: 'flex', flexDirection: 'column', padding: '8px',
-                  }}>
-                    <TreemapView data={dailyData} onSelect={selectItem} />
-                  </div>
-                )}
-
-                {/* Category tabs + table */}
-                <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 8, overflow: 'hidden' }}>
-                  <div style={{
-                    display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px',
-                    borderBottom: `1px solid ${BORDER}`, flexWrap: 'wrap',
-                  }}>
-                    <div style={{ display: 'flex', border: `1px solid ${BORDER}`, borderRadius: 20, overflow: 'hidden', marginRight: 4 }}>
-                      {['treemap', 'table'].map(mode => (
-                        <button key={mode} onClick={() => setViewMode(mode)} style={{
-                          padding: '4px 14px', border: 'none', cursor: 'pointer', fontSize: 12,
-                          background: viewMode === mode ? ACCENT : 'transparent',
-                          color: viewMode === mode ? '#fff' : DIM,
-                          fontWeight: viewMode === mode ? 600 : 400,
-                          transition: 'all 0.15s',
-                        }}>
-                          {mode === 'treemap' ? '트리맵' : '테이블'}
-                        </button>
-                      ))}
-                    </div>
-                    {categories.map(cat => (
-                      <button
-                        key={cat}
-                        onClick={() => setActiveCategory(cat)}
-                        style={{
-                          padding: '4px 12px', borderRadius: 16, fontSize: 12,
-                          border: `1px solid ${activeCategory === cat ? '#1e9070' : BORDER}`,
-                          background: activeCategory === cat ? '#1e9070' : SURFACE,
-                          color: activeCategory === cat ? '#fff' : DIM,
-                          cursor: 'pointer', fontWeight: activeCategory === cat ? 600 : 400,
-                          transition: 'all 0.15s',
-                        }}
-                      >
-                        {cat}
-                      </button>
-                    ))}
-                  </div>
-                  <ProductTable data={filteredData} onSelect={selectItem} />
-                </div>
-
-                {/* Detail panel */}
-                {selectedItem && (
-                  <DetailPanel
-                    item={selectedItem}
-                    trendData={trendData}
-                    varietyData={varietyData}
-                    originData={originData}
-                    detailLoading={detailLoading}
-                    onClose={() => setSelectedItem(null)}
-                  />
-                )}
+        ) : (
+          <>
+            {/* Treemap (only when viewMode === 'treemap') */}
+            {viewMode === 'treemap' && (
+              <div style={{
+                background: SURFACE, border: `1px solid ${BORDER}`,
+                borderRadius: 8, overflow: 'hidden', marginBottom: 12,
+                height: 374, display: 'flex', flexDirection: 'column', padding: '8px',
+              }}>
+                <TreemapView data={dailyData} onSelect={selectItem} />
               </div>
-            )
-          }
+            )}
 
-          // Side-by-side layout for desktop
-          return (
-            <>
-              {/* LEFT: table panel (scrollable) */}
-              <div style={{ flex: selectedItem ? '0 0 52%' : '1', minWidth: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 12, transition: 'flex 0.2s' }}>
-                {/* Treemap (only when viewMode === 'treemap') */}
-                {viewMode === 'treemap' && (
-                  <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 8, overflow: 'hidden', height: 340, display: 'flex', flexDirection: 'column', padding: '8px' }}>
-                    <TreemapView data={dailyData} onSelect={selectItem} />
-                  </div>
-                )}
-                {/* Category tabs + table */}
-                <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 8, overflow: 'hidden' }}>
-                  {/* View toggle + Category tabs */}
-                  <div style={{
-                    display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px',
-                    borderBottom: `1px solid ${BORDER}`, flexWrap: 'wrap',
-                  }}>
-                    <div style={{ display: 'flex', border: `1px solid ${BORDER}`, borderRadius: 20, overflow: 'hidden', marginRight: 4 }}>
-                      {['treemap', 'table'].map(mode => (
-                        <button key={mode} onClick={() => setViewMode(mode)} style={{
-                          padding: '4px 14px', border: 'none', cursor: 'pointer', fontSize: 12,
-                          background: viewMode === mode ? ACCENT : 'transparent',
-                          color: viewMode === mode ? '#fff' : DIM,
-                          fontWeight: viewMode === mode ? 600 : 400,
-                          transition: 'all 0.15s',
-                        }}>
-                          {mode === 'treemap' ? '트리맵' : '테이블'}
-                        </button>
-                      ))}
-                    </div>
-                    {categories.map(cat => (
-                      <button
-                        key={cat}
-                        onClick={() => setActiveCategory(cat)}
-                        style={{
-                          padding: '4px 12px', borderRadius: 16, fontSize: 12,
-                          border: `1px solid ${activeCategory === cat ? '#1e9070' : BORDER}`,
-                          background: activeCategory === cat ? '#1e9070' : SURFACE,
-                          color: activeCategory === cat ? '#fff' : DIM,
-                          cursor: 'pointer', fontWeight: activeCategory === cat ? 600 : 400,
-                          transition: 'all 0.15s',
-                        }}
-                      >
-                        {cat}
-                      </button>
-                    ))}
-                  </div>
-                  <ProductTable data={filteredData} onSelect={selectItem} />
+            {/* Detail panel — between treemap and table */}
+            {selectedItem && (
+              <DetailPanel
+                item={selectedItem}
+                trendData={trendData}
+                varietyData={varietyData}
+                originData={originData}
+                detailLoading={detailLoading}
+                onClose={() => setSelectedItem(null)}
+              />
+            )}
+
+            {/* Category tabs + table */}
+            <div style={{
+              background: SURFACE, border: `1px solid ${BORDER}`,
+              borderRadius: 8, overflow: 'hidden', marginBottom: 0,
+            }}>
+              {/* View toggle + Category tabs */}
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px',
+                borderBottom: `1px solid ${BORDER}`, flexWrap: 'wrap',
+              }}>
+                <div style={{ display: 'flex', border: `1px solid ${BORDER}`, borderRadius: 20, overflow: 'hidden', marginRight: 4 }}>
+                  {['treemap', 'table'].map(mode => (
+                    <button key={mode} onClick={() => setViewMode(mode)} style={{
+                      padding: '4px 14px', border: 'none', cursor: 'pointer', fontSize: 12,
+                      background: viewMode === mode ? ACCENT : 'transparent',
+                      color: viewMode === mode ? '#fff' : DIM,
+                      fontWeight: viewMode === mode ? 600 : 400,
+                      transition: 'all 0.15s',
+                    }}>
+                      {mode === 'treemap' ? '트리맵' : '테이블'}
+                    </button>
+                  ))}
                 </div>
+                {categories.map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => setActiveCategory(cat)}
+                    style={{
+                      padding: '4px 12px', borderRadius: 16, fontSize: 12,
+                      border: `1px solid ${activeCategory === cat ? '#1e9070' : BORDER}`,
+                      background: activeCategory === cat ? '#1e9070' : SURFACE,
+                      color: activeCategory === cat ? '#fff' : DIM,
+                      cursor: 'pointer', fontWeight: activeCategory === cat ? 600 : 400,
+                      transition: 'all 0.15s',
+                    }}
+                  >
+                    {cat}
+                  </button>
+                ))}
               </div>
-
-              {/* RIGHT: detail panel (only when item selected) */}
-              {selectedItem && (
-                <div style={{ flex: '0 0 46%', minWidth: 0, overflowY: 'auto' }}>
-                  <DetailPanel
-                    item={selectedItem}
-                    trendData={trendData}
-                    varietyData={varietyData}
-                    originData={originData}
-                    detailLoading={detailLoading}
-                    onClose={() => setSelectedItem(null)}
-                  />
-                </div>
-              )}
-            </>
-          )
-        })()}
+              <ProductTable data={filteredData} onSelect={selectItem} />
+            </div>
+          </>
+        )}
       </div>
     </div>
   )
