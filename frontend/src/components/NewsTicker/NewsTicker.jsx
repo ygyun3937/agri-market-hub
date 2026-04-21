@@ -28,11 +28,11 @@ export default function NewsTicker() {
     }}>
       <span style={{ color: '#56e890', fontWeight: 700, flexShrink: 0 }}>● LIVE</span>
       <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', flex: 1 }}>
-        <span style={{ display: 'inline-block', animation: 'ticker 150s linear infinite' }}>
+        <span style={{ display: 'inline-block', animation: 'ticker 60s linear infinite' }}>
           {text}
         </span>
       </div>
-      <style>{`@keyframes ticker { 0% { transform: translateX(100%) } 100% { transform: translateX(-100%) } }`}</style>
+      <style>{`@keyframes ticker { 0% { transform: translateX(0) } 100% { transform: translateX(-100%) } }`}</style>
     </div>
   )
 }
