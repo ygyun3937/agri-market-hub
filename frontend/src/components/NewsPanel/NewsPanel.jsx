@@ -24,9 +24,11 @@ export default function NewsPanel() {
           client.get('/news?tab=pest'),
         ])
           .then(results => {
-            setNews(results.flatMap(r => r.data)
-              .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
-              .slice(0, 6))
+            // Take top 2 from each tab to ensure diversity, then sort
+            const picked = results.flatMap(r =>
+              [...(r.data || [])].sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt)).slice(0, 2)
+            )
+            setNews(picked.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt)))
           }).catch(() => {})
       } else {
         client.get(`/news?tab=${tab}`).then(r => setNews(r.data)).catch(() => {})
