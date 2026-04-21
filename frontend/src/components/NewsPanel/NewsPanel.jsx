@@ -7,7 +7,6 @@ const TABS = [
   { key: 'crop', label: '작황·가격' },
   { key: 'logistics', label: '물류·운송' },
   { key: 'policy', label: '정책' },
-  { key: 'pest', label: '병해충' },
 ]
 
 export default function NewsPanel() {
@@ -21,7 +20,6 @@ export default function NewsPanel() {
           client.get('/news?tab=crop'),
           client.get('/news?tab=logistics'),
           client.get('/news?tab=policy'),
-          client.get('/news?tab=pest'),
         ])
           .then(results => {
             // Take top 2 from each tab to ensure diversity, then sort
