@@ -98,7 +98,7 @@ export default function ScheduleList({ schedules = [], refreshSchedules, setSche
           📋 출하 일정
         </div>
         {user && gcalConnected === false && (
-          <button onClick={() => { window.location.href = '/api/auth/google/redirect' }}
+          <button onClick={() => { window.location.href = `/api/auth/google/calendar-connect?token=${localStorage.getItem('token')}` }}
             style={{ fontSize: 10, color: '#f85149', background: 'none', border: '1px solid #f8514933',
               borderRadius: 4, padding: '2px 6px', cursor: 'pointer' }}>
             캘린더 재연동 필요

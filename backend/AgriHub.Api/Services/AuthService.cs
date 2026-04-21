@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using AgriHub.Api.Data;
 using AgriHub.Api.Models;
-
 namespace AgriHub.Api.Services;
 
 public class AuthService(AppDbContext db, IConfiguration config)
@@ -54,6 +53,28 @@ public class AuthService(AppDbContext db, IConfiguration config)
         }
         await db.SaveChangesAsync();
         return user;
+    }
+
+    public int? GetUserIdFromToken(string? token)
+    {
+        if (string.IsNullOrEmpty(token)) return null;
+        try
+        {
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Secret"]!));
+            var handler = new JwtSecurityTokenHandler();
+            handler.ValidateToken(token, new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = key,
+                ValidateIssuer = true, ValidIssuer = config["Jwt:Issuer"],
+                ValidateAudience = true, ValidAudience = config["Jwt:Audience"],
+                ValidateLifetime = true,
+            }, out var validated);
+            var jwt = (JwtSecurityToken)validated;
+            var idClaim = jwt.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            return idClaim != null && int.TryParse(idClaim.Value, out var id) ? id : null;
+        }
+        catch { return null; }
     }
 
     public string GenerateToken(User user)
