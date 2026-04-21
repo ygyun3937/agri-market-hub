@@ -1,11 +1,31 @@
 # crawler/crawlers/weather.py
 import os
 import requests
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import db
 
 API_KEY = os.getenv("WEATHER_KEY", "")
 BASE_URL = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0"
+MID_URL = "http://apis.data.go.kr/1360000/MidFcstInfoService"
+
+MID_LAND_CODES = {
+    '11B10': '11B00000', '11B20': '11B00000', '11B21': '11B00000', '11B22': '11B00000',
+    '11C10': '11C10000', '11C20': '11C20000',
+    '11D10': '11D10000', '11D20': '11D20000',
+    '11F10': '11F10000', '11F20': '11F20000',
+    '11G00': '11G00000',
+    '11H10': '11H10000', '11H11': '11H10000',
+    '11H20': '11H20000', '11H21': '11H20000',
+}
+
+def _get_mid_base_time():
+    now = datetime.now()
+    if now.hour >= 18:
+        return now.strftime("%Y%m%d") + "1800"
+    elif now.hour >= 6:
+        return now.strftime("%Y%m%d") + "0600"
+    else:
+        return (now - timedelta(days=1)).strftime("%Y%m%d") + "1800"
 
 REGIONS = [
     # 서울·인천·경기
@@ -153,9 +173,25 @@ def run_weather():
         )
 
 
+def _mid_wf_to_icon(wf):
+    if not wf:
+        return "sunny"
+    if "비" in wf or "소나기" in wf:
+        return "rainy"
+    if "눈" in wf:
+        return "snowy"
+    if "구름" in wf:
+        return "cloudy"
+    return "sunny"
+
+
 def run_forecast():
     base_date, base_time = _get_base_time()
+    tmfc = _get_mid_base_time()
+    today = date.today()
+
     for region in REGIONS:
+        # ── 단기예보 (오늘~D+2) ──────────────────────────────────────────
         params = {
             "serviceKey": API_KEY,
             "pageNo": 1,
@@ -166,17 +202,21 @@ def run_forecast():
             "nx": region["nx"],
             "ny": region["ny"],
         }
-        resp = requests.get(f"{BASE_URL}/getVilageFcst", params=params, timeout=10)
-        resp.raise_for_status()
-        items = resp.json()["response"]["body"]["items"]["item"]
+        try:
+            resp = requests.get(f"{BASE_URL}/getVilageFcst", params=params, timeout=10)
+            resp.raise_for_status()
+            items = resp.json()["response"]["body"]["items"]["item"]
+        except Exception:
+            items = []
 
-        # Group by fcstDate
         by_date: dict = {}
         for item in items:
             d = item["fcstDate"]
             by_date.setdefault(d, {})[item["category"]] = item["fcstValue"]
 
-        for date_str, cats in list(by_date.items())[:5]:
+        short_dates = set()
+        for date_str, cats in list(by_date.items())[:3]:
+            short_dates.add(date_str)
             forecast_date = f"{date_str[:4]}-{date_str[4:6]}-{date_str[6:]}"
             sky = cats.get("SKY", "1")
             icon = {"1": "sunny", "3": "cloudy", "4": "rainy"}.get(sky, "sunny")
@@ -187,6 +227,54 @@ def run_forecast():
                 high=float(cats.get("TMX", 0)),
                 low=float(cats.get("TMN", 0)),
                 rain_prob=int(float(cats.get("POP", 0))),
+            )
+
+        # ── 중기예보 (D+3, D+4) ──────────────────────────────────────────
+        land_code = MID_LAND_CODES.get(region["code"][:5])
+        if not land_code:
+            continue
+        try:
+            land_resp = requests.get(f"{MID_URL}/getMidLandFcst",
+                params={"serviceKey": API_KEY, "numOfRows": 1, "dataType": "JSON",
+                        "regId": land_code, "tmFc": tmfc}, timeout=10)
+            land_resp.raise_for_status()
+            land_item = land_resp.json()["response"]["body"]["items"]["item"]
+            if isinstance(land_item, list):
+                land_item = land_item[0]
+
+            ta_resp = requests.get(f"{MID_URL}/getMidTa",
+                params={"serviceKey": API_KEY, "numOfRows": 1, "dataType": "JSON",
+                        "regId": region["code"], "tmFc": tmfc}, timeout=10)
+            ta_resp.raise_for_status()
+            ta_item = ta_resp.json()["response"]["body"]["items"]["item"]
+            if isinstance(ta_item, list):
+                ta_item = ta_item[0]
+        except Exception:
+            continue
+
+        base_dt = datetime.strptime(tmfc, "%Y%m%d%H%M")
+        for offset in range(3, 7):
+            target = today + timedelta(days=offset)
+            target_str = target.strftime("%Y%m%d")
+            if target_str in short_dates:
+                continue
+            day_num = (target - base_dt.date()).days
+            if day_num < 3 or day_num > 10:
+                continue
+            wf = land_item.get(f"wf{day_num}Pm") or land_item.get(f"wf{day_num}Am", "")
+            rnst = max(
+                int(land_item.get(f"rnSt{day_num}Pm", 0) or 0),
+                int(land_item.get(f"rnSt{day_num}Am", 0) or 0),
+            )
+            ta_min = float(ta_item.get(f"taMin{day_num}", 0) or 0)
+            ta_max = float(ta_item.get(f"taMax{day_num}", 0) or 0)
+            db.upsert_forecast(
+                region_code=region["code"],
+                forecast_date=target.strftime("%Y-%m-%d"),
+                icon=_mid_wf_to_icon(wf),
+                high=ta_max,
+                low=ta_min,
+                rain_prob=rnst,
             )
 
 
