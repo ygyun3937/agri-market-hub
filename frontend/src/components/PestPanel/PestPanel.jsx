@@ -82,6 +82,7 @@ export default function PestPanel() {
   const month = new Date().getMonth() + 1
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true)
     client.get('/alerts/pest')
       .then(r => {
