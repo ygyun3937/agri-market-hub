@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>모바일 레이아웃 예제</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0e1a24; display: flex; gap: 32px; padding: 24px; font-family: -apple-system, sans-serif; justify-content: center; flex-wrap: wrap; }
+
+  .phone { width: 390px; height: 844px; background: #1c2a36; border-radius: 40px; overflow: hidden; display: flex; flex-direction: column; border: 8px solid #2d4255; position: relative; flex-shrink: 0; }
+  .label { color: #87b8d4; font-size: 13px; text-align: center; margin-bottom: 8px; }
+
+  /* Header */
+  .header { background: #162330; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; border-bottom: 1px solid #2d4255; }
+  .logo { color: #56e890; font-weight: 700; font-size: 14px; }
+  .header-right { display: flex; gap: 8px; align-items: center; }
+  .bell { color: #82cfff; font-size: 18px; }
+  .avatar { width: 26px; height: 26px; border-radius: 50%; background: #1e9070; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 11px; font-weight: 700; }
+
+  /* Ticker */
+  .ticker { background: #182d1e; border-bottom: 1px solid #1e5c37; padding: 5px 12px; font-size: 12px; color: #82cfff; display: flex; gap: 6px; flex-shrink: 0; overflow: hidden; }
+  .live { color: #56e890; font-weight: 700; flex-shrink: 0; }
+
+  /* News strip */
+  .news-strip { background: #1c2a36; border-bottom: 1px solid #2d4255; padding: 8px 12px; flex-shrink: 0; }
+  .news-tabs { display: flex; gap: 4px; margin-bottom: 8px; }
+  .ntab { padding: 3px 8px; border-radius: 4px; font-size: 11px; border: 1px solid #354d65; color: #87b8d4; background: #2d4255; }
+  .ntab.active { background: #1e9070; border-color: #22a882; color: #fff; }
+  .news-cards { display: flex; gap: 8px; overflow-x: auto; }
+  .news-card { flex-shrink: 0; width: 160px; background: #253748; border: 1px solid #354d65; border-radius: 6px; padding: 8px; }
+  .news-title { font-size: 12px; color: #eef5fb; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .news-src { font-size: 10px; color: #87b8d4; margin-top: 6px; }
+
+  /* Main content */
+  .main { flex: 1; overflow: hidden; position: relative; }
+
+  /* Map panel */
+  .map-panel { width: 100%; height: 100%; background: #162330; display: flex; align-items: center; justify-content: center; position: relative; }
+  .map-bg { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 50%, #1a3040 0%, #0e1a24 100%); }
+  .map-label { color: #354d65; font-size: 13px; position: relative; z-index: 1; }
+  .heatmap-dot { position: absolute; border-radius: 50%; filter: blur(20px); }
+
+  /* Weather panel */
+  .weather-panel { padding: 16px; overflow-y: auto; height: 100%; }
+  .temp-big { font-size: 56px; font-weight: 700; color: #eef5fb; line-height: 1; }
+  .weather-info { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+  .winfo { background: #253748; border: 1px solid #354d65; border-radius: 8px; padding: 10px; }
+  .wlabel { font-size: 11px; color: #87b8d4; }
+  .wval { font-size: 15px; font-weight: 600; color: #ddeaf5; margin-top: 3px; }
+  .forecast-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid #2d4255; }
+  .fday { font-size: 12px; color: #87b8d4; width: 30px; }
+  .ftemp { font-size: 13px; }
+
+  /* Schedule panel */
+  .sched-panel { padding: 14px; overflow-y: auto; height: 100%; }
+  .sched-item { background: #253748; border: 1px solid #354d65; border-radius: 6px; padding: 10px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+  .dday { font-size: 12px; font-weight: 700; color: #82cfff; width: 36px; text-align: center; }
+  .sched-title { font-size: 13px; color: #eef5fb; font-weight: 600; }
+  .sched-date { font-size: 11px; color: #87b8d4; }
+
+  /* Price panel */
+  .price-panel { padding: 14px; overflow-y: auto; height: 100%; }
+  .price-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #2d4255; }
+  .pname { font-size: 13px; color: #ddeaf5; }
+  .pprice { font-size: 14px; font-weight: 700; color: #eef5fb; }
+  .pchange-up { font-size: 11px; color: #f85149; }
+  .pchange-dn { font-size: 11px; color: #82cfff; }
+
+  /* Bottom nav */
+  .bottom-nav { background: #162330; border-top: 1px solid #2d4255; display: flex; flex-shrink: 0; }
+  .bnav { flex: 1; padding: 10px 0; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; border: none; background: none; }
+  .bnav.active { background: #1a2e3a; }
+  .bnav-icon { font-size: 20px; }
+  .bnav-label { font-size: 10px; color: #87b8d4; }
+  .bnav.active .bnav-label { color: #82cfff; }
+
+  /* Section title */
+  .section-title { font-size: 11px; color: #87b8d4; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; margin-bottom: 10px; }
+
+  /* Forecast section */
+  .forecast-section { margin-top: 16px; }
+</style>
+</head>
+<body>
+
+<!-- 현재 상태 -->
+<div>
+  <div class="label">❌ 현재 (데스크톱 레이아웃 그대로)</div>
+  <div class="phone" style="overflow-x: auto;">
+    <div style="width: 1200px; height: 100%; background: #253748; display: flex; align-items: center; justify-content: center; padding: 20px;">
+      <div style="text-align: center; color: #87b8d4;">
+        <div style="font-size: 32px; margin-bottom: 12px;">😵</div>
+        <div style="font-size: 14px;">4컬럼 레이아웃이 390px 화면에서<br>가로로 짤리거나 매우 작게 보임</div>
+        <div style="font-size: 11px; margin-top: 8px; color: #354d65;">지도, 날씨, 가격, 일정 동시에 표시 불가</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 제안: 지도 탭 -->
+<div>
+  <div class="label">✅ 제안 — 지도 탭 (기본)</div>
+  <div class="phone">
+    <div class="header">
+      <div class="logo">🌾 농수산 관제</div>
+      <div class="header-right">
+        <span class="bell">🔔</span>
+        <div class="avatar">Y</div>
+      </div>
+    </div>
+    <div class="ticker">
+      <span class="live">● LIVE</span>
+      <span style="overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">배추 가격 전주 대비 5% 상승 · 경기도 병해충 주의보 발령 · 농식품부 지원금 신청</span>
+    </div>
+    <div class="news-strip">
+      <div class="news-tabs">
+        <div class="ntab active">🔥 헤드라인</div>
+        <div class="ntab">작황·가격</div>
+        <div class="ntab">물류</div>
+        <div class="ntab">정책</div>
+        <div class="ntab">병해충</div>
+      </div>
+      <div class="news-cards">
+        <div class="news-card">
+          <div class="news-title">봄배추 출하량 증가로 가락시장 경매가 하락세</div>
+          <div class="news-src">농민신문 · 오늘</div>
+        </div>
+        <div class="news-card">
+          <div class="news-title">농식품부, 물류비 지원 확대 방안 발표</div>
+          <div class="news-src">한국농어민신문 · 오늘</div>
+        </div>
+        <div class="news-card">
+          <div class="news-title">전국 양파 산지 가격 강세 지속</div>
+          <div class="news-src">농수축산신문 · 어제</div>
+        </div>
+      </div>
+    </div>
+    <div class="main">
+      <div class="map-panel">
+        <div class="map-bg"></div>
+        <!-- heatmap blobs -->
+        <div class="heatmap-dot" style="width:80px;height:80px;background:rgba(255,100,0,0.5);top:35%;left:40%;"></div>
+        <div class="heatmap-dot" style="width:60px;height:60px;background:rgba(255,200,0,0.4);top:55%;left:60%;"></div>
+        <div class="heatmap-dot" style="width:50px;height:50px;background:rgba(0,180,100,0.4);top:25%;left:25%;"></div>
+        <div style="position:absolute;top:8px;right:8px;display:flex;flex-direction:column;gap:4px;z-index:10;">
+          <div style="background:#253748cc;border:1px solid #354d65;border-radius:6px;padding:4px 8px;font-size:10px;color:#ddeaf5;">☑ 도매시장</div>
+          <div style="background:#253748cc;border:1px solid #354d65;border-radius:6px;padding:4px 8px;font-size:10px;color:#ddeaf5;">☑ 기상특보</div>
+          <div style="background:#253748cc;border:1px solid #354d65;border-radius:6px;padding:4px 8px;font-size:10px;color:#ddeaf5;">☑ 병해충</div>
+        </div>
+        <div style="position:absolute;top:8px;left:8px;background:#253748cc;border:1px solid #354d65;border-radius:6px;padding:4px 8px;font-size:10px;color:#56e890;">● 실시간</div>
+      </div>
+    </div>
+    <div class="bottom-nav">
+      <button class="bnav active"><span class="bnav-icon">🗺️</span><span class="bnav-label" style="color:#82cfff;">지도</span></button>
+      <button class="bnav"><span class="bnav-icon">⛅</span><span class="bnav-label">날씨</span></button>
+      <button class="bnav"><span class="bnav-icon">📋</span><span class="bnav-label">일정</span></button>
+      <button class="bnav"><span class="bnav-icon">💰</span><span class="bnav-label">가격</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- 제안: 날씨 탭 -->
+<div>
+  <div class="label">✅ 제안 — 날씨 탭</div>
+  <div class="phone">
+    <div class="header">
+      <div class="logo">🌾 농수산 관제</div>
+      <div class="header-right">
+        <span class="bell">🔔</span>
+        <div class="avatar">Y</div>
+      </div>
+    </div>
+    <div class="ticker">
+      <span class="live">● LIVE</span>
+      <span style="overflow: hidden; white-space: nowrap;">배추 가격 전주 대비 5% 상승 · 농식품부 지원금 신청</span>
+    </div>
+    <div class="main" style="overflow-y: auto;">
+      <div class="weather-panel">
+        <div class="section-title">⛅ 날씨 · 서울</div>
+        <div style="display:flex;align-items:flex-end;gap:10px;margin-bottom:16px;">
+          <div class="temp-big">16°</div>
+          <div style="font-size:48px;padding-bottom:4px;">☀️</div>
+        </div>
+        <div class="weather-info">
+          <div class="winfo"><div class="wlabel">💧 습도</div><div class="wval">35%</div></div>
+          <div class="winfo"><div class="wlabel">💨 바람</div><div class="wval">4.5m/s</div></div>
+        </div>
+        <div class="forecast-section">
+          <div class="section-title" style="margin-top:16px;">5일 예보</div>
+          <div class="forecast-row"><div class="fday">화</div><div style="font-size:18px;">☀️</div><div class="ftemp"><span style="color:#f85149;font-weight:700;">19°</span> / <span style="color:#82cfff;">8°</span></div><div style="flex:1;height:4px;background:#2d4255;border-radius:2px;margin-left:8px;"><div style="width:20%;height:100%;background:#82cfff;border-radius:2px;"></div></div><span style="font-size:10px;color:#87b8d4;">20%</span></div>
+          <div class="forecast-row"><div class="fday">수</div><div style="font-size:18px;">⛅</div><div class="ftemp"><span style="color:#f85149;font-weight:700;">17°</span> / <span style="color:#82cfff;">9°</span></div><div style="flex:1;height:4px;background:#2d4255;border-radius:2px;margin-left:8px;"><div style="width:30%;height:100%;background:#82cfff;border-radius:2px;"></div></div><span style="font-size:10px;color:#87b8d4;">30%</span></div>
+          <div class="forecast-row"><div class="fday">목</div><div style="font-size:18px;">🌧️</div><div class="ftemp"><span style="color:#f85149;font-weight:700;">14°</span> / <span style="color:#82cfff;">7°</span></div><div style="flex:1;height:4px;background:#2d4255;border-radius:2px;margin-left:8px;"><div style="width:70%;height:100%;background:#82cfff;border-radius:2px;"></div></div><span style="font-size:10px;color:#87b8d4;">70%</span></div>
+          <div class="forecast-row"><div class="fday">금</div><div style="font-size:18px;">⛅</div><div class="ftemp"><span style="color:#f85149;font-weight:700;">16°</span> / <span style="color:#82cfff;">8°</span></div><div style="flex:1;height:4px;background:#2d4255;border-radius:2px;margin-left:8px;"><div style="width:40%;height:100%;background:#82cfff;border-radius:2px;"></div></div><span style="font-size:10px;color:#87b8d4;">40%</span></div>
+          <div class="forecast-row" style="border:none;"><div class="fday">토</div><div style="font-size:18px;">☀️</div><div class="ftemp"><span style="color:#f85149;font-weight:700;">18°</span> / <span style="color:#82cfff;">10°</span></div><div style="flex:1;height:4px;background:#2d4255;border-radius:2px;margin-left:8px;"><div style="width:15%;height:100%;background:#82cfff;border-radius:2px;"></div></div><span style="font-size:10px;color:#87b8d4;">15%</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="bottom-nav">
+      <button class="bnav"><span class="bnav-icon">🗺️</span><span class="bnav-label">지도</span></button>
+      <button class="bnav active"><span class="bnav-icon">⛅</span><span class="bnav-label" style="color:#82cfff;">날씨</span></button>
+      <button class="bnav"><span class="bnav-icon">📋</span><span class="bnav-label">일정</span></button>
+      <button class="bnav"><span class="bnav-icon">💰</span><span class="bnav-label">가격</span></button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
