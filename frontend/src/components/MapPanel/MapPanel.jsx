@@ -50,18 +50,39 @@ const PEST_COLORS = [
 ]
 
 const SEASONAL = {
-  1:  [{ itemName: '잿빛곰팡이병', severity: '주의', region: '전국' }, { itemName: '흰가루병', severity: '주의', region: '전국' }],
-  2:  [{ itemName: '총채벌레', severity: '주의', region: '전국' }, { itemName: '잿빛곰팡이병', severity: '주의', region: '전국' }],
-  3:  [{ itemName: '진딧물', severity: '경보', region: '전국' }, { itemName: '배추좀나방', severity: '주의', region: '남부' }, { itemName: '흰가루병', severity: '주의', region: '전국' }],
-  4:  [{ itemName: '진딧물', severity: '경보', region: '전국' }, { itemName: '배추좀나방', severity: '경보', region: '전국' }, { itemName: '총채벌레', severity: '주의', region: '전국' }, { itemName: '잿빛곰팡이병', severity: '주의', region: '전국' }, { itemName: '벼 줄무늬잎마름병', severity: '예비주의', region: '남부' }],
-  5:  [{ itemName: '복숭아순나방', severity: '경보', region: '전국' }, { itemName: '진딧물', severity: '주의', region: '전국' }, { itemName: '역병', severity: '주의', region: '전국' }],
-  6:  [{ itemName: '벼멸구', severity: '주의', region: '남부' }, { itemName: '고추 탄저병', severity: '경보', region: '전국' }, { itemName: '복숭아순나방', severity: '주의', region: '전국' }],
-  7:  [{ itemName: '벼멸구', severity: '경보', region: '남부' }, { itemName: '흰등멸구', severity: '주의', region: '남부' }, { itemName: '고추 역병·탄저병', severity: '경보', region: '전국' }],
-  8:  [{ itemName: '벼멸구', severity: '경보', region: '전국' }, { itemName: '배추 무름병', severity: '주의', region: '전국' }, { itemName: '사과 겹무늬썩음병', severity: '주의', region: '전국' }],
-  9:  [{ itemName: '벼 이삭도열병', severity: '경보', region: '전국' }, { itemName: '배추 진딧물', severity: '주의', region: '전국' }, { itemName: '노린재', severity: '주의', region: '전국' }],
-  10: [{ itemName: '노린재', severity: '주의', region: '전국' }, { itemName: '배추 무름병', severity: '주의', region: '전국' }],
-  11: [{ itemName: '흰가루병', severity: '주의', region: '전국' }, { itemName: '잿빛곰팡이병', severity: '주의', region: '전국' }],
-  12: [{ itemName: '잿빛곰팡이병', severity: '주의', region: '전국' }, { itemName: '흰가루병', severity: '주의', region: '전국' }],
+  1:  [{ itemName: '잿빛곰팡이병', severity: '주의', region: '전국', crops: ['딸기', '상추', '시금치'] },
+       { itemName: '흰가루병',     severity: '주의', region: '전국', crops: ['오이', '호박'] }],
+  2:  [{ itemName: '총채벌레',     severity: '주의', region: '전국', crops: ['딸기', '파프리카'] },
+       { itemName: '잿빛곰팡이병', severity: '주의', region: '전국', crops: ['딸기', '상추', '오이'] }],
+  3:  [{ itemName: '진딧물',       severity: '경보', region: '전국', crops: ['배추', '무', '감자'] },
+       { itemName: '배추좀나방',   severity: '주의', region: '남부', crops: ['배추'] },
+       { itemName: '흰가루병',     severity: '주의', region: '전국', crops: ['오이', '딸기'] }],
+  4:  [{ itemName: '진딧물',       severity: '경보', region: '전국', crops: ['배추', '감자', '고추', '사과', '배'] },
+       { itemName: '배추좀나방',   severity: '경보', region: '전국', crops: ['배추'] },
+       { itemName: '총채벌레',     severity: '주의', region: '전국', crops: ['딸기', '고추', '파프리카'] },
+       { itemName: '잿빛곰팡이병', severity: '주의', region: '전국', crops: ['딸기', '토마토'] },
+       { itemName: '벼 줄무늬잎마름병', severity: '예비주의', region: '남부', crops: ['쌀', '벼'] }],
+  5:  [{ itemName: '복숭아순나방', severity: '경보', region: '전국', crops: ['사과', '복숭아', '배'] },
+       { itemName: '진딧물',       severity: '주의', region: '전국', crops: ['고추', '옥수수'] },
+       { itemName: '역병',         severity: '주의', region: '전국', crops: ['고추'] }],
+  6:  [{ itemName: '벼멸구',       severity: '주의', region: '남부', crops: ['쌀', '벼'] },
+       { itemName: '고추 탄저병',  severity: '경보', region: '전국', crops: ['고추'] },
+       { itemName: '복숭아순나방', severity: '주의', region: '전국', crops: ['사과', '복숭아', '배'] }],
+  7:  [{ itemName: '벼멸구',           severity: '경보', region: '남부', crops: ['쌀', '벼'] },
+       { itemName: '흰등멸구',         severity: '주의', region: '남부', crops: ['쌀', '벼'] },
+       { itemName: '고추 역병·탄저병', severity: '경보', region: '전국', crops: ['고추'] }],
+  8:  [{ itemName: '벼멸구',           severity: '경보', region: '전국', crops: ['쌀', '벼'] },
+       { itemName: '배추 무름병',      severity: '주의', region: '전국', crops: ['배추'] },
+       { itemName: '사과 겹무늬썩음병', severity: '주의', region: '전국', crops: ['사과'] }],
+  9:  [{ itemName: '벼 이삭도열병', severity: '경보', region: '전국', crops: ['쌀', '벼'] },
+       { itemName: '배추 진딧물',   severity: '주의', region: '전국', crops: ['배추'] },
+       { itemName: '노린재',        severity: '주의', region: '전국', crops: ['쌀', '벼', '콩'] }],
+  10: [{ itemName: '노린재',      severity: '주의', region: '전국', crops: ['쌀', '벼', '사과', '배'] },
+       { itemName: '배추 무름병', severity: '주의', region: '전국', crops: ['배추'] }],
+  11: [{ itemName: '흰가루병',     severity: '주의', region: '전국', crops: ['딸기', '상추'] },
+       { itemName: '잿빛곰팡이병', severity: '주의', region: '전국', crops: ['딸기', '상추', '오이'] }],
+  12: [{ itemName: '잿빛곰팡이병', severity: '주의', region: '전국', crops: ['딸기', '상추'] },
+       { itemName: '흰가루병',     severity: '주의', region: '전국', crops: ['오이', '상추'] }],
 }
 
 const SOUTH_REGIONS = ['전남', '전북', '경남', '경북', '부산', '광주', '대구', '울산']
@@ -153,7 +174,7 @@ function PestChoropleth({ source, colorMap }) {
           )
         : expandRegion(items[0]?.region || '전국')
 
-      regions.forEach(r => { regionStyle[r] = { color, fillOpacity, name, sev } })
+      regions.forEach(r => { regionStyle[r] = { color, fillOpacity, name, sev, crops: items[0]?.crops } })
     })
 
     let cancelled = false
@@ -179,11 +200,15 @@ function PestChoropleth({ source, colorMap }) {
             const s = r ? regionStyle[r] : null
             if (s) {
               const sevColor = SEV_COLOR_MAP[s.sev] || '#87b8d4'
+              const cropsHtml = s.crops?.length
+                ? `<div style="color:#82cfff;font-size:10px;margin-top:2px">🌿 ${s.crops.join(' · ')}</div>`
+                : ''
               layer.bindTooltip(
                 `<div style="background:#162330;border:1px solid #2d4255;color:#ddeaf5;padding:5px 9px;border-radius:5px;font-size:12px;line-height:1.6;pointer-events:none">
                   <b style="color:#eef5fb">${r}</b><br>
-                  <span style="color:#87b8d4">${s.name}</span><br>
-                  <span style="color:${sevColor};font-weight:600">${s.sev}</span>
+                  <span style="color:#87b8d4">${s.name}</span>
+                  <span style="color:${sevColor};font-weight:600;margin-left:6px">${s.sev}</span>
+                  ${cropsHtml}
                 </div>`,
                 { sticky: true, opacity: 1, className: 'pest-tip' }
               )
@@ -221,16 +246,25 @@ function PestLegend({ colorMap, source }) {
         🐛 병해충 발생 ({new Date().getMonth() + 1}월 예보)
       </div>
       {entries.map(([name, color]) => {
-        const sev = byName[name]?.severity
+        const item = byName[name]
+        const sev = item?.severity
         const sevColor = SEV_COLOR_MAP[sev] || '#87b8d4'
+        const crops = item?.crops || []
         return (
-          <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 4 }}>
-            <div style={{
-              width: 14, height: 14, borderRadius: 3, flexShrink: 0,
-              background: color + 'aa', border: `1.5px solid ${color}`,
-            }} />
-            <span style={{ fontSize: 11, color: '#ddeaf5' }}>{name}</span>
-            <span style={{ fontSize: 10, color: sevColor, marginLeft: 2 }}>{sev}</span>
+          <div key={name} style={{ marginBottom: 6 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+              <div style={{
+                width: 14, height: 14, borderRadius: 3, flexShrink: 0,
+                background: color + 'aa', border: `1.5px solid ${color}`,
+              }} />
+              <span style={{ fontSize: 11, color: '#ddeaf5' }}>{name}</span>
+              <span style={{ fontSize: 10, color: sevColor, marginLeft: 2 }}>{sev}</span>
+            </div>
+            {crops.length > 0 && (
+              <div style={{ fontSize: 10, color: '#82cfff', marginLeft: 21, marginTop: 1 }}>
+                🌿 {crops.join(' · ')}
+              </div>
+            )}
           </div>
         )
       })}
