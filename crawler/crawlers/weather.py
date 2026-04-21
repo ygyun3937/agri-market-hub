@@ -195,7 +195,7 @@ def run_forecast():
         params = {
             "serviceKey": API_KEY,
             "pageNo": 1,
-            "numOfRows": 300,
+            "numOfRows": 1000,
             "dataType": "JSON",
             "base_date": base_date,
             "base_time": base_time,
@@ -209,14 +209,30 @@ def run_forecast():
         except Exception:
             items = []
 
+        # TMX/TMN appear only at specific fcstTime slots (1500/0600).
+        # Extract them separately before grouping to avoid defaulting to 0.
+        tmx_map: dict = {}
+        tmn_map: dict = {}
         by_date: dict = {}
         for item in items:
             d = item["fcstDate"]
-            by_date.setdefault(d, {})[item["category"]] = item["fcstValue"]
+            cat = item["category"]
+            val = item["fcstValue"]
+            if cat == "TMX":
+                tmx_map[d] = float(val)
+            elif cat == "TMN":
+                tmn_map[d] = float(val)
+            else:
+                by_date.setdefault(d, {})[cat] = val
 
         short_dates = set()
-        for date_str, cats in list(by_date.items())[:3]:
+        for date_str in sorted(by_date.keys())[:3]:
+            high = tmx_map.get(date_str)
+            low = tmn_map.get(date_str)
+            if high is None or low is None:
+                continue  # skip dates missing temp data; mid-term will cover them
             short_dates.add(date_str)
+            cats = by_date[date_str]
             forecast_date = f"{date_str[:4]}-{date_str[4:6]}-{date_str[6:]}"
             sky = cats.get("SKY", "1")
             icon = {"1": "sunny", "3": "cloudy", "4": "rainy"}.get(sky, "sunny")
@@ -224,8 +240,8 @@ def run_forecast():
                 region_code=region["code"],
                 forecast_date=forecast_date,
                 icon=icon,
-                high=float(cats.get("TMX", 0)),
-                low=float(cats.get("TMN", 0)),
+                high=high,
+                low=low,
                 rain_prob=int(float(cats.get("POP", 0))),
             )
 
