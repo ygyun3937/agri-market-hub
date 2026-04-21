@@ -47,16 +47,25 @@ export default function Header({ alertCount = 0, hasDisasterAlert = false }) {
         </span>
       )}
 
-      {!isMobile && (
-        <nav style={{ display: 'flex', gap: 8, marginLeft: 8, flexShrink: 0 }}>
-          <button onClick={() => navigate('/')}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14,
-              color: location.pathname === '/' ? '#eef5fb' : '#87b8d4', whiteSpace: 'nowrap' }}>대시보드</button>
-          <button onClick={() => navigate('/analysis')}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14,
-              color: location.pathname === '/analysis' ? '#eef5fb' : '#87b8d4', whiteSpace: 'nowrap' }}>경매분석</button>
-        </nav>
-      )}
+      <nav style={{ display: 'flex', gap: isMobile ? 4 : 8, marginLeft: isMobile ? 4 : 8, flexShrink: 0 }}>
+        {[
+          { label: isMobile ? '홈' : '대시보드', path: '/' },
+          { label: '경매분석', path: '/analysis' },
+        ].map(({ label, path }) => {
+          const active = path === '/' ? location.pathname === '/' : location.pathname.startsWith(path)
+          return (
+            <button key={path} onClick={() => navigate(path)} style={{
+              background: active ? '#1c2a36' : 'none',
+              border: active ? '1px solid #354d65' : '1px solid transparent',
+              borderRadius: 5, cursor: 'pointer',
+              fontSize: isMobile ? 11 : 14,
+              padding: isMobile ? '3px 7px' : '2px 4px',
+              color: active ? '#eef5fb' : '#87b8d4',
+              whiteSpace: 'nowrap', flexShrink: 0,
+            }}>{label}</button>
+          )
+        })}
+      </nav>
 
       <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
         <span style={{ fontSize: 14, color: '#87b8d4' }}>
