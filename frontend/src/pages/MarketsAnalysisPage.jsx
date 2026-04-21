@@ -479,6 +479,7 @@ export default function MarketsAnalysisPage() {
   const [mapH, setMapH] = useState(() => {
     try { return Number(localStorage.getItem('markets_mapH') || 240) } catch { return 240 }
   })
+  const [mobileFilter, setMobileFilter] = useState('all')
 
   // Fetch product list
   useEffect(() => {
@@ -521,6 +522,101 @@ export default function MarketsAnalysisPage() {
       return next
     })
   }, [])
+
+  const isMobile = window.innerWidth <= 768
+
+  if (isMobile) {
+    const month = new Date().getMonth() + 1
+
+    const mobileFiltered = products.filter(p => {
+      if (mobileFilter === 'seasonal')  return isSeasonalItem(p.itemName, month)
+      if (mobileFilter === 'watchlist') return watchlist.has(p.itemCode)
+      return true
+    })
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100vh',
+        background: BG, overflow: 'hidden', color: TEXT }}>
+        <Header />
+        <NewsTicker />
+        <PageToolbar selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
+        <AnalysisNav />
+        <HolidayBanner selectedDate={selectedDate} hasData={products.length > 0} />
+
+        <div style={{ flex: 1, overflowY: 'auto' }}>
+          {/* Section 1: Filter tabs + product chip list */}
+          <div style={{ background: SURFACE, borderBottom: `1px solid ${BORDER}` }}>
+            {/* Filter tabs row */}
+            <div style={{ display: 'flex', borderBottom: `1px solid ${BORDER}` }}>
+              {FILTERS.map(f => (
+                <button key={f.key} onClick={() => setMobileFilter(f.key)} style={{
+                  flex: 1, padding: '8px 4px', fontSize: 12, cursor: 'pointer',
+                  background: 'none', border: 'none',
+                  borderBottom: mobileFilter === f.key ? `2px solid ${GREEN}` : '2px solid transparent',
+                  color: mobileFilter === f.key ? GREEN : DIM,
+                  fontWeight: mobileFilter === f.key ? 700 : 400,
+                }}>
+                  {f.key === 'watchlist'
+                    ? `★ 관심${watchlist.size > 0 ? `(${watchlist.size})` : ''}`
+                    : f.label}
+                </button>
+              ))}
+            </div>
+            {/* Horizontal scrollable chip list */}
+            <div style={{ display: 'flex', overflowX: 'auto', gap: 8, padding: '10px 12px',
+              scrollbarWidth: 'none' }}>
+              {loadingProducts ? (
+                <span style={{ fontSize: 12, color: DIM, padding: '6px 0' }}>불러오는 중...</span>
+              ) : mobileFiltered.length === 0 ? (
+                <span style={{ fontSize: 12, color: DIM, padding: '6px 0' }}>
+                  {mobileFilter === 'watchlist' ? '★를 눌러 추가' : '데이터 없음'}
+                </span>
+              ) : mobileFiltered.map(p => {
+                const isActive = selectedProduct?.itemCode === p.itemCode
+                return (
+                  <button key={p.itemCode} onClick={() => setSelectedProduct(p)}
+                    style={{
+                      flexShrink: 0, padding: '6px 14px', borderRadius: 20,
+                      fontSize: 13, fontWeight: isActive ? 700 : 400, cursor: 'pointer',
+                      border: `1px solid ${isActive ? ACCENT : BORDER}`,
+                      background: isActive ? '#2d4255' : 'transparent',
+                      color: isActive ? ACCENT : TEXT,
+                      whiteSpace: 'nowrap',
+                    }}>
+                    {p.itemName}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Section 2: Map — 200px tall */}
+          <div style={{ height: 200, margin: '12px 12px 0' }}>
+            <MarketMap
+              marketPrices={marketPrices}
+              selectedMarket={selectedMarketCode ? { marketCode: selectedMarketCode } : null}
+              onSelect={setSelectedMarketCode}
+              mapH={200}
+            />
+          </div>
+
+          {/* Section 3: RightPanel — full width */}
+          <div style={{ marginTop: 12 }}>
+            <RightPanel
+              selectedProduct={selectedProduct}
+              selectedDate={selectedDate}
+              marketPrices={marketPrices}
+              trendData={trendData}
+              loadingMarkets={loadingMarkets}
+              loadingTrend={loadingTrend}
+              selectedMarketCode={selectedMarketCode}
+              onSelectMarket={setSelectedMarketCode}
+            />
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh',

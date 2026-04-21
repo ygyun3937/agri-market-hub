@@ -207,6 +207,8 @@ function PriceRangeBar({ min, avg, max }) {
 
 // ─── Table View ───────────────────────────────────────────────────────────────
 function TableView({ rows, onSelect }) {
+  const isMobile = window.innerWidth <= 768
+
   if (rows.length === 0) {
     return (
       <div style={{ padding: 40, textAlign: 'center', color: DIM, fontSize: 15 }}>
@@ -214,6 +216,42 @@ function TableView({ rows, onSelect }) {
       </div>
     )
   }
+
+  if (isMobile) {
+    return (
+      <div>
+        {rows.map((row, i) => (
+          <div
+            key={`${row.itemCode}-${i}`}
+            onClick={() => onSelect(row)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 10,
+              padding: '10px 14px', borderBottom: `1px solid ${BORDER}`,
+              cursor: 'pointer',
+            }}
+          >
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontWeight: 700, color: TEXT, fontSize: 14, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {row.itemName}
+              </div>
+              <div style={{ fontSize: 11, color: DIM, marginTop: 2 }}>
+                {row.category} · {Number(row.volume).toLocaleString()}박스
+              </div>
+            </div>
+            <div style={{ textAlign: 'right', flexShrink: 0 }}>
+              <div style={{ fontWeight: 700, color: TEXT, fontSize: 14 }}>
+                {Number(row.avgPrice).toLocaleString()}원
+              </div>
+              <div style={{ marginTop: 2 }}>
+                <ChangeBadge change={row.change7d != null ? Number(row.change7d) : null} />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    )
+  }
+
   return (
     <div style={{ overflowX: 'auto' }}>
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>

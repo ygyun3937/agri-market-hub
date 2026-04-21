@@ -257,6 +257,72 @@ function ProductTable({ data, onSelect }) {
     )
   }
 
+  // ── Mobile card layout ──────────────────────────────────────────────────────
+  if (window.innerWidth <= 768) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '8px 0' }}>
+        {sorted.map((row, i) => {
+          const change = row.change7d != null ? Number(row.change7d) : null
+          const up = change != null && change > 0
+          const down = change != null && change < 0
+          return (
+            <div
+              key={`${row.itemCode}-${i}`}
+              onClick={() => onSelect(row)}
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                background: SURFACE,
+                border: `1px solid ${BORDER}`,
+                borderRadius: 8,
+                padding: '10px 14px',
+                cursor: 'pointer',
+              }}
+            >
+              {/* Left: 품목명 + category */}
+              <div style={{ flex: 1, minWidth: 0, marginRight: 12 }}>
+                <div style={{
+                  fontWeight: 700,
+                  color: TEXT,
+                  fontSize: 14,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}>
+                  {row.itemName}
+                </div>
+                <div style={{ fontSize: 11, color: DIM, marginTop: 2 }}>
+                  {row.category}
+                </div>
+              </div>
+              {/* Right: price + change badge */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flexShrink: 0 }}>
+                <div style={{ fontWeight: 700, color: TEXT, fontSize: 14 }}>
+                  {Number(row.avgPrice).toLocaleString()}원
+                </div>
+                <div style={{ marginTop: 4 }}>
+                  {change == null
+                    ? <span style={{ color: DIM, fontSize: 12 }}>-</span>
+                    : <span style={{
+                        fontSize: 12, fontWeight: 600,
+                        color: up ? RED : down ? BLUE : DIM,
+                        background: up ? '#f8514920' : down ? '#82cfff20' : 'transparent',
+                        padding: '2px 6px', borderRadius: 4,
+                      }}>
+                        {up ? '▲' : down ? '▼' : '–'} {Math.abs(change).toFixed(1)}%
+                      </span>
+                  }
+                </div>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
+
   const thStyle = (key) => ({
     padding: '8px 12px',
     textAlign: key === 'itemName' ? 'left' : 'right',
