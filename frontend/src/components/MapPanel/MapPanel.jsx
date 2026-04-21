@@ -42,6 +42,22 @@ const REGION_COORDS = {
 
 const SEV_INTENSITY = { '경보': 1.0, '주의': 0.6, '예보': 0.3 }
 
+const REGION_ALIAS = {
+  '전라남': '전남', '전라북': '전북',
+  '경상남': '경남', '경상북': '경북',
+  '충청남': '충남', '충청북': '충북',
+  '강원도': '강원', '제주도': '제주',
+}
+
+function resolveRegionCoords(region) {
+  if (!region) return null
+  const two = region.substring(0, 2)
+  if (REGION_COORDS[two]) return REGION_COORDS[two]
+  const three = region.substring(0, 3)
+  const mapped = REGION_ALIAS[three]
+  return mapped ? REGION_COORDS[mapped] : null
+}
+
 function makeIcon(color) {
   return L.divIcon({
     className: '',
@@ -61,7 +77,7 @@ function PestHeatmap({ alerts }) {
     if (!alerts.length) return
 
     const points = alerts.flatMap(a => {
-      const coords = REGION_COORDS[a.region?.substring(0, 2)]
+      const coords = resolveRegionCoords(a.region)
       if (!coords) return []
       const intens = SEV_INTENSITY[a.severity] ?? 0.4
       // 중심 + 산포 포인트로 blob 효과
@@ -151,7 +167,7 @@ export default function MapPanel({ layers = { '도매시장': true, '기상특�
 
       {/* 기상특보 마커 */}
       {layers['기상특보'] && disasterAlerts.map(a => {
-        const coords = REGION_COORDS[a.region?.substring(0, 2)]
+        const coords = resolveRegionCoords(a.region)
         if (!coords) return null
         return (
           <Marker key={a.id} position={coords} icon={DISASTER_ICON}>

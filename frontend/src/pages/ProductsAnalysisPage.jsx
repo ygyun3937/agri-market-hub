@@ -509,7 +509,7 @@ function HolidayBanner({ selectedDate, hasData }) {
   )
 }
 
-function PageToolbar({ selectedDate, setSelectedDate, viewMode, setViewMode }) {
+function PageToolbar({ selectedDate, setSelectedDate }) {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -519,41 +519,22 @@ function PageToolbar({ selectedDate, setSelectedDate, viewMode, setViewMode }) {
       <h1 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: TEXT }}>
         전국 농수산물 경매 현황
       </h1>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: DIM }}>
-          기준일:
-          <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
-            <input
-              type="date"
-              value={selectedDate}
-              max={getToday()}
-              onChange={e => setSelectedDate(e.target.value)}
-              style={{
-                background: BG, border: `1px solid ${BORDER}`, borderRadius: 5,
-                color: TEXT, fontSize: 13, padding: '4px 28px 4px 8px', outline: 'none', cursor: 'pointer',
-              }}
-            />
-            <span style={{ position: 'absolute', right: 6, pointerEvents: 'none', fontSize: 14 }}>📅</span>
-          </div>
-        </label>
-        <div style={{ display: 'flex', border: `1px solid ${BORDER}`, borderRadius: 20, overflow: 'hidden' }}>
-          {['treemap', 'table'].map(mode => (
-            <button
-              key={mode}
-              onClick={() => setViewMode(mode)}
-              style={{
-                padding: '4px 14px', border: 'none', cursor: 'pointer', fontSize: 12,
-                background: viewMode === mode ? ACCENT : 'transparent',
-                color: viewMode === mode ? '#fff' : DIM,
-                fontWeight: viewMode === mode ? 600 : 400,
-                transition: 'all 0.15s',
-              }}
-            >
-              {mode === 'treemap' ? '트리맵' : '테이블'}
-            </button>
-          ))}
+      <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: DIM }}>
+        기준일:
+        <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
+          <input
+            type="date"
+            value={selectedDate}
+            max={getToday()}
+            onChange={e => setSelectedDate(e.target.value)}
+            style={{
+              background: BG, border: `1px solid ${BORDER}`, borderRadius: 5,
+              color: TEXT, fontSize: 13, padding: '4px 28px 4px 8px', outline: 'none', cursor: 'pointer',
+            }}
+          />
+          <span style={{ position: 'absolute', right: 6, pointerEvents: 'none', fontSize: 14 }}>📅</span>
         </div>
-      </div>
+      </label>
     </div>
   )
 }
@@ -627,8 +608,6 @@ export default function ProductsAnalysisPage() {
       <PageToolbar
         selectedDate={selectedDate}
         setSelectedDate={setSelectedDate}
-        viewMode={viewMode}
-        setViewMode={setViewMode}
       />
       <AnalysisNav />
       <HolidayBanner selectedDate={selectedDate} hasData={dailyData.length > 0} />
@@ -656,11 +635,24 @@ export default function ProductsAnalysisPage() {
               background: SURFACE, border: `1px solid ${BORDER}`,
               borderRadius: 8, overflow: 'hidden', marginBottom: 0,
             }}>
-              {/* Category tabs */}
+              {/* View toggle + Category tabs */}
               <div style={{
-                display: 'flex', gap: 6, padding: '10px 16px',
+                display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px',
                 borderBottom: `1px solid ${BORDER}`, flexWrap: 'wrap',
               }}>
+                <div style={{ display: 'flex', border: `1px solid ${BORDER}`, borderRadius: 20, overflow: 'hidden', marginRight: 4 }}>
+                  {['treemap', 'table'].map(mode => (
+                    <button key={mode} onClick={() => setViewMode(mode)} style={{
+                      padding: '4px 14px', border: 'none', cursor: 'pointer', fontSize: 12,
+                      background: viewMode === mode ? ACCENT : 'transparent',
+                      color: viewMode === mode ? '#fff' : DIM,
+                      fontWeight: viewMode === mode ? 600 : 400,
+                      transition: 'all 0.15s',
+                    }}>
+                      {mode === 'treemap' ? '트리맵' : '테이블'}
+                    </button>
+                  ))}
+                </div>
                 {categories.map(cat => (
                   <button
                     key={cat}

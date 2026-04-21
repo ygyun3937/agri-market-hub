@@ -4,7 +4,6 @@ import client from '../../api/client'
 
 const TABS = [
   { key: 'headline', label: '🔥 헤드라인' },
-  { key: 'all', label: '전체' },
   { key: 'crop', label: '작황·가격' },
   { key: 'logistics', label: '물류·운송' },
   { key: 'policy', label: '정책' },

@@ -21,7 +21,7 @@ export default function NewsTicker() {
 
   return (
     <div style={{
-      background: '#223347', borderBottom: '1px solid #354d65',
+      background: '#182d1e', borderBottom: '1px solid #1e5c37',
       padding: '5px 16px', fontSize: 14, color: '#82cfff',
       display: 'flex', alignItems: 'center', gap: 8,
       overflow: 'hidden', flexShrink: 0
