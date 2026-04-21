@@ -7,6 +7,7 @@ const TABS = [
   { key: 'crop', label: '작황·가격' },
   { key: 'logistics', label: '물류·운송' },
   { key: 'policy', label: '정책' },
+  { key: 'pest', label: '병해충' },
 ]
 
 export default function NewsPanel() {
@@ -16,18 +17,7 @@ export default function NewsPanel() {
   useEffect(() => {
     const fetch = () => {
       if (tab === 'headline') {
-        Promise.all([
-          client.get('/news?tab=crop'),
-          client.get('/news?tab=logistics'),
-          client.get('/news?tab=policy'),
-        ])
-          .then(results => {
-            // Take top 2 from each tab to ensure diversity, then sort
-            const picked = results.flatMap(r =>
-              [...(r.data || [])].sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt)).slice(0, 2)
-            )
-            setNews(picked.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt)))
-          }).catch(() => {})
+        client.get('/news').then(r => setNews(r.data || [])).catch(() => {})
       } else {
         client.get(`/news?tab=${tab}`).then(r => setNews(r.data)).catch(() => {})
       }

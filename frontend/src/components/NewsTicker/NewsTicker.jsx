@@ -6,16 +6,13 @@ export default function NewsTicker() {
   const [items, setItems] = useState([])
 
   useEffect(() => {
-    Promise.all([
-      client.get('/news?tab=crop'),
-      client.get('/news?tab=logistics'),
-      client.get('/news?tab=policy'),
-    ]).then(results => {
-      const combined = results.flatMap(r =>
-        [...(r.data || [])].sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt)).slice(0, 2)
-      ).sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
-      setItems(combined.slice(0, 6))
-    }).catch(() => {})
+    Promise.all([client.get('/news?tab=pest'), client.get('/news?tab=crop')])
+      .then(([pest, crop]) => {
+        const combined = [...(pest.data || []), ...(crop.data || [])]
+          .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
+          .slice(0, 5)
+        setItems(combined)
+      }).catch(() => {})
   }, [])
 
   if (items.length === 0) return null
