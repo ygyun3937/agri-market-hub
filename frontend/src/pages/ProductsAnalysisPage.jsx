@@ -9,7 +9,7 @@ import Header from '../components/Header/Header'
 import NewsTicker from '../components/NewsTicker/NewsTicker'
 import AnalysisNav from '../components/Analysis/AnalysisNav'
 import client from '../api/client'
-import { MOCK_DAILY, MOCK_TREND } from '../data/analysisMock'
+import { MOCK_DAILY, MOCK_TREND, MOCK_VARIETY, MOCK_ORIGIN } from '../data/analysisMock'
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const BG      = '#1c2a36'
@@ -572,20 +572,24 @@ export default function ProductsAnalysisPage() {
       return
     }
     setDetailLoading(true)
-    Promise.all([
+    Promise.allSettled([
       client.get(`/analysis/trend?itemCode=${selectedItem.itemCode}&days=30`),
       client.get(`/analysis/variety?itemCode=${selectedItem.itemCode}&date=${selectedDate}`),
       client.get(`/analysis/origin?itemCode=${selectedItem.itemCode}&date=${selectedDate}`),
     ])
       .then(([trend, variety, origin]) => {
-        setTrendData(trend.data?.length ? trend.data : MOCK_TREND(selectedItem.itemCode))
-        setVarietyData(variety.data || [])
-        setOriginData(origin.data || [])
-      })
-      .catch(() => {
-        setTrendData(MOCK_TREND(selectedItem.itemCode))
-        setVarietyData([])
-        setOriginData([])
+        setTrendData(
+          trend.status === 'fulfilled' && trend.value.data?.length
+            ? trend.value.data : MOCK_TREND(selectedItem.itemCode)
+        )
+        setVarietyData(
+          variety.status === 'fulfilled' && variety.value.data?.length
+            ? variety.value.data : MOCK_VARIETY
+        )
+        setOriginData(
+          origin.status === 'fulfilled' && origin.value.data?.length
+            ? origin.value.data : MOCK_ORIGIN
+        )
       })
       .finally(() => setDetailLoading(false))
   }, [selectedItem, selectedDate])
