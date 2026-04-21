@@ -122,10 +122,8 @@ const MARKET_COORDS = {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-function getYesterday() {
-  const d = new Date()
-  d.setDate(d.getDate() - 1)
-  return d.toISOString().slice(0, 10)
+function getToday() {
+  return new Date().toISOString().slice(0, 10)
 }
 
 function fmtDate(dateStr) {
@@ -433,7 +431,7 @@ function PageToolbar({ selectedDate, setSelectedDate }) {
       <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: DIM }}>
         기준일:
         <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
-          <input type="date" value={selectedDate} max={getYesterday()}
+          <input type="date" value={selectedDate} max={getToday()}
             onChange={e => setSelectedDate(e.target.value)}
             style={{ background: BG, border: `1px solid ${BORDER}`, borderRadius: 5,
               color: TEXT, fontSize: 13, padding: '4px 28px 4px 8px', outline: 'none', cursor: 'pointer' }} />
@@ -457,7 +455,7 @@ function mockMarketPrices(itemCode) {
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function MarketsAnalysisPage() {
-  const [selectedDate, setSelectedDate]       = useState(getYesterday)
+  const [selectedDate, setSelectedDate]       = useState(getToday)
   const [products, setProducts]               = useState([])
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [marketPrices, setMarketPrices]       = useState([])
