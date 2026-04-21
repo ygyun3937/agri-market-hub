@@ -17,7 +17,7 @@ function daysLeft(dateStr) {
   return { label: `D+${Math.abs(diff)}`, color: '#87b8d4' }
 }
 
-export default function ScheduleList({ schedules = [], setSchedules }) {
+export default function ScheduleList({ schedules = [], refreshSchedules, setSchedules }) {
   const today = new Date().toISOString().slice(0, 10)
   const [form, setForm] = useState({ date: today, title: '' })
   const [saving, setSaving] = useState(false)
@@ -35,8 +35,8 @@ export default function ScheduleList({ schedules = [], setSchedules }) {
     if (!form.title.trim() || !form.date) return
     setSaving(true)
     try {
-      const res = await client.post('/schedules', { title: form.title, type: 'shipping', date: form.date, memo: '' })
-      setSchedules(prev => [...prev, res.data])
+      await client.post('/schedules', { title: form.title, type: 'shipping', date: form.date, memo: '' })
+      refreshSchedules()
       setForm({ date: today, title: '' })
     } catch { /* noop */ }
     setSaving(false)

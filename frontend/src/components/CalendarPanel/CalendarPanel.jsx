@@ -9,7 +9,7 @@ function gcalLink(s) {
   return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(s.title)}&dates=${d}/${d}&details=${encodeURIComponent(s.memo || '')}`
 }
 
-export default function CalendarPanel({ schedules = [], setSchedules }) {
+export default function CalendarPanel({ schedules = [], refreshSchedules }) {
   const [now] = useState(() => new Date())
   const [selectedDay, setSelectedDay] = useState(null)
   const [form, setForm] = useState({ title: '', memo: '' })
@@ -45,11 +45,11 @@ export default function CalendarPanel({ schedules = [], setSchedules }) {
     if (!form.title.trim() || !selectedDay) return
     setSaving(true)
     try {
-      const res = await client.post('/schedules', {
+      await client.post('/schedules', {
         title: form.title, type: 'shipping',
         date: dateStr(selectedDay), memo: form.memo,
       })
-      setSchedules(prev => [...prev, res.data])
+      refreshSchedules()
       setForm({ title: '', memo: '' })
       setSelectedDay(null)
     } catch { /* noop */ }

@@ -1,5 +1,5 @@
 // src/pages/Dashboard.jsx
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import client from '../api/client'
 import Header from '../components/Header/Header'
 import AlertBanner from '../components/AlertBanner/AlertBanner'
@@ -106,22 +106,26 @@ export default function Dashboard() {
 
   const isLoggedIn = !!localStorage.getItem('token')
 
+  const fetchSchedules = useCallback(() => {
+    Promise.all([
+      client.get('/schedules').catch(() => ({ data: [] })),
+      client.get('/schedules/gcal-events').catch(() => ({ data: [] })),
+    ]).then(([siteRes, gcalRes]) => {
+      const siteSchedules = siteRes.data || []
+      const gcalEvents = (gcalRes.data || []).filter(
+        g => !siteSchedules.some(s => s.gcalEventId === g.gcalEventId)
+      )
+      setSchedules([...siteSchedules, ...gcalEvents])
+    })
+  }, [])
+
   useEffect(() => {
     client.get('/alerts/disaster').then(r => setDisasterAlerts(r.data)).catch(() => {})
     if (isLoggedIn) {
       client.get('/notifications').then(r => setNotifications(r.data)).catch(() => {})
-      Promise.all([
-        client.get('/schedules').catch(() => ({ data: [] })),
-        client.get('/schedules/gcal-events').catch(() => ({ data: [] })),
-      ]).then(([siteRes, gcalRes]) => {
-        const siteSchedules = siteRes.data || []
-        const gcalEvents = (gcalRes.data || []).filter(
-          g => !siteSchedules.some(s => s.gcalEventId === g.gcalEventId)
-        )
-        setSchedules([...siteSchedules, ...gcalEvents])
-      })
+      fetchSchedules()
     }
-  }, [])
+  }, [fetchSchedules])
 
   const unreadCount = notifications.filter(n => !n.isRead).length
 
@@ -188,7 +192,7 @@ export default function Dashboard() {
           <div style={{ flex: 1, overflow: 'auto', minHeight: 0 }}><PricePanel /></div>
           <RowHandle onDelta={dy => updateLayout('bottomH', -dy, B)} />
           <div style={{ height: layout.bottomH, flexShrink: 0, overflow: 'auto' }}>
-            <CalendarPanel schedules={schedules} setSchedules={setSchedules} />
+            <CalendarPanel schedules={schedules} refreshSchedules={fetchSchedules} />
           </div>
         </div>
 
@@ -199,7 +203,7 @@ export default function Dashboard() {
           <div style={{ flex: 1, overflow: 'auto', minHeight: 0 }}><WeatherPanel /></div>
           <RowHandle onDelta={dy => updateLayout('bottomH', -dy, B)} />
           <div style={{ height: layout.bottomH, flexShrink: 0, overflow: 'auto' }}>
-            <ScheduleList schedules={schedules} setSchedules={setSchedules} />
+            <ScheduleList schedules={schedules} refreshSchedules={fetchSchedules} />
           </div>
         </div>
 
