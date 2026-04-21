@@ -18,9 +18,14 @@ export default function NewsPanel() {
   useEffect(() => {
     const fetch = () => {
       if (tab === 'headline') {
-        Promise.all([client.get('/news?tab=pest'), client.get('/news?tab=crop')])
-          .then(([pest, crop]) => {
-            setNews([...pest.data, ...crop.data]
+        Promise.all([
+          client.get('/news?tab=crop'),
+          client.get('/news?tab=logistics'),
+          client.get('/news?tab=policy'),
+          client.get('/news?tab=pest'),
+        ])
+          .then(results => {
+            setNews(results.flatMap(r => r.data)
               .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
               .slice(0, 6))
           }).catch(() => {})

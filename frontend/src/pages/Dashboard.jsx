@@ -14,7 +14,7 @@ import FuelPanel from '../components/FuelPanel/FuelPanel'
 import PestPanel from '../components/PestPanel/PestPanel'
 import { useSignalR } from '../hooks/useSignalR'
 
-const LAYER_LABELS = ['도매시장', '산지', '기상특보', '병해충']
+const LAYER_LABELS = ['도매시장', '기상특보', '병해충']
 
 const DEFAULT_LAYOUT = { col1: 220, col3: 270, col4: 280, bottomH: 310 }
 
@@ -100,7 +100,7 @@ function RowHandle({ onDelta }) {
 export default function Dashboard() {
   const [disasterAlerts, setDisasterAlerts] = useState([])
   const [notifications, setNotifications] = useState([])
-  const [layers, setLayers] = useState({ '도매시장': true, '산지': true, '기상특보': true, '병해충': true })
+  const [layers, setLayers] = useState({ '도매시장': true, '기상특보': true, '병해충': true })
   const [schedules, setSchedules] = useState([])
   const [layout, setLayout] = useState(loadLayout)
 

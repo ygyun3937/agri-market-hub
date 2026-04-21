@@ -41,8 +41,8 @@ public class AuthController(AuthService auth, IConfiguration config, IHttpClient
             $"?client_id={Uri.EscapeDataString(clientId)}" +
             $"&redirect_uri={Uri.EscapeDataString(RedirectUri)}" +
             "&response_type=code" +
-            "&scope=openid%20email%20profile%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcalendar" +
-            "&access_type=offline&prompt=consent";
+            "&scope=openid%20email%20profile" +
+            "&access_type=online";
         return Redirect(url);
     }
 

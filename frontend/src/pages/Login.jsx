@@ -78,7 +78,7 @@ export default function Login() {
         </button>
 
         <div style={{ fontSize: 11, color: '#6a8fa8', textAlign: 'center', lineHeight: 1.6 }}>
-          로그인 시 Google 캘린더 연동이 함께 설정됩니다
+          Google 계정으로 간편하게 로그인하세요
         </div>
       </div>
     </div>

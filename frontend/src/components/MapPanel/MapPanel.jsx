@@ -1,6 +1,10 @@
 // src/components/MapPanel/MapPanel.jsx
 import { useEffect, useState } from 'react'
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
+import 'leaflet/dist/leaflet.css'
+import 'leaflet.heat'
+import L from 'leaflet'
+import client from '../../api/client'
 
 function MapResizer() {
   const map = useMap()
@@ -11,9 +15,6 @@ function MapResizer() {
   }, [map])
   return null
 }
-import 'leaflet/dist/leaflet.css'
-import L from 'leaflet'
-import client from '../../api/client'
 
 delete L.Icon.Default.prototype._getIconUrl
 L.Icon.Default.mergeOptions({
@@ -25,34 +26,11 @@ L.Icon.Default.mergeOptions({
 const ITEM_NAMES = { '111': '봄배추', '112': '무', '211': '양파', '214': '당근', '215': '감자', '311': '사과', '312': '배', '411': '쌀' }
 
 const MARKETS = [
-  { name: '가락시장', code: '100110', lat: 37.493, lng: 127.113, type: '도매시장' },
-  { name: '강서시장', code: '100120', lat: 37.572, lng: 126.823, type: '도매시장' },
-  { name: '부산엄궁시장', code: '500110', lat: 35.148, lng: 128.956, type: '도매시장' },
-  { name: '광주각화시장', code: '600110', lat: 35.180, lng: 126.884, type: '도매시장' },
+  { name: '가락시장',     code: '100110', lat: 37.493, lng: 127.113 },
+  { name: '강서시장',     code: '100120', lat: 37.572, lng: 126.823 },
+  { name: '부산엄궁시장', code: '500110', lat: 35.148, lng: 128.956 },
+  { name: '광주각화시장', code: '600110', lat: 35.180, lng: 126.884 },
 ]
-
-const ORIGINS = [
-  { name: '나주 배 산지', lat: 35.016, lng: 126.711, type: '산지' },
-  { name: '해남 배추 산지', lat: 34.573, lng: 126.599, type: '산지' },
-  { name: '제주 당근 산지', lat: 33.499, lng: 126.531, type: '산지' },
-  { name: '강원 감자 산지', lat: 37.341, lng: 128.377, type: '산지' },
-]
-
-function makeIcon(color) {
-  return L.divIcon({
-    className: '',
-    html: `<div style="width:12px;height:12px;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 0 4px #0006"></div>`,
-    iconSize: [12, 12],
-    iconAnchor: [6, 6],
-  })
-}
-
-const ICONS = {
-  '도매시장': makeIcon('#82cfff'),
-  '산지': makeIcon('#56e890'),
-  '기상특보': makeIcon('#f85149'),
-  '병해충': makeIcon('#d29922'),
-}
 
 const REGION_COORDS = {
   '경기': [37.4, 127.2], '전남': [34.8, 126.9], '충남': [36.5, 126.8],
@@ -62,7 +40,64 @@ const REGION_COORDS = {
   '광주': [35.15, 126.85], '대전': [36.35, 127.38], '울산': [35.54, 129.31],
 }
 
-export default function MapPanel({ layers = { '도매시장': true, '산지': true, '기상특보': true, '병해충': true } }) {
+const SEV_INTENSITY = { '경보': 1.0, '주의': 0.6, '예보': 0.3 }
+
+function makeIcon(color) {
+  return L.divIcon({
+    className: '',
+    html: `<div style="width:12px;height:12px;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 0 4px #0006"></div>`,
+    iconSize: [12, 12], iconAnchor: [6, 6],
+  })
+}
+
+const MARKET_ICON = makeIcon('#82cfff')
+const DISASTER_ICON = makeIcon('#f85149')
+
+// 히트맵 레이어 컴포넌트
+function PestHeatmap({ alerts }) {
+  const map = useMap()
+
+  useEffect(() => {
+    if (!alerts.length) return
+
+    const points = alerts.flatMap(a => {
+      const coords = REGION_COORDS[a.region?.substring(0, 2)]
+      if (!coords) return []
+      const intens = SEV_INTENSITY[a.severity] ?? 0.4
+      // 중심 + 산포 포인트로 blob 효과
+      return [
+        [coords[0], coords[1], intens],
+        ...Array.from({ length: 6 }, () => [
+          coords[0] + (Math.random() - 0.5) * 0.7,
+          coords[1] + (Math.random() - 0.5) * 0.7,
+          intens * (0.3 + Math.random() * 0.4),
+        ]),
+      ]
+    })
+
+    const heat = L.heatLayer(points, {
+      radius: 50,
+      blur: 38,
+      maxZoom: 10,
+      max: 1.0,
+      gradient: {
+        0.0: '#004080',
+        0.2: '#0066cc',
+        0.4: '#00cc88',
+        0.65: '#aaee00',
+        0.78: '#ffcc00',
+        0.9: '#ff6600',
+        1.0: '#ff1a1a',
+      },
+    }).addTo(map)
+
+    return () => map.removeLayer(heat)
+  }, [alerts, map])
+
+  return null
+}
+
+export default function MapPanel({ layers = { '도매시장': true, '기상특보': true, '병해충': true } }) {
   const [pricesByMarket, setPricesByMarket] = useState({})
   const [pestAlerts, setPestAlerts] = useState([])
   const [disasterAlerts, setDisasterAlerts] = useState([])
@@ -79,29 +114,23 @@ export default function MapPanel({ layers = { '도매시장': true, '산지': tr
       results.forEach(({ code, prices }) => { map[code] = prices })
       setPricesByMarket(map)
     })
-    client.get('/alerts/pest').then(r => {
-      setPestAlerts(r.data.map(a => {
-        const coords = REGION_COORDS[a.region?.substring(0, 2)]
-        return coords
-          ? { ...a, offset: [coords[0] + (Math.random() * 0.3 - 0.15), coords[1] + (Math.random() * 0.3 - 0.15)] }
-          : { ...a, offset: null }
-      }))
-    }).catch(() => {})
-    client.get('/alerts/disaster').then(r => setDisasterAlerts(r.data)).catch(() => {})
+    client.get('/alerts/pest').then(r => setPestAlerts(r.data || [])).catch(() => {})
+    client.get('/alerts/disaster').then(r => setDisasterAlerts(r.data || [])).catch(() => {})
   }, [])
 
   return (
-    <MapContainer center={[36.5, 127.5]} zoom={7} style={{ width: '100%', height: '100%' }} zoomControl={true}>
+    <MapContainer center={[36.5, 127.5]} zoom={7} style={{ width: '100%', height: '100%' }} zoomControl>
       <MapResizer />
       <TileLayer
         url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
         attribution='&copy; <a href="https://carto.com/">CARTO</a>'
       />
 
+      {/* 도매시장 마커 */}
       {layers['도매시장'] && MARKETS.map(m => {
         const prices = pricesByMarket[m.code] || []
         return (
-          <Marker key={m.name} position={[m.lat, m.lng]} icon={ICONS['도매시장']}>
+          <Marker key={m.name} position={[m.lat, m.lng]} icon={MARKET_ICON}>
             <Popup>
               <div style={{ minWidth: 160 }}>
                 <div style={{ fontWeight: 700, marginBottom: 6, fontSize: 14 }}>{m.name}</div>
@@ -120,17 +149,12 @@ export default function MapPanel({ layers = { '도매시장': true, '산지': tr
         )
       })}
 
-      {layers['산지'] && ORIGINS.map(o => (
-        <Marker key={o.name} position={[o.lat, o.lng]} icon={ICONS['산지']}>
-          <Popup><div style={{ fontSize: 13 }}>{o.name}</div></Popup>
-        </Marker>
-      ))}
-
+      {/* 기상특보 마커 */}
       {layers['기상특보'] && disasterAlerts.map(a => {
         const coords = REGION_COORDS[a.region?.substring(0, 2)]
         if (!coords) return null
         return (
-          <Marker key={a.id} position={coords} icon={ICONS['기상특보']}>
+          <Marker key={a.id} position={coords} icon={DISASTER_ICON}>
             <Popup>
               <div style={{ minWidth: 140 }}>
                 <div style={{ fontWeight: 700, color: '#f85149', marginBottom: 4 }}>⚠️ {a.type}</div>
@@ -142,20 +166,8 @@ export default function MapPanel({ layers = { '도매시장': true, '산지': tr
         )
       })}
 
-      {layers['병해충'] && pestAlerts.map(a => {
-        if (!a.offset) return null
-        return (
-          <Marker key={a.id} position={a.offset} icon={ICONS['병해충']}>
-            <Popup>
-              <div style={{ minWidth: 140 }}>
-                <div style={{ fontWeight: 700, color: '#d29922', marginBottom: 4 }}>🐛 {a.severity}</div>
-                <div style={{ fontSize: 12 }}>{a.region} / {a.itemName}</div>
-                <div style={{ fontSize: 12, color: '#555', marginTop: 4 }}>{a.description}</div>
-              </div>
-            </Popup>
-          </Marker>
-        )
-      })}
+      {/* 병해충 히트맵 */}
+      {layers['병해충'] && <PestHeatmap alerts={pestAlerts} />}
     </MapContainer>
   )
 }
