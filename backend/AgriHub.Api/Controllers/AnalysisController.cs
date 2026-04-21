@@ -147,6 +147,7 @@ public class AnalysisController(AppDbContext db) : ControllerBase
         if (string.IsNullOrWhiteSpace(itemCode))
             return BadRequest("itemCode is required.");
         var targetDate = date ?? DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1));
+        var from = targetDate.AddDays(-30);
         var rows = await db.Database
             .SqlQueryRaw<BreakdownDto>(
                 """
@@ -154,12 +155,12 @@ public class AnalysisController(AppDbContext db) : ControllerBase
                        ROUND(AVG(price))  AS "AvgPrice",
                        SUM(volume)        AS "Volume"
                 FROM   auction_raw
-                WHERE  item_code = {0} AND date = {1} AND price > 0
+                WHERE  item_code = {0} AND date BETWEEN {1} AND {2} AND price > 0
                 GROUP  BY COALESCE(NULLIF(TRIM(variety),''), '기타')
                 ORDER  BY "Volume" DESC
                 LIMIT  10
                 """,
-                itemCode, targetDate)
+                itemCode, from, targetDate)
             .ToListAsync();
         return Ok(rows);
     }
@@ -173,6 +174,7 @@ public class AnalysisController(AppDbContext db) : ControllerBase
         if (string.IsNullOrWhiteSpace(itemCode))
             return BadRequest("itemCode is required.");
         var targetDate = date ?? DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1));
+        var from = targetDate.AddDays(-30);
         var rows = await db.Database
             .SqlQueryRaw<BreakdownDto>(
                 """
@@ -180,12 +182,12 @@ public class AnalysisController(AppDbContext db) : ControllerBase
                        ROUND(AVG(price))  AS "AvgPrice",
                        SUM(volume)        AS "Volume"
                 FROM   auction_raw
-                WHERE  item_code = {0} AND date = {1} AND price > 0
+                WHERE  item_code = {0} AND date BETWEEN {1} AND {2} AND price > 0
                 GROUP  BY COALESCE(NULLIF(TRIM(origin),''), '기타')
                 ORDER  BY "Volume" DESC
                 LIMIT  10
                 """,
-                itemCode, targetDate)
+                itemCode, from, targetDate)
             .ToListAsync();
         return Ok(rows);
     }

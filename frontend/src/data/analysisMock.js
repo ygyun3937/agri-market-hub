@@ -70,14 +70,72 @@ export const MOCK_MARKET_PRODUCTS = () =>
     avgPrice: Math.round(d.avgPrice * (0.9 + Math.random() * 0.2)),
   }))
 
-export const MOCK_VARIETY = [
-  { label: '얼갈이', avgPrice: 7800, volume: 1240 },
-  { label: '쌈배추', avgPrice: 8500, volume: 980 },
-  { label: '기타', avgPrice: 7200, volume: 430 },
-]
+const VARIETY_MAP = {
+  '111': [{ label: '봄배추', avgPrice: 8400, volume: 2100 }, { label: '얼갈이', avgPrice: 7800, volume: 1240 }, { label: '쌈배추', avgPrice: 8500, volume: 980 }, { label: '기타', avgPrice: 7200, volume: 430 }],
+  '112': [{ label: '청무', avgPrice: 3600, volume: 1800 }, { label: '왜무', avgPrice: 3200, volume: 920 }, { label: '기타', avgPrice: 3100, volume: 290 }],
+  '211': [{ label: '황양파', avgPrice: 5800, volume: 1950 }, { label: '적양파', avgPrice: 6200, volume: 680 }, { label: '기타', avgPrice: 5300, volume: 250 }],
+  '214': [{ label: '수입당근', avgPrice: 4300, volume: 1100 }, { label: '국내당근', avgPrice: 3800, volume: 670 }, { label: '기타', avgPrice: 3500, volume: 100 }],
+  '215': [{ label: '수미', avgPrice: 7100, volume: 1400 }, { label: '대지마', avgPrice: 6500, volume: 820 }, { label: '두백', avgPrice: 6800, volume: 220 }],
+  '311': [{ label: '부사', avgPrice: 44000, volume: 750 }, { label: '홍로', avgPrice: 40000, volume: 320 }, { label: '아오리', avgPrice: 38000, volume: 160 }],
+  '312': [{ label: '신고', avgPrice: 39000, volume: 620 }, { label: '원황', avgPrice: 36000, volume: 240 }, { label: '기타', avgPrice: 34000, volume: 120 }],
+  '313': [{ label: '설향', avgPrice: 29000, volume: 980 }, { label: '매향', avgPrice: 26000, volume: 420 }, { label: '기타', avgPrice: 24000, volume: 160 }],
+  '314': [{ label: '수박(대)', avgPrice: 24000, volume: 520 }, { label: '수박(소)', avgPrice: 18000, volume: 280 }, { label: '기타', avgPrice: 20000, volume: 70 }],
+  '411': [{ label: '일반계', avgPrice: 53000, volume: 2100 }, { label: '찹쌀', avgPrice: 58000, volume: 980 }, { label: '기타', avgPrice: 50000, volume: 320 }],
+  '421': [{ label: '백태', avgPrice: 14500, volume: 520 }, { label: '서리태', avgPrice: 16000, volume: 280 }, { label: '기타', avgPrice: 13000, volume: 90 }],
+  '216': [{ label: '시금치(일반)', avgPrice: 7400, volume: 820 }, { label: '포항초', avgPrice: 7800, volume: 420 }, { label: '기타', avgPrice: 6800, volume: 100 }],
+  '217': [{ label: '취청오이', avgPrice: 5000, volume: 980 }, { label: '가시오이', avgPrice: 4500, volume: 580 }, { label: '기타', avgPrice: 4200, volume: 120 }],
+  '315': [{ label: '천중도', avgPrice: 20000, volume: 380 }, { label: '창방조생', avgPrice: 18000, volume: 180 }, { label: '기타', avgPrice: 17000, volume: 62 }],
+  '218': [{ label: '빨강', avgPrice: 11500, volume: 580 }, { label: '노랑', avgPrice: 10800, volume: 240 }, { label: '초록', avgPrice: 10200, volume: 100 }],
+  '612': [{ label: '국내산', avgPrice: 12500, volume: 480 }, { label: '수입산', avgPrice: 10500, volume: 280 }],
+  '711': [{ label: '삼겹살', avgPrice: 20000, volume: 680 }, { label: '목살', avgPrice: 18000, volume: 320 }, { label: '기타부위', avgPrice: 15000, volume: 120 }],
+}
 
-export const MOCK_ORIGIN = [
-  { label: '전남 해남', avgPrice: 7900, volume: 1350 },
-  { label: '강원 삼척', avgPrice: 8100, volume: 820 },
-  { label: '충남 아산', avgPrice: 7600, volume: 480 },
-]
+const ORIGIN_MAP = {
+  '111': [{ label: '전남 해남', avgPrice: 7900, volume: 1350 }, { label: '강원 삼척', avgPrice: 8100, volume: 820 }, { label: '충남 아산', avgPrice: 7600, volume: 480 }, { label: '기타', avgPrice: 7400, volume: 170 }],
+  '112': [{ label: '경북 의성', avgPrice: 3500, volume: 980 }, { label: '전남 담양', avgPrice: 3300, volume: 720 }, { label: '제주', avgPrice: 3700, volume: 310 }],
+  '211': [{ label: '경남 창녕', avgPrice: 5700, volume: 1200 }, { label: '전남 무안', avgPrice: 5500, volume: 980 }, { label: '경북 영천', avgPrice: 5900, volume: 520 }, { label: '기타', avgPrice: 5400, volume: 180 }],
+  '214': [{ label: '수입(호주)', avgPrice: 4400, volume: 1050 }, { label: '제주', avgPrice: 3700, volume: 420 }, { label: '기타', avgPrice: 3600, volume: 100 }],
+  '215': [{ label: '강원 정선', avgPrice: 7200, volume: 850 }, { label: '경북 안동', avgPrice: 6800, volume: 650 }, { label: '전북 김제', avgPrice: 6600, volume: 320 }, { label: '기타', avgPrice: 6400, volume: 120 }],
+  '311': [{ label: '경북 청송', avgPrice: 45000, volume: 480 }, { label: '경북 영주', avgPrice: 43000, volume: 320 }, { label: '충북 충주', avgPrice: 41000, volume: 210 }, { label: '기타', avgPrice: 39000, volume: 120 }],
+  '312': [{ label: '전남 나주', avgPrice: 40000, volume: 520 }, { label: '충남 천안', avgPrice: 37000, volume: 280 }, { label: '기타', avgPrice: 35000, volume: 80 }],
+  '313': [{ label: '경남 남해', avgPrice: 30000, volume: 680 }, { label: '충남 논산', avgPrice: 28000, volume: 520 }, { label: '전북 담양', avgPrice: 27000, volume: 200 }, { label: '기타', avgPrice: 25000, volume: 160 }],
+  '314': [{ label: '충남 부여', avgPrice: 24000, volume: 380 }, { label: '전북 고창', avgPrice: 22000, volume: 280 }, { label: '기타', avgPrice: 20000, volume: 80 }],
+  '411': [{ label: '경기 이천', avgPrice: 56000, volume: 1200 }, { label: '충남 당진', avgPrice: 52000, volume: 980 }, { label: '전북 김제', avgPrice: 50000, volume: 680 }, { label: '기타', avgPrice: 49000, volume: 340 }],
+  '421': [{ label: '경북 의성', avgPrice: 15000, volume: 320 }, { label: '전북 임실', avgPrice: 14000, volume: 180 }, { label: '기타', avgPrice: 13000, volume: 90 }],
+  '216': [{ label: '경북 포항', avgPrice: 7800, volume: 420 }, { label: '남해', avgPrice: 7200, volume: 280 }, { label: '기타', avgPrice: 6800, volume: 120 }],
+  '217': [{ label: '경남 밀양', avgPrice: 5100, volume: 620 }, { label: '충남 부여', avgPrice: 4800, volume: 480 }, { label: '기타', avgPrice: 4500, volume: 180 }],
+  '315': [{ label: '충북 음성', avgPrice: 20500, volume: 280 }, { label: '경기 이천', avgPrice: 19000, volume: 180 }, { label: '기타', avgPrice: 17500, volume: 62 }],
+  '218': [{ label: '전남 담양', avgPrice: 11500, volume: 480 }, { label: '경남 밀양', avgPrice: 10800, volume: 280 }, { label: '기타', avgPrice: 10200, volume: 80 }],
+  '612': [{ label: '국내산', avgPrice: 12500, volume: 480 }, { label: '수입산', avgPrice: 10500, volume: 280 }],
+  '711': [{ label: '국내산', avgPrice: 20000, volume: 820 }, { label: '수입산(덴마크)', avgPrice: 15000, volume: 300 }],
+}
+
+function hashCode(str) {
+  let h = 0
+  for (let i = 0; i < str.length; i++) h = (Math.imul(31, h) + str.charCodeAt(i)) | 0
+  return Math.abs(h)
+}
+
+export function MOCK_VARIETY(itemCode) {
+  if (VARIETY_MAP[itemCode]) return VARIETY_MAP[itemCode]
+  const seed = hashCode(itemCode)
+  const labels = ['일반', '특품', '상품', '기타']
+  const base = 5000 + (seed % 30000)
+  return labels.map((label, i) => ({
+    label,
+    avgPrice: Math.round(base * (1 - i * 0.05)),
+    volume: Math.round((1000 - i * 150) * (0.8 + (seed % 5) * 0.08)),
+  }))
+}
+
+export function MOCK_ORIGIN(itemCode) {
+  if (ORIGIN_MAP[itemCode]) return ORIGIN_MAP[itemCode]
+  const seed = hashCode(itemCode)
+  const regions = ['전남', '경북', '충남', '강원', '제주']
+  const base = 5000 + (seed % 30000)
+  return regions.slice(0, 3 + (seed % 2)).map((region, i) => ({
+    label: region,
+    avgPrice: Math.round(base * (1 - i * 0.04)),
+    volume: Math.round((900 - i * 180) * (0.8 + (seed % 4) * 0.08)),
+  }))
+}

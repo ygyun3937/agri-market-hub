@@ -85,6 +85,40 @@ function ChangeBadge({ change }) {
   )
 }
 
+// ─── Price Heatmap ────────────────────────────────────────────────────────────
+function PriceHeatmap({ data, onSelect }) {
+  if (data.length === 0) return null
+  return (
+    <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 8, padding: '10px 14px', marginBottom: 12 }}>
+      <div style={{ fontSize: 13, fontWeight: 600, color: DIM, marginBottom: 8 }}>📊 품목별 가격 현황</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: 6 }}>
+        {data.map(item => (
+          <div
+            key={item.itemCode}
+            onClick={() => onSelect(item)}
+            style={{
+              background: getChangeColor(item.change7d),
+              borderRadius: 6,
+              padding: '8px 10px',
+              cursor: 'pointer',
+            }}
+          >
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#eef5fb' }}>{item.itemName}</div>
+            <div style={{ fontSize: 11, color: '#eef5fb', opacity: 0.85, marginTop: 2 }}>
+              {Number(item.avgPrice).toLocaleString()}원
+            </div>
+            {item.change7d != null && (
+              <div style={{ fontSize: 11, color: '#eef5fb', marginTop: 3 }}>
+                {item.change7d > 0 ? '▲' : '▼'} {Math.abs(item.change7d).toFixed(1)}%
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 // ─── Top Movers ───────────────────────────────────────────────────────────────
 function MoversCard({ title, items, onSelect }) {
   return (
@@ -705,6 +739,7 @@ export default function AnalysisPage() {
           <>
             <KpiRow data={dailyData} selectedDate={selectedDate} />
             <TopMovers data={dailyData} onSelect={selectItem} />
+            <PriceHeatmap data={dailyData} onSelect={selectItem} />
             <MainSection
               data={dailyData}
               viewMode={viewMode}
