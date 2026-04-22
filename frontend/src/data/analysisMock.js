@@ -1,27 +1,49 @@
 // src/data/analysisMock.js
+const UNIT_MAP = {
+  '111': '10kg',
+  '112': '20kg',
+  '211': '20kg',
+  '214': '20kg',
+  '215': '20kg',
+  '311': '10kg',
+  '312': '15kg',
+  '313': '2kg',
+  '314': '개',
+  '411': '10kg',
+  '421': '30kg',
+  '511': '단',
+  '612': '10kg',
+  '711': '1kg',
+  '216': '4kg',
+  '217': '100개',
+  '315': '4.5kg',
+  '218': '5kg',
+}
+
 export const MOCK_DAILY = [
-  { itemCode: '111', itemName: '봄배추', category: '채소류', date: '2025-04-18', avgPrice: 8200, minPrice: 6000, maxPrice: 11000, volume: 4820, change7d: 12.3 },
-  { itemCode: '112', itemName: '무', category: '채소류', date: '2025-04-18', avgPrice: 3400, minPrice: 2500, maxPrice: 4800, volume: 3210, change7d: -5.2 },
-  { itemCode: '211', itemName: '양파', category: '채소류', date: '2025-04-18', avgPrice: 5600, minPrice: 4200, maxPrice: 7100, volume: 2980, change7d: 3.1 },
-  { itemCode: '214', itemName: '당근', category: '채소류', date: '2025-04-18', avgPrice: 4100, minPrice: 3000, maxPrice: 5500, volume: 1870, change7d: -8.4 },
-  { itemCode: '215', itemName: '감자', category: '채소류', date: '2025-04-18', avgPrice: 6800, minPrice: 5200, maxPrice: 9000, volume: 2540, change7d: 1.2 },
-  { itemCode: '311', itemName: '사과', category: '과일류', date: '2025-04-18', avgPrice: 42000, minPrice: 35000, maxPrice: 55000, volume: 1230, change7d: 6.7 },
-  { itemCode: '312', itemName: '배', category: '과일류', date: '2025-04-18', avgPrice: 38000, minPrice: 30000, maxPrice: 48000, volume: 980, change7d: -2.1 },
-  { itemCode: '313', itemName: '딸기', category: '과일류', date: '2025-04-18', avgPrice: 28000, minPrice: 22000, maxPrice: 36000, volume: 1560, change7d: 9.3 },
-  { itemCode: '314', itemName: '수박', category: '과일류', date: '2025-04-18', avgPrice: 22000, minPrice: 18000, maxPrice: 28000, volume: 870, change7d: -1.5 },
-  { itemCode: '411', itemName: '쌀', category: '특용작물', date: '2025-04-18', avgPrice: 52000, minPrice: 48000, maxPrice: 58000, volume: 3400, change7d: 0.8 },
-  { itemCode: '421', itemName: '콩', category: '특용작물', date: '2025-04-18', avgPrice: 14000, minPrice: 11000, maxPrice: 18000, volume: 890, change7d: -3.6 },
-  { itemCode: '511', itemName: '장미', category: '화훼류', date: '2025-04-18', avgPrice: 8500, minPrice: 6500, maxPrice: 11000, volume: 450, change7d: 5.2 },
-  { itemCode: '612', itemName: '고등어', category: '수산물', date: '2025-04-18', avgPrice: 12000, minPrice: 9000, maxPrice: 15000, volume: 760, change7d: -4.1 },
-  { itemCode: '711', itemName: '돼지고기', category: '축산물', date: '2025-04-18', avgPrice: 18500, minPrice: 15000, maxPrice: 22000, volume: 1120, change7d: 2.4 },
-  { itemCode: '216', itemName: '시금치', category: '채소류', date: '2025-04-18', avgPrice: 7200, minPrice: 5500, maxPrice: 9500, volume: 1340, change7d: 14.5 },
-  { itemCode: '217', itemName: '오이', category: '채소류', date: '2025-04-18', avgPrice: 4800, minPrice: 3500, maxPrice: 6200, volume: 1680, change7d: -6.8 },
-  { itemCode: '315', itemName: '복숭아', category: '과일류', date: '2025-04-18', avgPrice: 19000, minPrice: 15000, maxPrice: 24000, volume: 620, change7d: 3.8 },
-  { itemCode: '218', itemName: '파프리카', category: '채소류', date: '2025-04-18', avgPrice: 11000, minPrice: 8500, maxPrice: 14000, volume: 920, change7d: -2.9 },
+  { itemCode: '111', itemName: '봄배추', category: '채소류', date: '2025-04-18', avgPrice: 8200, minPrice: 6000, maxPrice: 11000, volume: 4820, change7d: 12.3, unit: '10kg' },
+  { itemCode: '112', itemName: '무', category: '채소류', date: '2025-04-18', avgPrice: 3400, minPrice: 2500, maxPrice: 4800, volume: 3210, change7d: -5.2, unit: '20kg' },
+  { itemCode: '211', itemName: '양파', category: '채소류', date: '2025-04-18', avgPrice: 5600, minPrice: 4200, maxPrice: 7100, volume: 2980, change7d: 3.1, unit: '20kg' },
+  { itemCode: '214', itemName: '당근', category: '채소류', date: '2025-04-18', avgPrice: 4100, minPrice: 3000, maxPrice: 5500, volume: 1870, change7d: -8.4, unit: '20kg' },
+  { itemCode: '215', itemName: '감자', category: '채소류', date: '2025-04-18', avgPrice: 6800, minPrice: 5200, maxPrice: 9000, volume: 2540, change7d: 1.2, unit: '20kg' },
+  { itemCode: '311', itemName: '사과', category: '과일류', date: '2025-04-18', avgPrice: 42000, minPrice: 35000, maxPrice: 55000, volume: 1230, change7d: 6.7, unit: '10kg' },
+  { itemCode: '312', itemName: '배', category: '과일류', date: '2025-04-18', avgPrice: 38000, minPrice: 30000, maxPrice: 48000, volume: 980, change7d: -2.1, unit: '15kg' },
+  { itemCode: '313', itemName: '딸기', category: '과일류', date: '2025-04-18', avgPrice: 28000, minPrice: 22000, maxPrice: 36000, volume: 1560, change7d: 9.3, unit: '2kg' },
+  { itemCode: '314', itemName: '수박', category: '과일류', date: '2025-04-18', avgPrice: 22000, minPrice: 18000, maxPrice: 28000, volume: 870, change7d: -1.5, unit: '개' },
+  { itemCode: '411', itemName: '쌀', category: '특용작물', date: '2025-04-18', avgPrice: 52000, minPrice: 48000, maxPrice: 58000, volume: 3400, change7d: 0.8, unit: '10kg' },
+  { itemCode: '421', itemName: '콩', category: '특용작물', date: '2025-04-18', avgPrice: 14000, minPrice: 11000, maxPrice: 18000, volume: 890, change7d: -3.6, unit: '30kg' },
+  { itemCode: '511', itemName: '장미', category: '화훼류', date: '2025-04-18', avgPrice: 8500, minPrice: 6500, maxPrice: 11000, volume: 450, change7d: 5.2, unit: '단' },
+  { itemCode: '612', itemName: '고등어', category: '수산물', date: '2025-04-18', avgPrice: 12000, minPrice: 9000, maxPrice: 15000, volume: 760, change7d: -4.1, unit: '10kg' },
+  { itemCode: '711', itemName: '돼지고기', category: '축산물', date: '2025-04-18', avgPrice: 18500, minPrice: 15000, maxPrice: 22000, volume: 1120, change7d: 2.4, unit: '1kg' },
+  { itemCode: '216', itemName: '시금치', category: '채소류', date: '2025-04-18', avgPrice: 7200, minPrice: 5500, maxPrice: 9500, volume: 1340, change7d: 14.5, unit: '4kg' },
+  { itemCode: '217', itemName: '오이', category: '채소류', date: '2025-04-18', avgPrice: 4800, minPrice: 3500, maxPrice: 6200, volume: 1680, change7d: -6.8, unit: '100개' },
+  { itemCode: '315', itemName: '복숭아', category: '과일류', date: '2025-04-18', avgPrice: 19000, minPrice: 15000, maxPrice: 24000, volume: 620, change7d: 3.8, unit: '4.5kg' },
+  { itemCode: '218', itemName: '파프리카', category: '채소류', date: '2025-04-18', avgPrice: 11000, minPrice: 8500, maxPrice: 14000, volume: 920, change7d: -2.9, unit: '5kg' },
 ]
 
 export const MOCK_TREND = (itemCode) => {
   const base = MOCK_DAILY.find(d => d.itemCode === itemCode)?.avgPrice || 10000
+  const unit = UNIT_MAP[itemCode] || '10kg'
   return Array.from({ length: 30 }, (_, i) => {
     const d = new Date('2025-04-18')
     d.setDate(d.getDate() - (29 - i))
@@ -34,6 +56,7 @@ export const MOCK_TREND = (itemCode) => {
       minPrice: Math.round(price * 0.82),
       maxPrice: Math.round(price * 1.18),
       volume: Math.round(500 + Math.random() * 1500),
+      unit,
     }
   })
 }

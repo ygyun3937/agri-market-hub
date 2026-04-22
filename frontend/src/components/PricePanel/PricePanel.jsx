@@ -47,6 +47,9 @@ function PriceRow({ price, onRemove }) {
       <span style={{ fontSize: 14, fontWeight: 700, color: price.price ? '#eef5fb' : '#87b8d4' }}>
         {price.price ? `₩${price.price.toLocaleString()}` : '가격 없음'}
       </span>
+      {price.unit && (
+        <span style={{ fontSize: 10, color: '#87b8d4', marginLeft: 3 }}>/{price.unit}</span>
+      )}
       {price.changePercent != null && (
         <span style={{ fontSize: 12, fontWeight: 700, color: isUp ? '#f85149' : '#56e890' }}>
           {isUp ? '▲' : '▼'}{Math.abs(price.changePercent)}%

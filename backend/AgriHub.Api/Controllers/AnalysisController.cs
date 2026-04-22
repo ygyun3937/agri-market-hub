@@ -13,7 +13,8 @@ public record DailyAuctionDto(
     decimal MinPrice,
     decimal MaxPrice,
     decimal Volume,
-    decimal? Change7d);
+    decimal? Change7d,
+    string? Unit);
 
 public record TrendDto(
     string ItemCode,
@@ -23,7 +24,8 @@ public record TrendDto(
     decimal AvgPrice,
     decimal MinPrice,
     decimal MaxPrice,
-    decimal Volume);
+    decimal Volume,
+    string? Unit);
 
 public record MarketSummaryDto(
     string MarketCode,
@@ -61,7 +63,10 @@ public class AnalysisController(AppDbContext db) : ControllerBase
                        t.volume      AS "Volume",
                        CASE WHEN w.avg_price > 0
                             THEN ROUND(((t.avg_price - w.avg_price) / w.avg_price * 100)::numeric, 1)
-                            ELSE NULL END AS "Change7d"
+                            ELSE NULL END AS "Change7d",
+                       (SELECT MODE() WITHIN GROUP (ORDER BY ar.unit)
+                        FROM auction_raw ar
+                        WHERE ar.item_code = t.item_code AND ar.date = {0}) AS "Unit"
                 FROM   daily_auction t
                 LEFT JOIN daily_auction w
                        ON w.item_code = t.item_code AND w.date = {1}
@@ -97,7 +102,11 @@ public class AnalysisController(AppDbContext db) : ControllerBase
                        avg_price   AS "AvgPrice",
                        min_price   AS "MinPrice",
                        max_price   AS "MaxPrice",
-                       volume      AS "Volume"
+                       volume      AS "Volume",
+                       (SELECT MODE() WITHIN GROUP (ORDER BY ar.unit)
+                        FROM auction_raw ar
+                        WHERE ar.item_code = daily_auction.item_code
+                          AND ar.date = daily_auction.date) AS "Unit"
                 FROM   daily_auction
                 WHERE  item_code = {0}
                   AND  date >= {1}

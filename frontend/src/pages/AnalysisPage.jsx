@@ -241,6 +241,7 @@ function TableView({ rows, onSelect }) {
             <div style={{ textAlign: 'right', flexShrink: 0 }}>
               <div style={{ fontWeight: 700, color: TEXT, fontSize: 14 }}>
                 {Number(row.avgPrice).toLocaleString()}원
+                {row.unit && <span style={{ fontSize: 10, color: DIM, marginLeft: 3 }}>/{row.unit}</span>}
               </div>
               <div style={{ marginTop: 2 }}>
                 <ChangeBadge change={row.change7d != null ? Number(row.change7d) : null} />
@@ -279,7 +280,8 @@ function TableView({ rows, onSelect }) {
                 <div style={{ fontSize: 12, color: DIM }}>{row.category}</div>
               </td>
               <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 700, color: TEXT }}>
-                {Number(row.avgPrice).toLocaleString()}원
+                <div>{Number(row.avgPrice).toLocaleString()}원</div>
+                {row.unit && <div style={{ fontSize: 10, color: DIM, marginTop: 1 }}>/{row.unit}</div>}
               </td>
               <td style={{ padding: '8px 12px', textAlign: 'right' }}>
                 <ChangeBadge change={row.change7d != null ? Number(row.change7d) : null} />
