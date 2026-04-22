@@ -24,8 +24,9 @@ public class WeatherController(AppDbContext db) : ControllerBase
     [HttpGet("{regionCode}/forecast")]
     public async Task<ActionResult<List<ForecastDto>>> GetForecast(string regionCode)
     {
+        var kstNow = DateTime.UtcNow.AddHours(9);
         var forecasts = await db.WeatherForecasts
-            .Where(f => f.RegionCode == regionCode && f.ForecastDate >= DateOnly.FromDateTime(DateTime.UtcNow))
+            .Where(f => f.RegionCode == regionCode && f.ForecastDate >= DateOnly.FromDateTime(kstNow))
             .OrderBy(f => f.ForecastDate)
             .Take(5)
             .Select(f => new ForecastDto(f.ForecastDate, f.Icon, f.High, f.Low, f.RainProb))
