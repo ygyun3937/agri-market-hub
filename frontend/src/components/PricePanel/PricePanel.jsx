@@ -5,6 +5,14 @@ import client from '../../api/client'
 const SEASONAL = ['111', '112', '411']
 const ITEM_NAMES = { '111': '봄배추', '112': '무', '211': '양파', '214': '당근', '215': '감자', '311': '사과', '312': '배', '411': '쌀' }
 const ITEM_ICONS = { '111': '🥬', '112': '🌿', '211': '🧅', '214': '🥕', '215': '🥔', '311': '🍎', '312': '🍐', '411': '🌾' }
+const UNIT_MAP = {
+  '111': '10kg', '112': '20kg', '211': '20kg', '214': '20kg', '215': '20kg',
+  '311': '10kg', '312': '15kg', '313': '2kg',  '314': '개',   '315': '4.5kg',
+  '411': '10kg', '421': '30kg', '511': '단',   '612': '10kg', '711': '1kg',
+  '213': '10kg', '216': '10kg', '217': '10kg', '218': '10kg', '219': '4kg',
+  '221': '개',   '222': '100개','223': '5kg',  '224': '2kg',  '225': '10kg',
+  '226': '4kg',  '412': '30kg', '413': '30kg',
+}
 
 const EXTRA_ITEMS = [
   { code: '213', name: '마늘', icon: '🧄' },
@@ -44,12 +52,16 @@ function PriceRow({ price, onRemove }) {
       <span style={{ fontSize: 12, color: '#ddeaf5', flex: 1 }}>
         {price.itemName || ITEM_NAMES[price.itemCode] || price.itemCode}
       </span>
-      <span style={{ fontSize: 14, fontWeight: 700, color: price.price ? '#eef5fb' : '#87b8d4' }}>
-        {price.price ? `₩${price.price.toLocaleString()}` : '가격 없음'}
-      </span>
-      {price.unit && (
-        <span style={{ fontSize: 10, color: '#87b8d4', marginLeft: 3 }}>/{price.unit}</span>
-      )}
+      <div style={{ textAlign: 'right' }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: price.price ? '#eef5fb' : '#87b8d4' }}>
+          {price.price ? `₩${price.price.toLocaleString()}` : '가격 없음'}
+        </div>
+        {(price.unit || UNIT_MAP[price.itemCode]) && (
+          <div style={{ fontSize: 10, color: '#87b8d4' }}>
+            /{price.unit || UNIT_MAP[price.itemCode]}
+          </div>
+        )}
+      </div>
       {price.changePercent != null && (
         <span style={{ fontSize: 12, fontWeight: 700, color: isUp ? '#f85149' : '#56e890' }}>
           {isUp ? '▲' : '▼'}{Math.abs(price.changePercent)}%
