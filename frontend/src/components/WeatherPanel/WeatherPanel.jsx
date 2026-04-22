@@ -264,7 +264,7 @@ export default function WeatherPanel() {
       {weather ? (
         <div style={{ background: '#253748', border: '1px solid #354d65',
           borderRadius: 8, padding: '12px 14px', marginBottom: 10 }}>
-          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, marginBottom: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, marginBottom: 6 }}>
             <span style={{ fontSize: 42, fontWeight: 700, color: '#eef5fb', lineHeight: 1 }}>
               {weather.temp ?? '--'}°
             </span>
@@ -272,6 +272,18 @@ export default function WeatherPanel() {
               {weather.rain > 0 ? '🌧️' : weather.humidity > 70 ? '⛅' : '☀️'}
             </span>
           </div>
+          {weather.collectedAt && (() => {
+            const d = new Date(weather.collectedAt)
+            const todayStr = new Date().toLocaleDateString('sv')
+            const dataStr = d.toLocaleDateString('sv')
+            const isStale = dataStr !== todayStr
+            const label = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')} 기준`
+            return (
+              <div style={{ fontSize: 10, color: isStale ? '#d29922' : '#6a8fa8', marginBottom: 8 }}>
+                {isStale ? '⚠️ ' : ''}{label}{isStale ? ' (전일 데이터)' : ''}
+              </div>
+            )
+          })()}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
               <span style={{ fontSize: 13 }}>💧</span>
@@ -312,7 +324,7 @@ export default function WeatherPanel() {
           const d = new Date(f.date)
           const weekday = d.toLocaleDateString('ko', { weekday: 'short' })
           const date = d.toLocaleDateString('ko', { month: 'numeric', day: 'numeric' })
-          const isToday = new Date().toDateString() === d.toDateString()
+          const isToday = new Date().toLocaleDateString('sv') === f.date?.slice(0, 10)
           return (
             <div key={f.date} style={{
               display: 'flex', alignItems: 'center', gap: 6,
