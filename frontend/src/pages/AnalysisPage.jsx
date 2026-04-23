@@ -24,6 +24,20 @@ const MOCK_LIVESTOCK = [
   { itemCode: 'L032', itemName: '계란 대란',         category: '닭·계란', price: 1280, unit: '30개', change7d: -0.8 },
 ]
 
+const LIVESTOCK_BASE_PRICE = {
+  'L001': 8900, 'L002': 5200, 'L003': 4800, 'L004': 5900,
+  'L011': 2450, 'L012': 2100, 'L013': 1680,
+  'L021': 4200, 'L031': 1420, 'L032': 1280,
+}
+function MOCK_LIVESTOCK_TREND(itemCode) {
+  const base = LIVESTOCK_BASE_PRICE[itemCode] || 5000
+  return Array.from({ length: 30 }, (_, i) => {
+    const d = new Date(); d.setDate(d.getDate() - 29 + i)
+    const price = Math.round(base + (Math.random() - 0.5) * base * 0.08)
+    return { itemCode, date: d.toISOString().slice(0, 10), avgPrice: price, price, volume: 0 }
+  })
+}
+
 const LIVESTOCK_SUB_TABS = ['소', '돼지', '닭·계란']
 const LIVESTOCK_ICONS = { '소': '🐄', '돼지': '🐷', '닭·계란': '🐔' }
 
@@ -837,10 +851,11 @@ function LivestockSection({ selectedDate }) {
     if (!selectedItem) { setTrendData([]); return }
     setTrendLoading(true)
     client.get(`/livestock/trend?itemCode=${selectedItem.itemCode}&days=30`)
-      .then(r => setTrendData(
-        (r.data || []).map(d => ({ ...d, avgPrice: d.price, volume: 0 }))
-      ))
-      .catch(() => setTrendData([]))
+      .then(r => {
+        const rows = (r.data || []).map(d => ({ ...d, avgPrice: d.price, volume: 0 }))
+        setTrendData(rows.length ? rows : MOCK_LIVESTOCK_TREND(selectedItem.itemCode))
+      })
+      .catch(() => setTrendData(MOCK_LIVESTOCK_TREND(selectedItem.itemCode)))
       .finally(() => setTrendLoading(false))
   }, [selectedItem])
 
