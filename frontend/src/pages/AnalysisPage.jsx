@@ -740,29 +740,75 @@ function PageHeader({ selectedDate, setSelectedDate }) {
 }
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
-// ─── Livestock Trend Chart ────────────────────────────────────────────────────
-function LivestockTrendChart({ item, data, onClose }) {
-  if (!data.length) return null
+// ─── Livestock KPI Row ────────────────────────────────────────────────────────
+function LivestockKpiRow({ data, selectedDate }) {
+  const withChange = data.filter(d => d.change7d != null)
+  const risers = withChange.filter(d => d.change7d > 0).length
+  const fallers = withChange.filter(d => d.change7d < 0).length
+  const isMobile = window.innerWidth <= 768
   return (
-    <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 8, padding: '14px 16px', marginBottom: 12 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-        <span style={{ fontSize: 14, fontWeight: 600, color: TEXT }}>{item.itemName} 30일 추이</span>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', color: DIM, cursor: 'pointer', fontSize: 16 }}>✕</button>
-      </div>
-      <ResponsiveContainer width="100%" height={160}>
-        <ComposedChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#2d4255" />
-          <XAxis dataKey="date" tickFormatter={d => d?.slice(5)} tick={{ fontSize: 10, fill: DIM }} />
-          <YAxis tick={{ fontSize: 10, fill: DIM }} tickFormatter={v => v.toLocaleString()} width={60} />
-          <Tooltip
-            contentStyle={{ background: '#253748', border: '1px solid #354d65', borderRadius: 6 }}
-            labelStyle={{ color: DIM }}
-            formatter={v => [`₩${Number(v).toLocaleString()}`, '가격']}
-          />
-          <Line type="monotone" dataKey="price" stroke={ACCENT} strokeWidth={2} dot={false} />
-        </ComposedChart>
-      </ResponsiveContainer>
+    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: 12, marginBottom: 12 }}>
+      <StatCard label="모니터링 품목" value={`${data.length}개`} />
+      <StatCard label="가격 상승" value={`${risers}개`} />
+      <StatCard label="가격 하락" value={`${fallers}개`} />
+      <StatCard label="기준일" value={selectedDate} />
     </div>
+  )
+}
+
+// ─── Livestock Table ──────────────────────────────────────────────────────────
+function LivestockTable({ rows, onSelect }) {
+  const isMobile = window.innerWidth <= 768
+  if (isMobile) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '6px 10px' }}>
+        {rows.map(item => (
+          <div key={item.itemCode} onClick={() => onSelect(item)}
+            style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              background: '#1c2a36', border: '1px solid #354d65', borderRadius: 6, padding: '8px 10px', cursor: 'pointer' }}>
+            <div>
+              <div style={{ fontSize: 13, color: TEXT, fontWeight: 600 }}>{item.itemName}</div>
+              <div style={{ fontSize: 11, color: DIM }}>/{item.unit}</div>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: TEXT }}>₩{Number(item.price).toLocaleString()}</div>
+              <ChangeBadge change={item.change7d} />
+            </div>
+          </div>
+        ))}
+      </div>
+    )
+  }
+  return (
+    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+      <thead>
+        <tr style={{ background: BG }}>
+          {['품목', '가격', '단위', '7일比'].map((h, i) => (
+            <th key={h} style={{ padding: '8px 12px', fontSize: 11, color: DIM,
+              borderBottom: `1px solid ${BORDER}`,
+              textAlign: i === 0 ? 'left' : i === 2 ? 'center' : 'right' }}>{h}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map(item => (
+          <tr key={item.itemCode} onClick={() => onSelect(item)}
+            style={{ borderBottom: `1px solid #2d4255`, cursor: 'pointer' }}
+            onMouseEnter={e => { e.currentTarget.style.background = '#2d4255' }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}>
+            <td style={{ padding: '9px 12px', fontSize: 13, color: TEXT }}>{item.itemName}</td>
+            <td style={{ padding: '9px 12px', fontSize: 14, fontWeight: 700, color: TEXT, textAlign: 'right' }}>
+              ₩{Number(item.price).toLocaleString()}
+            </td>
+            <td style={{ padding: '9px 12px', fontSize: 11, color: DIM, textAlign: 'center' }}>/{item.unit}</td>
+            <td style={{ padding: '9px 12px', textAlign: 'right' }}><ChangeBadge change={item.change7d} /></td>
+          </tr>
+        ))}
+        {rows.length === 0 && (
+          <tr><td colSpan={4} style={{ padding: 20, textAlign: 'center', color: DIM }}>데이터 없음</td></tr>
+        )}
+      </tbody>
+    </table>
   )
 }
 
@@ -773,6 +819,7 @@ function LivestockSection({ selectedDate }) {
   const [trendData, setTrendData] = useState([])
   const [selectedItem, setSelectedItem] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [trendLoading, setTrendLoading] = useState(false)
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -788,15 +835,26 @@ function LivestockSection({ selectedDate }) {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!selectedItem) { setTrendData([]); return }
+    setTrendLoading(true)
     client.get(`/livestock/trend?itemCode=${selectedItem.itemCode}&days=30`)
-      .then(r => setTrendData(r.data || []))
+      .then(r => setTrendData(
+        (r.data || []).map(d => ({ ...d, avgPrice: d.price, volume: 0 }))
+      ))
       .catch(() => setTrendData([]))
+      .finally(() => setTrendLoading(false))
   }, [selectedItem])
 
+  const selectItem = useCallback((item) => {
+    setSelectedItem({ itemCode: item.itemCode, itemName: item.itemName })
+  }, [])
+
   const filtered = data.filter(d => d.category === subTab)
+  // 농산물 컴포넌트 재사용 위해 avgPrice 필드 정규화
+  const normalized = filtered.map(d => ({ ...d, avgPrice: d.price, minPrice: d.price, maxPrice: d.price, volume: 0 }))
 
   return (
     <div>
+      {/* 축종 서브탭 */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
         {LIVESTOCK_SUB_TABS.map(tab => (
           <button key={tab} onClick={() => { setSubTab(tab); setSelectedItem(null) }} style={{
@@ -813,45 +871,27 @@ function LivestockSection({ selectedDate }) {
       </div>
 
       {loading ? (
-        <div style={{ padding: 40, textAlign: 'center', color: DIM }}>불러오는 중...</div>
+        <div style={{ padding: 60, textAlign: 'center', color: DIM, fontSize: 15 }}>불러오는 중...</div>
       ) : (
         <>
+          <LivestockKpiRow data={normalized} selectedDate={selectedDate} />
+          <TopMovers data={normalized} onSelect={selectItem} />
+          <PriceHeatmap data={normalized} onSelect={selectItem} />
           {selectedItem && (
-            <LivestockTrendChart item={selectedItem} data={trendData} onClose={() => setSelectedItem(null)} />
+            <TrendPanel
+              item={selectedItem}
+              data={trendData}
+              trendLoading={trendLoading}
+              onClose={() => setSelectedItem(null)}
+            />
           )}
-          <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 8, overflow: 'hidden' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ background: BG }}>
-                  <th style={{ padding: '8px 12px', textAlign: 'left',   fontSize: 11, color: DIM, borderBottom: `1px solid ${BORDER}` }}>품목</th>
-                  <th style={{ padding: '8px 12px', textAlign: 'right',  fontSize: 11, color: DIM, borderBottom: `1px solid ${BORDER}` }}>가격</th>
-                  <th style={{ padding: '8px 12px', textAlign: 'center', fontSize: 11, color: DIM, borderBottom: `1px solid ${BORDER}` }}>단위</th>
-                  <th style={{ padding: '8px 12px', textAlign: 'right',  fontSize: 11, color: DIM, borderBottom: `1px solid ${BORDER}` }}>7일比</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map(item => (
-                  <tr key={item.itemCode}
-                    onClick={() => setSelectedItem({ itemCode: item.itemCode, itemName: item.itemName })}
-                    style={{ borderBottom: `1px solid #2d4255`, cursor: 'pointer' }}
-                    onMouseEnter={e => { e.currentTarget.style.background = '#2d4255' }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-                  >
-                    <td style={{ padding: '9px 12px', fontSize: 13, color: TEXT }}>{item.itemName}</td>
-                    <td style={{ padding: '9px 12px', fontSize: 14, fontWeight: 700, color: TEXT, textAlign: 'right' }}>
-                      ₩{Number(item.price).toLocaleString()}
-                    </td>
-                    <td style={{ padding: '9px 12px', fontSize: 11, color: DIM, textAlign: 'center' }}>/{item.unit}</td>
-                    <td style={{ padding: '9px 12px', textAlign: 'right' }}><ChangeBadge change={item.change7d} /></td>
-                  </tr>
-                ))}
-                {filtered.length === 0 && (
-                  <tr><td colSpan={4} style={{ padding: 20, textAlign: 'center', color: DIM }}>데이터 없음</td></tr>
-                )}
-              </tbody>
-            </table>
+          <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 8, overflow: 'hidden', marginBottom: 12 }}>
+            <div style={{ padding: '10px 14px', borderBottom: `1px solid ${BORDER}`, fontSize: 13, color: ACCENT, fontWeight: 600 }}>
+              {LIVESTOCK_ICONS[subTab]} {subTab} 전체 품목
+            </div>
+            <LivestockTable rows={filtered} onSelect={selectItem} />
           </div>
-          <div style={{ marginTop: 8, fontSize: 11, color: DIM }}>
+          <div style={{ fontSize: 11, color: DIM, marginBottom: 8 }}>
             📌 KAMIS 도매 기준가 · 품목 클릭 시 30일 추이 확인
           </div>
         </>
