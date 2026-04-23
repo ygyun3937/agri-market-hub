@@ -22,6 +22,33 @@ const GREEN   = '#56e890'
 const RED     = '#f85149'
 const BLUE    = '#82cfff'
 
+// ─── Livestock mock data ───────────────────────────────────────────────────────
+const MOCK_LIVESTOCK_RAW = [
+  { itemCode: 'L001', itemName: '한우 등심(거세)', category: '소',    price: 8900, unit: '100g', change7d:  1.2 },
+  { itemCode: 'L002', itemName: '한우 설도(거세)', category: '소',    price: 5200, unit: '100g', change7d: -0.8 },
+  { itemCode: 'L003', itemName: '육우 등심',       category: '소',    price: 4800, unit: '100g', change7d:  0.3 },
+  { itemCode: 'L004', itemName: '돼지 삼겹살',     category: '돼지',  price: 2800, unit: '100g', change7d:  2.1 },
+  { itemCode: 'L005', itemName: '돼지 목살',       category: '돼지',  price: 2100, unit: '100g', change7d: -1.5 },
+  { itemCode: 'L006', itemName: '돼지 앞다리',     category: '돼지',  price: 1600, unit: '100g', change7d:  0.0 },
+  { itemCode: 'L007', itemName: '육계(생닭)',       category: '닭·계란', price: 1850, unit: '마리', change7d: -2.3 },
+  { itemCode: 'L008', itemName: '계란(특란)',       category: '닭·계란', price: 230,  unit: '개',  change7d:  3.5 },
+  { itemCode: 'L009', itemName: '계란(대란)',       category: '닭·계란', price: 210,  unit: '개',  change7d:  2.8 },
+  { itemCode: 'L010', itemName: '오리(생오리)',     category: '닭·계란', price: 4200, unit: '마리', change7d:  0.5 },
+]
+const MOCK_LIVESTOCK = MOCK_LIVESTOCK_RAW.map(d => ({ ...d, avgPrice: d.price, volume: 0 }))
+
+const _LS_BASE = { L001: 8900, L002: 5200, L003: 4800, L004: 2800, L005: 2100, L006: 1600, L007: 1850, L008: 230, L009: 210, L010: 4200 }
+function MOCK_LIVESTOCK_TREND(itemCode) {
+  const base = _LS_BASE[itemCode] || 5000
+  return Array.from({ length: 30 }, (_, i) => {
+    const d = new Date(); d.setDate(d.getDate() - 29 + i)
+    const price = Math.round(base + (Math.random() - 0.5) * base * 0.08)
+    return { itemCode, date: d.toISOString().slice(0, 10), avgPrice: price, volume: 0 }
+  })
+}
+
+const LIVESTOCK_SUB_TABS = ['소', '돼지', '닭·계란']
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function getToday() {
   return new Date().toISOString().slice(0, 10)
@@ -557,6 +584,182 @@ function DetailPanel({ item, trendData, varietyData, originData, detailLoading, 
   )
 }
 
+// ─── Livestock detail panel (trend only) ─────────────────────────────────────
+function LivestockDetailPanel({ item, trendData, detailLoading, onClose }) {
+  const chartData = trendData.map(row => ({
+    date: fmtDate(row.date),
+    avgPrice: Number(row.avgPrice),
+    volume: 0,
+  }))
+
+  return (
+    <div style={{
+      background: SURFACE, border: `1px solid ${BORDER}`,
+      borderRadius: 8, padding: '12px 16px', marginTop: 12,
+      animation: 'slideIn 0.2s ease-out',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+        <span style={{ fontSize: 15, fontWeight: 700, color: TEXT }}>{item.itemName} 가격 추이</span>
+        <button
+          onClick={onClose}
+          style={{
+            marginLeft: 'auto', background: 'none', border: `1px solid ${BORDER}`,
+            color: DIM, fontSize: 13, width: 24, height: 24,
+            borderRadius: 4, cursor: 'pointer', lineHeight: 1,
+          }}
+        >×</button>
+      </div>
+      {detailLoading ? (
+        <div style={{ padding: 40, textAlign: 'center', color: DIM, fontSize: 13 }}>불러오는 중...</div>
+      ) : chartData.length === 0 ? (
+        <div style={{ fontSize: 12, color: DIM, padding: '12px 0' }}>데이터 없음</div>
+      ) : (
+        <div style={{ height: 200 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={chartData} margin={{ top: 4, right: 24, bottom: 4, left: 8 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#2d4255" />
+              <XAxis
+                dataKey="date"
+                tick={{ fill: DIM, fontSize: 10 }}
+                axisLine={{ stroke: BORDER }}
+                tickLine={false}
+                interval="preserveStartEnd"
+              />
+              <YAxis
+                yAxisId="price"
+                orientation="left"
+                tick={{ fill: DIM, fontSize: 10 }}
+                axisLine={{ stroke: BORDER }}
+                tickLine={false}
+                tickFormatter={v => v.toLocaleString()}
+              />
+              <Tooltip content={<TrendTooltip />} />
+              <Line
+                yAxisId="price"
+                type="monotone"
+                dataKey="avgPrice"
+                name="평균가"
+                stroke={ACCENT}
+                strokeWidth={2}
+                dot={false}
+                activeDot={{ r: 4, fill: ACCENT }}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Livestock section ────────────────────────────────────────────────────────
+function LivestockSection() {
+  const [viewMode, setViewMode]         = useState('treemap')
+  const [subTab, setSubTab]             = useState('소')
+  const [listData, setListData]         = useState([])
+  const [selectedItem, setSelectedItem] = useState(null)
+  const [trendData, setTrendData]       = useState([])
+  const [loading, setLoading]           = useState(false)
+  const [detailLoading, setDetailLoading] = useState(false)
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLoading(true)
+    client.get('/livestock/daily')
+      .then(r => {
+        const rows = (r.data || []).map(d => ({ ...d, avgPrice: d.price, volume: 0 }))
+        setListData(rows.length ? rows : MOCK_LIVESTOCK)
+      })
+      .catch(() => setListData(MOCK_LIVESTOCK))
+      .finally(() => setLoading(false))
+  }, [])
+
+  useEffect(() => {
+    if (!selectedItem) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setTrendData([])
+      return
+    }
+    setDetailLoading(true)
+    client.get(`/livestock/trend?itemCode=${selectedItem.itemCode}&days=30`)
+      .then(r => {
+        const rows = (r.data || []).map(d => ({ ...d, avgPrice: d.price, volume: 0 }))
+        setTrendData(rows.length ? rows : MOCK_LIVESTOCK_TREND(selectedItem.itemCode))
+      })
+      .catch(() => setTrendData(MOCK_LIVESTOCK_TREND(selectedItem.itemCode)))
+      .finally(() => setDetailLoading(false))
+  }, [selectedItem])
+
+  const selectItem = useCallback((item) => {
+    setSelectedItem({ itemCode: item.itemCode, itemName: item.itemName })
+  }, [])
+
+  const filtered = listData.filter(d => d.category === subTab)
+
+  return (
+    <>
+      {loading ? (
+        <div style={{ padding: 60, textAlign: 'center', color: DIM, fontSize: 14 }}>불러오는 중...</div>
+      ) : (
+        <>
+          {viewMode === 'treemap' && (
+            <div style={{
+              background: SURFACE, border: `1px solid ${BORDER}`,
+              borderRadius: 8, overflow: 'hidden', marginBottom: 12,
+              height: 374, display: 'flex', flexDirection: 'column', padding: '8px',
+            }}>
+              <TreemapView data={listData} onSelect={selectItem} />
+            </div>
+          )}
+
+          {selectedItem && (
+            <LivestockDetailPanel
+              item={selectedItem}
+              trendData={trendData}
+              detailLoading={detailLoading}
+              onClose={() => setSelectedItem(null)}
+            />
+          )}
+
+          <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 8, overflow: 'hidden' }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px',
+              borderBottom: `1px solid ${BORDER}`, flexWrap: 'wrap',
+            }}>
+              <div style={{ display: 'flex', border: `1px solid ${BORDER}`, borderRadius: 20, overflow: 'hidden', marginRight: 4 }}>
+                {['treemap', 'table'].map(mode => (
+                  <button key={mode} onClick={() => setViewMode(mode)} style={{
+                    padding: '4px 14px', border: 'none', cursor: 'pointer', fontSize: 12,
+                    background: viewMode === mode ? ACCENT : 'transparent',
+                    color: viewMode === mode ? '#fff' : DIM,
+                    fontWeight: viewMode === mode ? 600 : 400,
+                    transition: 'all 0.15s',
+                  }}>
+                    {mode === 'treemap' ? '트리맵' : '테이블'}
+                  </button>
+                ))}
+              </div>
+              {LIVESTOCK_SUB_TABS.map(tab => (
+                <button key={tab} onClick={() => setSubTab(tab)} style={{
+                  padding: '4px 12px', borderRadius: 16, fontSize: 12,
+                  border: `1px solid ${subTab === tab ? '#1e9070' : BORDER}`,
+                  background: subTab === tab ? '#1e9070' : SURFACE,
+                  color: subTab === tab ? '#fff' : DIM,
+                  cursor: 'pointer', fontWeight: subTab === tab ? 600 : 400,
+                  transition: 'all 0.15s',
+                }}>
+                  {tab}
+                </button>
+              ))}
+            </div>
+            <ProductTable data={filtered} onSelect={selectItem} />
+          </div>
+        </>
+      )}
+    </>
+  )
+}
+
 // ─── Page toolbar ─────────────────────────────────────────────────────────────
 function HolidayBanner({ selectedDate, hasData }) {
   const d = new Date(selectedDate)
@@ -609,6 +812,7 @@ function PageToolbar({ selectedDate, setSelectedDate }) {
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function ProductsAnalysisPage() {
+  const [mainTab, setMainTab]           = useState('농산물')
   const [selectedDate, setSelectedDate] = useState(getToday)
   const [dailyData, setDailyData]       = useState([])
   const [viewMode, setViewMode]         = useState('treemap')
@@ -682,10 +886,31 @@ export default function ProductsAnalysisPage() {
         setSelectedDate={setSelectedDate}
       />
       <AnalysisNav />
-      <HolidayBanner selectedDate={selectedDate} hasData={dailyData.length > 0} />
+
+      {/* Main tab switcher */}
+      <div style={{
+        display: 'flex', gap: 4, padding: '8px 16px',
+        borderBottom: `1px solid ${BORDER}`, background: SURFACE, flexShrink: 0,
+      }}>
+        {['농산물', '축산물'].map(tab => (
+          <button key={tab} onClick={() => setMainTab(tab)} style={{
+            padding: '6px 16px', borderRadius: 6, fontSize: 13, border: 'none',
+            cursor: 'pointer', transition: 'all 0.15s',
+            background: mainTab === tab ? ACCENT : 'transparent',
+            color: mainTab === tab ? '#fff' : DIM,
+            fontWeight: mainTab === tab ? 600 : 400,
+          }}>
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      {mainTab === '농산물' && <HolidayBanner selectedDate={selectedDate} hasData={dailyData.length > 0} />}
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px 16px' }}>
-        {loading ? (
+        {mainTab === '축산물' ? (
+          <LivestockSection />
+        ) : loading ? (
           <div style={{ padding: 60, textAlign: 'center', color: DIM, fontSize: 14 }}>
             불러오는 중...
           </div>
