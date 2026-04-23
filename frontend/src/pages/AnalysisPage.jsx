@@ -786,6 +786,7 @@ function LivestockSection({ selectedDate }) {
   }, [selectedDate])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!selectedItem) { setTrendData([]); return }
     client.get(`/livestock/trend?itemCode=${selectedItem.itemCode}&days=30`)
       .then(r => setTrendData(r.data || []))
