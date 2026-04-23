@@ -24,27 +24,35 @@ const BLUE    = '#82cfff'
 
 // ─── Livestock mock data ───────────────────────────────────────────────────────
 const MOCK_LIVESTOCK_RAW = [
-  { itemCode: 'L001', itemName: '한우 등심(거세)', category: '소',    price: 8900, unit: '100g', change7d:  1.2 },
-  { itemCode: 'L002', itemName: '한우 설도(거세)', category: '소',    price: 5200, unit: '100g', change7d: -0.8 },
-  { itemCode: 'L003', itemName: '육우 등심',       category: '소',    price: 4800, unit: '100g', change7d:  0.3 },
-  { itemCode: 'L004', itemName: '돼지 삼겹살',     category: '돼지',  price: 2800, unit: '100g', change7d:  2.1 },
-  { itemCode: 'L005', itemName: '돼지 목살',       category: '돼지',  price: 2100, unit: '100g', change7d: -1.5 },
-  { itemCode: 'L006', itemName: '돼지 앞다리',     category: '돼지',  price: 1600, unit: '100g', change7d:  0.0 },
-  { itemCode: 'L007', itemName: '육계(생닭)',       category: '닭·계란', price: 1850, unit: '마리', change7d: -2.3 },
-  { itemCode: 'L008', itemName: '계란(특란)',       category: '닭·계란', price: 230,  unit: '개',  change7d:  3.5 },
-  { itemCode: 'L009', itemName: '계란(대란)',       category: '닭·계란', price: 210,  unit: '개',  change7d:  2.8 },
-  { itemCode: 'L010', itemName: '오리(생오리)',     category: '닭·계란', price: 4200, unit: '마리', change7d:  0.5 },
+  { itemCode: 'L001', itemName: '한우 등심(거세)',  category: '소',    price: 8900, unit: '100g', change7d:  1.2, origin: '국내산' },
+  { itemCode: 'L002', itemName: '한우 설도(거세)',  category: '소',    price: 5200, unit: '100g', change7d: -0.8, origin: '국내산' },
+  { itemCode: 'L003', itemName: '육우 등심',        category: '소',    price: 4800, unit: '100g', change7d:  0.3, origin: '국내산' },
+  { itemCode: 'L011', itemName: '돼지 삼겹살', category: '돼지', price: 2800, unit: '100g', change7d:  2.1, origin: '국내산' },
+  { itemCode: 'L011', itemName: '돼지 삼겹살', category: '돼지', price: 1050, unit: '100g', change7d:  0.8, origin: '수입산' },
+  { itemCode: 'L012', itemName: '돼지 목심',   category: '돼지', price: 2100, unit: '100g', change7d: -1.5, origin: '국내산' },
+  { itemCode: 'L012', itemName: '돼지 목심',   category: '돼지', price:  850, unit: '100g', change7d:  1.2, origin: '수입산' },
+  { itemCode: 'L013', itemName: '돼지 앞다리', category: '돼지', price: 1600, unit: '100g', change7d:  0.0, origin: '국내산' },
+  { itemCode: 'L013', itemName: '돼지 앞다리', category: '돼지', price:  680, unit: '100g', change7d: -0.5, origin: '수입산' },
+  { itemCode: 'L021', itemName: '닭(육계)',  category: '닭·계란', price: 1850, unit: '1kg',  change7d: -2.3, origin: '국내산' },
+  { itemCode: 'L031', itemName: '계란 특란', category: '닭·계란', price:  230, unit: '30개', change7d:  3.5, origin: '국내산' },
+  { itemCode: 'L032', itemName: '계란 대란', category: '닭·계란', price:  210, unit: '30개', change7d:  2.8, origin: '국내산' },
 ]
 const MOCK_LIVESTOCK = MOCK_LIVESTOCK_RAW.map(d => ({ ...d, avgPrice: d.price, volume: 0 }))
 
-const _LS_BASE = { L001: 8900, L002: 5200, L003: 4800, L004: 2800, L005: 2100, L006: 1600, L007: 1850, L008: 230, L009: 210, L010: 4200 }
-function MOCK_LIVESTOCK_TREND(itemCode) {
-  const base = _LS_BASE[itemCode] || 5000
+const _LS_BASE = { L001: 8900, L002: 5200, L003: 4800, L011: 2800, L012: 2100, L013: 1600, L021: 1850, L031: 230, L032: 210 }
+function MOCK_LIVESTOCK_TREND(itemCode, origin = '국내산') {
+  const base = (_LS_BASE[itemCode] || 5000) * (origin === '수입산' ? 0.38 : 1)
   return Array.from({ length: 30 }, (_, i) => {
     const d = new Date(); d.setDate(d.getDate() - 29 + i)
     const price = Math.round(base + (Math.random() - 0.5) * base * 0.08)
     return { itemCode, date: d.toISOString().slice(0, 10), avgPrice: price, volume: 0 }
   })
+}
+
+function MOCK_LIVESTOCK_ORIGIN(itemCode) {
+  return MOCK_LIVESTOCK_RAW
+    .filter(d => d.itemCode === itemCode)
+    .map(d => ({ origin: d.origin, price: d.price, unit: d.unit }))
 }
 
 const LIVESTOCK_SUB_TABS = ['소', '돼지', '닭·계란']
@@ -584,8 +592,37 @@ function DetailPanel({ item, trendData, varietyData, originData, detailLoading, 
   )
 }
 
-// ─── Livestock detail panel (trend only) ─────────────────────────────────────
-function LivestockDetailPanel({ item, trendData, detailLoading, onClose }) {
+// ─── Origin price bar chart ───────────────────────────────────────────────────
+function OriginPriceChart({ data }) {
+  if (!data || data.length === 0)
+    return <div style={{ fontSize: 12, color: DIM, padding: '12px 0' }}>데이터 없음</div>
+  const max = Math.max(...data.map(d => Number(d.price) || 0))
+  return (
+    <div>
+      {data.map(d => (
+        <div key={d.origin} style={{ marginBottom: 12 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 4 }}>
+            <span style={{ color: TEXT, fontWeight: 600 }}>{d.origin}</span>
+            <span style={{ color: ACCENT, fontWeight: 700 }}>
+              {Number(d.price).toLocaleString()}원
+              {d.unit && <span style={{ color: DIM, fontWeight: 400, fontSize: 11 }}>/{d.unit}</span>}
+            </span>
+          </div>
+          <div style={{ height: 8, background: '#2d4255', borderRadius: 4 }}>
+            <div style={{
+              height: 8, borderRadius: 4, transition: 'width 0.3s ease',
+              background: d.origin.includes('수입') ? '#5ba3f5' : ACCENT,
+              width: max > 0 ? `${(Number(d.price) / max * 100).toFixed(1)}%` : '0%',
+            }} />
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// ─── Livestock detail panel ───────────────────────────────────────────────────
+function LivestockDetailPanel({ item, trendData, originData, detailLoading, onClose }) {
   const chartData = trendData.map(row => ({
     date: fmtDate(row.date),
     avgPrice: Number(row.avgPrice),
@@ -611,41 +648,58 @@ function LivestockDetailPanel({ item, trendData, detailLoading, onClose }) {
       </div>
       {detailLoading ? (
         <div style={{ padding: 40, textAlign: 'center', color: DIM, fontSize: 13 }}>불러오는 중...</div>
-      ) : chartData.length === 0 ? (
-        <div style={{ fontSize: 12, color: DIM, padding: '12px 0' }}>데이터 없음</div>
       ) : (
-        <div style={{ height: 200 }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={chartData} margin={{ top: 4, right: 24, bottom: 4, left: 8 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#2d4255" />
-              <XAxis
-                dataKey="date"
-                tick={{ fill: DIM, fontSize: 10 }}
-                axisLine={{ stroke: BORDER }}
-                tickLine={false}
-                interval="preserveStartEnd"
-              />
-              <YAxis
-                yAxisId="price"
-                orientation="left"
-                tick={{ fill: DIM, fontSize: 10 }}
-                axisLine={{ stroke: BORDER }}
-                tickLine={false}
-                tickFormatter={v => v.toLocaleString()}
-              />
-              <Tooltip content={<TrendTooltip />} />
-              <Line
-                yAxisId="price"
-                type="monotone"
-                dataKey="avgPrice"
-                name="평균가"
-                stroke={ACCENT}
-                strokeWidth={2}
-                dot={false}
-                activeDot={{ r: 4, fill: ACCENT }}
-              />
-            </ComposedChart>
-          </ResponsiveContainer>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 }}>
+          {/* 30일 가격 추이 */}
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: DIM, marginBottom: 8 }}>
+              30일 가격 추이 ({item.origin || '국내산'})
+            </div>
+            {chartData.length === 0
+              ? <div style={{ fontSize: 12, color: DIM }}>데이터 없음</div>
+              : (
+                <div style={{ height: 200 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart data={chartData} margin={{ top: 4, right: 24, bottom: 4, left: 8 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#2d4255" />
+                      <XAxis
+                        dataKey="date"
+                        tick={{ fill: DIM, fontSize: 10 }}
+                        axisLine={{ stroke: BORDER }}
+                        tickLine={false}
+                        interval="preserveStartEnd"
+                      />
+                      <YAxis
+                        yAxisId="price"
+                        orientation="left"
+                        tick={{ fill: DIM, fontSize: 10 }}
+                        axisLine={{ stroke: BORDER }}
+                        tickLine={false}
+                        tickFormatter={v => v.toLocaleString()}
+                      />
+                      <Tooltip content={<TrendTooltip />} />
+                      <Line
+                        yAxisId="price"
+                        type="monotone"
+                        dataKey="avgPrice"
+                        name="평균가"
+                        stroke={ACCENT}
+                        strokeWidth={2}
+                        dot={false}
+                        activeDot={{ r: 4, fill: ACCENT }}
+                      />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                </div>
+              )
+            }
+          </div>
+
+          {/* 원산지별 가격 */}
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: DIM, marginBottom: 8 }}>원산지별 가격</div>
+            <OriginPriceChart data={originData} />
+          </div>
         </div>
       )}
     </div>
@@ -659,6 +713,7 @@ function LivestockSection() {
   const [listData, setListData]         = useState([])
   const [selectedItem, setSelectedItem] = useState(null)
   const [trendData, setTrendData]       = useState([])
+  const [originData, setOriginData]     = useState([])
   const [loading, setLoading]           = useState(false)
   const [detailLoading, setDetailLoading] = useState(false)
 
@@ -678,23 +733,40 @@ function LivestockSection() {
     if (!selectedItem) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setTrendData([])
+      setOriginData([])
       return
     }
+    const { itemCode, origin = '국내산' } = selectedItem
     setDetailLoading(true)
-    client.get(`/livestock/trend?itemCode=${selectedItem.itemCode}&days=30`)
-      .then(r => {
-        const rows = (r.data || []).map(d => ({ ...d, avgPrice: d.price, volume: 0 }))
-        setTrendData(rows.length ? rows : MOCK_LIVESTOCK_TREND(selectedItem.itemCode))
-      })
-      .catch(() => setTrendData(MOCK_LIVESTOCK_TREND(selectedItem.itemCode)))
-      .finally(() => setDetailLoading(false))
+    Promise.allSettled([
+      client.get(`/livestock/trend?itemCode=${itemCode}&days=30&origin=${encodeURIComponent(origin)}`),
+      client.get(`/livestock/origin?itemCode=${itemCode}`),
+    ]).then(([trend, orig]) => {
+      const tRows = trend.status === 'fulfilled'
+        ? (trend.value.data || []).map(d => ({ ...d, avgPrice: d.price, volume: 0 }))
+        : []
+      setTrendData(tRows.length ? tRows : MOCK_LIVESTOCK_TREND(itemCode, origin))
+      setOriginData(
+        orig.status === 'fulfilled' && orig.value.data?.length
+          ? orig.value.data
+          : MOCK_LIVESTOCK_ORIGIN(itemCode)
+      )
+    }).finally(() => setDetailLoading(false))
   }, [selectedItem])
 
   const selectItem = useCallback((item) => {
-    setSelectedItem({ itemCode: item.itemCode, itemName: item.itemName })
+    setSelectedItem({ itemCode: item.itemCode, itemName: item.itemName, origin: item.origin || '국내산' })
   }, [])
 
-  const filtered = listData.filter(d => d.category === subTab)
+  // Append origin to itemName when the same item has multiple origins
+  const originCounts = {}
+  listData.forEach(d => { originCounts[d.itemCode] = (originCounts[d.itemCode] || 0) + 1 })
+  const displayData = listData.map(d => ({
+    ...d,
+    itemName: originCounts[d.itemCode] > 1 ? `${d.itemName} (${d.origin})` : d.itemName,
+  }))
+
+  const filtered = displayData.filter(d => d.category === subTab)
 
   return (
     <>
@@ -708,7 +780,7 @@ function LivestockSection() {
               borderRadius: 8, overflow: 'hidden', marginBottom: 12,
               height: 374, display: 'flex', flexDirection: 'column', padding: '8px',
             }}>
-              <TreemapView data={listData} onSelect={selectItem} />
+              <TreemapView data={displayData} onSelect={selectItem} />
             </div>
           )}
 
@@ -716,6 +788,7 @@ function LivestockSection() {
             <LivestockDetailPanel
               item={selectedItem}
               trendData={trendData}
+              originData={originData}
               detailLoading={detailLoading}
               onClose={() => setSelectedItem(null)}
             />

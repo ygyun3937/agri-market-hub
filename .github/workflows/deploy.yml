@@ -102,4 +102,7 @@ jobs:
             docker compose exec -T db psql -U agrihub -d agrihub -c \"CREATE INDEX IF NOT EXISTS idx_daily_auction_item ON daily_auction(item_code, date)\"
             docker compose exec -T db psql -U agrihub -d agrihub -c \"CREATE TABLE IF NOT EXISTS livestock_prices (id SERIAL PRIMARY KEY, item_code VARCHAR(50) NOT NULL, item_name VARCHAR(100), category VARCHAR(50), price NUMERIC(10,2), unit VARCHAR(20), date DATE NOT NULL, UNIQUE(item_code, date))\"
             docker compose exec -T db psql -U agrihub -d agrihub -c \"CREATE INDEX IF NOT EXISTS idx_livestock_date ON livestock_prices(date DESC)\"
+            docker compose exec -T db psql -U agrihub -d agrihub -c \"ALTER TABLE livestock_prices ADD COLUMN IF NOT EXISTS origin VARCHAR(50) NOT NULL DEFAULT '국내산'\"
+            docker compose exec -T db psql -U agrihub -d agrihub -c \"DO \\\$\\\$ BEGIN IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'livestock_prices_item_code_date_key') THEN ALTER TABLE livestock_prices DROP CONSTRAINT livestock_prices_item_code_date_key; END IF; END \\\$\\\$\"
+            docker compose exec -T db psql -U agrihub -d agrihub -c \"ALTER TABLE livestock_prices ADD CONSTRAINT livestock_prices_item_code_origin_date_key UNIQUE (item_code, origin, date)\" || true
           "

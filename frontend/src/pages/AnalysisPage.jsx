@@ -12,16 +12,19 @@ import client from '../api/client'
 import { MOCK_DAILY, MOCK_TREND } from '../data/analysisMock'
 
 const MOCK_LIVESTOCK = [
-  { itemCode: 'L001', itemName: '한우 등심(거세)',  category: '소',    price: 8900, unit: '100g', change7d: 1.2 },
-  { itemCode: 'L002', itemName: '한우 설도(거세)',  category: '소',    price: 5200, unit: '100g', change7d: -0.8 },
-  { itemCode: 'L003', itemName: '한우 앞다리(거세)', category: '소',   price: 4800, unit: '100g', change7d: 0.3 },
-  { itemCode: 'L004', itemName: '육우 등심',        category: '소',    price: 5900, unit: '100g', change7d: -1.5 },
-  { itemCode: 'L011', itemName: '돼지 삼겹살',      category: '돼지',  price: 2450, unit: '100g', change7d: 2.1 },
-  { itemCode: 'L012', itemName: '돼지 목심',        category: '돼지',  price: 2100, unit: '100g', change7d: -0.5 },
-  { itemCode: 'L013', itemName: '돼지 앞다리',      category: '돼지',  price: 1680, unit: '100g', change7d: 0.0 },
-  { itemCode: 'L021', itemName: '닭(육계)',          category: '닭·계란', price: 4200, unit: '1kg',  change7d: 3.2 },
-  { itemCode: 'L031', itemName: '계란 특란',         category: '닭·계란', price: 1420, unit: '30개', change7d: -1.2 },
-  { itemCode: 'L032', itemName: '계란 대란',         category: '닭·계란', price: 1280, unit: '30개', change7d: -0.8 },
+  { itemCode: 'L001', itemName: '한우 등심(거세)',  category: '소',    price: 8900, unit: '100g', change7d:  1.2, origin: '국내산' },
+  { itemCode: 'L002', itemName: '한우 설도(거세)',  category: '소',    price: 5200, unit: '100g', change7d: -0.8, origin: '국내산' },
+  { itemCode: 'L003', itemName: '한우 앞다리(거세)', category: '소',   price: 4800, unit: '100g', change7d:  0.3, origin: '국내산' },
+  { itemCode: 'L004', itemName: '육우 등심',        category: '소',    price: 5900, unit: '100g', change7d: -1.5, origin: '국내산' },
+  { itemCode: 'L011', itemName: '돼지 삼겹살', category: '돼지', price: 2450, unit: '100g', change7d:  2.1, origin: '국내산' },
+  { itemCode: 'L011', itemName: '돼지 삼겹살', category: '돼지', price: 1050, unit: '100g', change7d:  0.8, origin: '수입산' },
+  { itemCode: 'L012', itemName: '돼지 목심',   category: '돼지', price: 2100, unit: '100g', change7d: -0.5, origin: '국내산' },
+  { itemCode: 'L012', itemName: '돼지 목심',   category: '돼지', price:  850, unit: '100g', change7d:  1.2, origin: '수입산' },
+  { itemCode: 'L013', itemName: '돼지 앞다리', category: '돼지', price: 1680, unit: '100g', change7d:  0.0, origin: '국내산' },
+  { itemCode: 'L013', itemName: '돼지 앞다리', category: '돼지', price:  680, unit: '100g', change7d: -0.5, origin: '수입산' },
+  { itemCode: 'L021', itemName: '닭(육계)',  category: '닭·계란', price: 4200, unit: '1kg',  change7d:  3.2, origin: '국내산' },
+  { itemCode: 'L031', itemName: '계란 특란', category: '닭·계란', price: 1420, unit: '30개', change7d: -1.2, origin: '국내산' },
+  { itemCode: 'L032', itemName: '계란 대란', category: '닭·계란', price: 1280, unit: '30개', change7d: -0.8, origin: '국내산' },
 ]
 
 const LIVESTOCK_BASE_PRICE = {
@@ -29,13 +32,19 @@ const LIVESTOCK_BASE_PRICE = {
   'L011': 2450, 'L012': 2100, 'L013': 1680,
   'L021': 4200, 'L031': 1420, 'L032': 1280,
 }
-function MOCK_LIVESTOCK_TREND(itemCode) {
-  const base = LIVESTOCK_BASE_PRICE[itemCode] || 5000
+function MOCK_LIVESTOCK_TREND(itemCode, origin = '국내산') {
+  const base = (LIVESTOCK_BASE_PRICE[itemCode] || 5000) * (origin === '수입산' ? 0.38 : 1)
   return Array.from({ length: 30 }, (_, i) => {
     const d = new Date(); d.setDate(d.getDate() - 29 + i)
     const price = Math.round(base + (Math.random() - 0.5) * base * 0.08)
     return { itemCode, date: d.toISOString().slice(0, 10), avgPrice: price, price, volume: 0 }
   })
+}
+
+function MOCK_LIVESTOCK_ORIGIN(itemCode) {
+  return MOCK_LIVESTOCK
+    .filter(d => d.itemCode === itemCode)
+    .map(d => ({ origin: d.origin, price: d.price, unit: d.unit }))
 }
 
 const LIVESTOCK_SUB_TABS = ['소', '돼지', '닭·계란']
@@ -777,12 +786,12 @@ function LivestockTable({ rows, onSelect }) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '6px 10px' }}>
         {rows.map(item => (
-          <div key={item.itemCode} onClick={() => onSelect(item)}
+          <div key={`${item.itemCode}-${item.origin}`} onClick={() => onSelect(item)}
             style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center',
               background: '#1c2a36', border: '1px solid #354d65', borderRadius: 6, padding: '8px 10px', cursor: 'pointer' }}>
             <div>
               <div style={{ fontSize: 13, color: TEXT, fontWeight: 600 }}>{item.itemName}</div>
-              <div style={{ fontSize: 11, color: DIM }}>/{item.unit}</div>
+              <div style={{ fontSize: 11, color: DIM }}>{item.origin && <span style={{ marginRight: 4, color: item.origin.includes('수입') ? '#5ba3f5' : DIM }}>{item.origin}</span>}/{item.unit}</div>
             </div>
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontSize: 15, fontWeight: 700, color: TEXT }}>₩{Number(item.price).toLocaleString()}</div>
@@ -797,20 +806,23 @@ function LivestockTable({ rows, onSelect }) {
     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
       <thead>
         <tr style={{ background: BG }}>
-          {['품목', '가격', '단위', '7일比'].map((h, i) => (
+          {['품목', '원산지', '가격', '단위', '7일比'].map((h, i) => (
             <th key={h} style={{ padding: '8px 12px', fontSize: 11, color: DIM,
               borderBottom: `1px solid ${BORDER}`,
-              textAlign: i === 0 ? 'left' : i === 2 ? 'center' : 'right' }}>{h}</th>
+              textAlign: i === 0 ? 'left' : i === 3 ? 'center' : 'right' }}>{h}</th>
           ))}
         </tr>
       </thead>
       <tbody>
         {rows.map(item => (
-          <tr key={item.itemCode} onClick={() => onSelect(item)}
+          <tr key={`${item.itemCode}-${item.origin}`} onClick={() => onSelect(item)}
             style={{ borderBottom: `1px solid #2d4255`, cursor: 'pointer' }}
             onMouseEnter={e => { e.currentTarget.style.background = '#2d4255' }}
             onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}>
             <td style={{ padding: '9px 12px', fontSize: 13, color: TEXT }}>{item.itemName}</td>
+            <td style={{ padding: '9px 12px', fontSize: 12, textAlign: 'right' }}>
+              <span style={{ color: item.origin?.includes('수입') ? '#5ba3f5' : DIM }}>{item.origin || '국내산'}</span>
+            </td>
             <td style={{ padding: '9px 12px', fontSize: 14, fontWeight: 700, color: TEXT, textAlign: 'right' }}>
               ₩{Number(item.price).toLocaleString()}
             </td>
@@ -831,6 +843,7 @@ function LivestockSection({ selectedDate }) {
   const [subTab, setSubTab] = useState('소')
   const [data, setData] = useState([])
   const [trendData, setTrendData] = useState([])
+  const [originData, setOriginData] = useState([])
   const [selectedItem, setSelectedItem] = useState(null)
   const [loading, setLoading] = useState(false)
   const [trendLoading, setTrendLoading] = useState(false)
@@ -840,6 +853,7 @@ function LivestockSection({ selectedDate }) {
     setLoading(true)
     setSelectedItem(null)
     setTrendData([])
+    setOriginData([])
     client.get(`/livestock/daily?date=${selectedDate}`)
       .then(r => setData(r.data?.length ? r.data : MOCK_LIVESTOCK))
       .catch(() => setData(MOCK_LIVESTOCK))
@@ -847,20 +861,32 @@ function LivestockSection({ selectedDate }) {
   }, [selectedDate])
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (!selectedItem) { setTrendData([]); return }
+    if (!selectedItem) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setTrendData([])
+      setOriginData([])
+      return
+    }
+    const { itemCode, origin = '국내산' } = selectedItem
     setTrendLoading(true)
-    client.get(`/livestock/trend?itemCode=${selectedItem.itemCode}&days=30`)
-      .then(r => {
-        const rows = (r.data || []).map(d => ({ ...d, avgPrice: d.price, volume: 0 }))
-        setTrendData(rows.length ? rows : MOCK_LIVESTOCK_TREND(selectedItem.itemCode))
-      })
-      .catch(() => setTrendData(MOCK_LIVESTOCK_TREND(selectedItem.itemCode)))
-      .finally(() => setTrendLoading(false))
-  }, [selectedItem])
+    Promise.allSettled([
+      client.get(`/livestock/trend?itemCode=${itemCode}&days=30&origin=${encodeURIComponent(origin)}`),
+      client.get(`/livestock/origin?itemCode=${itemCode}&date=${selectedDate}`),
+    ]).then(([trend, orig]) => {
+      const tRows = trend.status === 'fulfilled'
+        ? (trend.value.data || []).map(d => ({ ...d, avgPrice: d.price, volume: 0 }))
+        : []
+      setTrendData(tRows.length ? tRows : MOCK_LIVESTOCK_TREND(itemCode, origin))
+      setOriginData(
+        orig.status === 'fulfilled' && orig.value.data?.length
+          ? orig.value.data
+          : MOCK_LIVESTOCK_ORIGIN(itemCode)
+      )
+    }).finally(() => setTrendLoading(false))
+  }, [selectedItem, selectedDate])
 
   const selectItem = useCallback((item) => {
-    setSelectedItem({ itemCode: item.itemCode, itemName: item.itemName })
+    setSelectedItem({ itemCode: item.itemCode, itemName: item.itemName, origin: item.origin || '국내산' })
   }, [])
 
   const filtered = data.filter(d => d.category === subTab)
@@ -893,12 +919,40 @@ function LivestockSection({ selectedDate }) {
           <TopMovers data={normalized} onSelect={selectItem} />
           <PriceHeatmap data={normalized} onSelect={selectItem} />
           {selectedItem && (
-            <TrendPanel
-              item={selectedItem}
-              data={trendData}
-              trendLoading={trendLoading}
-              onClose={() => setSelectedItem(null)}
-            />
+            <>
+              <TrendPanel
+                item={selectedItem}
+                data={trendData}
+                trendLoading={trendLoading}
+                onClose={() => setSelectedItem(null)}
+              />
+              {originData.length > 1 && (
+                <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 8, padding: '12px 16px', marginBottom: 12 }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: DIM, marginBottom: 12 }}>원산지별 가격 비교</div>
+                  {originData.map(d => {
+                    const max = Math.max(...originData.map(x => Number(x.price) || 0))
+                    return (
+                      <div key={d.origin} style={{ marginBottom: 10 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 4 }}>
+                          <span style={{ color: d.origin.includes('수입') ? '#5ba3f5' : TEXT, fontWeight: 600 }}>{d.origin}</span>
+                          <span style={{ color: ACCENT, fontWeight: 700 }}>
+                            {Number(d.price).toLocaleString()}원
+                            {d.unit && <span style={{ color: DIM, fontWeight: 400, fontSize: 11 }}>/{d.unit}</span>}
+                          </span>
+                        </div>
+                        <div style={{ height: 8, background: '#2d4255', borderRadius: 4 }}>
+                          <div style={{
+                            height: 8, borderRadius: 4, transition: 'width 0.3s ease',
+                            background: d.origin.includes('수입') ? '#5ba3f5' : ACCENT,
+                            width: max > 0 ? `${(Number(d.price) / max * 100).toFixed(1)}%` : '0%',
+                          }} />
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </>
           )}
           <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 8, overflow: 'hidden', marginBottom: 12 }}>
             <div style={{ padding: '10px 14px', borderBottom: `1px solid ${BORDER}`, fontSize: 13, color: ACCENT, fontWeight: 600 }}>

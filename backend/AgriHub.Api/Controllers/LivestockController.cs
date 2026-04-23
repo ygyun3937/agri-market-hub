@@ -8,6 +8,7 @@ public record LivestockDailyDto(
     string ItemCode,
     string ItemName,
     string Category,
+    string Origin,
     DateOnly Date,
     decimal Price,
     string? Unit,
@@ -18,6 +19,11 @@ public record LivestockTrendDto(
     string ItemName,
     string Category,
     DateOnly Date,
+    decimal Price,
+    string? Unit);
+
+public record LivestockOriginDto(
+    string Origin,
     decimal Price,
     string? Unit);
 
@@ -38,6 +44,7 @@ public class LivestockController(AppDbContext db) : ControllerBase
                 SELECT t.item_code  AS "ItemCode",
                        t.item_name  AS "ItemName",
                        t.category   AS "Category",
+                       t.origin     AS "Origin",
                        t.date       AS "Date",
                        t.price      AS "Price",
                        t.unit       AS "Unit",
@@ -46,9 +53,9 @@ public class LivestockController(AppDbContext db) : ControllerBase
                             ELSE NULL END AS "Change7d"
                 FROM   livestock_prices t
                 LEFT JOIN livestock_prices w
-                       ON w.item_code = t.item_code AND w.date = {1}
+                       ON w.item_code = t.item_code AND w.origin = t.origin AND w.date = {1}
                 WHERE  t.date = {0}
-                ORDER  BY t.category, t.item_name
+                ORDER  BY t.category, t.item_name, t.origin DESC
                 """,
                 targetDate, week)
             .ToListAsync();
@@ -56,11 +63,12 @@ public class LivestockController(AppDbContext db) : ControllerBase
         return Ok(rows);
     }
 
-    // GET /api/livestock/trend?itemCode=XXX&days=30
+    // GET /api/livestock/trend?itemCode=XXX&days=30&origin=국내산
     [HttpGet("trend")]
     public async Task<ActionResult<List<LivestockTrendDto>>> GetTrend(
         [FromQuery] string itemCode,
-        [FromQuery] int days = 30)
+        [FromQuery] int days = 30,
+        [FromQuery] string origin = "국내산")
     {
         if (string.IsNullOrWhiteSpace(itemCode))
             return BadRequest("itemCode is required.");
@@ -79,10 +87,39 @@ public class LivestockController(AppDbContext db) : ControllerBase
                        unit       AS "Unit"
                 FROM   livestock_prices
                 WHERE  item_code = {0}
+                  AND  origin = {2}
                   AND  date >= {1}
                 ORDER  BY date ASC
                 """,
-                itemCode, from)
+                itemCode, from, origin)
+            .ToListAsync();
+
+        return Ok(rows);
+    }
+
+    // GET /api/livestock/origin?itemCode=XXX&date=YYYY-MM-DD
+    [HttpGet("origin")]
+    public async Task<ActionResult<List<LivestockOriginDto>>> GetOrigin(
+        [FromQuery] string itemCode,
+        [FromQuery] DateOnly? date)
+    {
+        if (string.IsNullOrWhiteSpace(itemCode))
+            return BadRequest("itemCode is required.");
+
+        var targetDate = date ?? DateOnly.FromDateTime(DateTime.UtcNow.AddHours(9).AddDays(-1));
+
+        var rows = await db.Database
+            .SqlQueryRaw<LivestockOriginDto>(
+                """
+                SELECT origin AS "Origin",
+                       price  AS "Price",
+                       unit   AS "Unit"
+                FROM   livestock_prices
+                WHERE  item_code = {0}
+                  AND  date = {1}
+                ORDER  BY origin DESC
+                """,
+                itemCode, targetDate)
             .ToListAsync();
 
         return Ok(rows);

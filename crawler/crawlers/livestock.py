@@ -86,26 +86,33 @@ def run_livestock():
 
     matched = 0
     for search, code, name, unit, cat in LIVESTOCK_TARGETS:
+        seen_origins = set()
         for it in all_items:
             item_name = it.get("item_name", "")
-            if search in item_name:
-                try:
-                    price_str = str(it.get("dpr1", "0")).replace(",", "").strip()
-                    price = float(price_str) if price_str else 0
-                    if price <= 0:
-                        continue
-                    db.upsert_livestock_price(
-                        item_code=code,
-                        item_name=name,
-                        category=cat,
-                        price=price,
-                        unit=unit,
-                        date_str=today,
-                    )
-                    matched += 1
-                    log.info(f"Livestock: {name} = {price:,.0f}원/{unit}")
-                except (ValueError, KeyError) as e:
-                    log.warning(f"Livestock parse error for {name}: {e}")
-                break
+            if search not in item_name:
+                continue
+            raw_kind = (it.get("kind_name", "") or "").strip()
+            origin = "수입산" if "수입" in raw_kind else "국내산"
+            if origin in seen_origins:
+                continue
+            seen_origins.add(origin)
+            try:
+                price_str = str(it.get("dpr1", "0")).replace(",", "").strip()
+                price = float(price_str) if price_str else 0
+                if price <= 0:
+                    continue
+                db.upsert_livestock_price(
+                    item_code=code,
+                    item_name=name,
+                    category=cat,
+                    price=price,
+                    unit=unit,
+                    date_str=today,
+                    origin=origin,
+                )
+                matched += 1
+                log.info(f"Livestock: {name} ({origin}) = {price:,.0f}원/{unit}")
+            except (ValueError, KeyError) as e:
+                log.warning(f"Livestock parse error for {name} ({origin}): {e}")
 
-    log.info(f"Livestock: {matched}/{len(LIVESTOCK_TARGETS)} items saved for {today}")
+    log.info(f"Livestock: {matched} prices saved for {today}")
