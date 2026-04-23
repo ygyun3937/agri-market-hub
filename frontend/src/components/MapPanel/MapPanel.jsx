@@ -473,7 +473,7 @@ function SpecialtyLayer() {
   return null
 }
 
-function SpecialtyLegend({ hasPest }) {
+function SpecialtyLegend() {
   return (
     <div style={{
       position: 'absolute', bottom: 28, right: 10, zIndex: 1000,
@@ -582,7 +582,7 @@ export default function MapPanel({ layers = { '도매시장': true, '기상특�
       </MapContainer>
 
       {layers['병해충'] && <PestLegend colorMap={pestColorMap} source={pestSource} />}
-      {layers['특산물'] && <SpecialtyLegend hasPest={!!layers['병해충']} />}
+      {layers['특산물'] && <SpecialtyLegend />}
     </div>
   )
 }
