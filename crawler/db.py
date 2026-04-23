@@ -135,6 +135,17 @@ def upsert_auction_raw_batch(date_str, items):
             rows,
         )
 
+def upsert_livestock_price(item_code, item_name, category, price, unit, date_str):
+    with get_conn() as conn, conn.cursor() as cur:
+        cur.execute(
+            """INSERT INTO livestock_prices (item_code, item_name, category, price, unit, date)
+               VALUES (%s, %s, %s, %s, %s, %s)
+               ON CONFLICT (item_code, date)
+               DO UPDATE SET price=EXCLUDED.price, item_name=EXCLUDED.item_name""",
+            (item_code, item_name, category, price, unit, date_str),
+        )
+
+
 def aggregate_daily_auction(date_str):
     with get_conn() as conn, conn.cursor() as cur:
         cur.execute(

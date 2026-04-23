@@ -100,4 +100,6 @@ jobs:
             docker compose exec -T db psql -U agrihub -d agrihub -c \"CREATE TABLE IF NOT EXISTS daily_auction (id SERIAL PRIMARY KEY, item_code VARCHAR(50) NOT NULL, item_name VARCHAR(100), category VARCHAR(50), date DATE NOT NULL, avg_price NUMERIC(10,0), min_price NUMERIC(10,0), max_price NUMERIC(10,0), volume NUMERIC(12,0), UNIQUE(item_code, date))\"
             docker compose exec -T db psql -U agrihub -d agrihub -c \"CREATE INDEX IF NOT EXISTS idx_auction_raw_date ON auction_raw(date DESC)\"
             docker compose exec -T db psql -U agrihub -d agrihub -c \"CREATE INDEX IF NOT EXISTS idx_daily_auction_item ON daily_auction(item_code, date)\"
+            docker compose exec -T db psql -U agrihub -d agrihub -c \"CREATE TABLE IF NOT EXISTS livestock_prices (id SERIAL PRIMARY KEY, item_code VARCHAR(50) NOT NULL, item_name VARCHAR(100), category VARCHAR(50), price NUMERIC(10,2), unit VARCHAR(20), date DATE NOT NULL, UNIQUE(item_code, date))\"
+            docker compose exec -T db psql -U agrihub -d agrihub -c \"CREATE INDEX IF NOT EXISTS idx_livestock_date ON livestock_prices(date DESC)\"
           "

@@ -11,6 +11,22 @@ import AnalysisNav from '../components/Analysis/AnalysisNav'
 import client from '../api/client'
 import { MOCK_DAILY, MOCK_TREND } from '../data/analysisMock'
 
+const MOCK_LIVESTOCK = [
+  { itemCode: 'L001', itemName: '한우 등심(거세)',  category: '소',    price: 8900, unit: '100g', change7d: 1.2 },
+  { itemCode: 'L002', itemName: '한우 설도(거세)',  category: '소',    price: 5200, unit: '100g', change7d: -0.8 },
+  { itemCode: 'L003', itemName: '한우 앞다리(거세)', category: '소',   price: 4800, unit: '100g', change7d: 0.3 },
+  { itemCode: 'L004', itemName: '육우 등심',        category: '소',    price: 5900, unit: '100g', change7d: -1.5 },
+  { itemCode: 'L011', itemName: '돼지 삼겹살',      category: '돼지',  price: 2450, unit: '100g', change7d: 2.1 },
+  { itemCode: 'L012', itemName: '돼지 목심',        category: '돼지',  price: 2100, unit: '100g', change7d: -0.5 },
+  { itemCode: 'L013', itemName: '돼지 앞다리',      category: '돼지',  price: 1680, unit: '100g', change7d: 0.0 },
+  { itemCode: 'L021', itemName: '닭(육계)',          category: '닭·계란', price: 4200, unit: '1kg',  change7d: 3.2 },
+  { itemCode: 'L031', itemName: '계란 특란',         category: '닭·계란', price: 1420, unit: '30개', change7d: -1.2 },
+  { itemCode: 'L032', itemName: '계란 대란',         category: '닭·계란', price: 1280, unit: '30개', change7d: -0.8 },
+]
+
+const LIVESTOCK_SUB_TABS = ['소', '돼지', '닭·계란']
+const LIVESTOCK_ICONS = { '소': '🐄', '돼지': '🐷', '닭·계란': '🐔' }
+
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const BG      = '#1c2a36'
 const SURFACE = '#253748'
@@ -724,7 +740,127 @@ function PageHeader({ selectedDate, setSelectedDate }) {
 }
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
+// ─── Livestock Trend Chart ────────────────────────────────────────────────────
+function LivestockTrendChart({ item, data, onClose }) {
+  if (!data.length) return null
+  return (
+    <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 8, padding: '14px 16px', marginBottom: 12 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+        <span style={{ fontSize: 14, fontWeight: 600, color: TEXT }}>{item.itemName} 30일 추이</span>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', color: DIM, cursor: 'pointer', fontSize: 16 }}>✕</button>
+      </div>
+      <ResponsiveContainer width="100%" height={160}>
+        <ComposedChart data={data}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#2d4255" />
+          <XAxis dataKey="date" tickFormatter={d => d?.slice(5)} tick={{ fontSize: 10, fill: DIM }} />
+          <YAxis tick={{ fontSize: 10, fill: DIM }} tickFormatter={v => v.toLocaleString()} width={60} />
+          <Tooltip
+            contentStyle={{ background: '#253748', border: '1px solid #354d65', borderRadius: 6 }}
+            labelStyle={{ color: DIM }}
+            formatter={v => [`₩${Number(v).toLocaleString()}`, '가격']}
+          />
+          <Line type="monotone" dataKey="price" stroke={ACCENT} strokeWidth={2} dot={false} />
+        </ComposedChart>
+      </ResponsiveContainer>
+    </div>
+  )
+}
+
+// ─── Livestock Section ────────────────────────────────────────────────────────
+function LivestockSection({ selectedDate }) {
+  const [subTab, setSubTab] = useState('소')
+  const [data, setData] = useState([])
+  const [trendData, setTrendData] = useState([])
+  const [selectedItem, setSelectedItem] = useState(null)
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLoading(true)
+    setSelectedItem(null)
+    setTrendData([])
+    client.get(`/livestock/daily?date=${selectedDate}`)
+      .then(r => setData(r.data?.length ? r.data : MOCK_LIVESTOCK))
+      .catch(() => setData(MOCK_LIVESTOCK))
+      .finally(() => setLoading(false))
+  }, [selectedDate])
+
+  useEffect(() => {
+    if (!selectedItem) { setTrendData([]); return }
+    client.get(`/livestock/trend?itemCode=${selectedItem.itemCode}&days=30`)
+      .then(r => setTrendData(r.data || []))
+      .catch(() => setTrendData([]))
+  }, [selectedItem])
+
+  const filtered = data.filter(d => d.category === subTab)
+
+  return (
+    <div>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
+        {LIVESTOCK_SUB_TABS.map(tab => (
+          <button key={tab} onClick={() => { setSubTab(tab); setSelectedItem(null) }} style={{
+            padding: '6px 18px', borderRadius: 20,
+            border: `1px solid ${subTab === tab ? '#6ab8ff' : BORDER}`,
+            background: subTab === tab ? '#1a7fd4' : SURFACE,
+            color: subTab === tab ? '#fff' : DIM,
+            fontWeight: subTab === tab ? 700 : 400,
+            cursor: 'pointer', fontSize: 13,
+          }}>
+            {LIVESTOCK_ICONS[tab]} {tab}
+          </button>
+        ))}
+      </div>
+
+      {loading ? (
+        <div style={{ padding: 40, textAlign: 'center', color: DIM }}>불러오는 중...</div>
+      ) : (
+        <>
+          {selectedItem && (
+            <LivestockTrendChart item={selectedItem} data={trendData} onClose={() => setSelectedItem(null)} />
+          )}
+          <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 8, overflow: 'hidden' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ background: BG }}>
+                  <th style={{ padding: '8px 12px', textAlign: 'left',   fontSize: 11, color: DIM, borderBottom: `1px solid ${BORDER}` }}>품목</th>
+                  <th style={{ padding: '8px 12px', textAlign: 'right',  fontSize: 11, color: DIM, borderBottom: `1px solid ${BORDER}` }}>가격</th>
+                  <th style={{ padding: '8px 12px', textAlign: 'center', fontSize: 11, color: DIM, borderBottom: `1px solid ${BORDER}` }}>단위</th>
+                  <th style={{ padding: '8px 12px', textAlign: 'right',  fontSize: 11, color: DIM, borderBottom: `1px solid ${BORDER}` }}>7일比</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map(item => (
+                  <tr key={item.itemCode}
+                    onClick={() => setSelectedItem({ itemCode: item.itemCode, itemName: item.itemName })}
+                    style={{ borderBottom: `1px solid #2d4255`, cursor: 'pointer' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = '#2d4255' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                  >
+                    <td style={{ padding: '9px 12px', fontSize: 13, color: TEXT }}>{item.itemName}</td>
+                    <td style={{ padding: '9px 12px', fontSize: 14, fontWeight: 700, color: TEXT, textAlign: 'right' }}>
+                      ₩{Number(item.price).toLocaleString()}
+                    </td>
+                    <td style={{ padding: '9px 12px', fontSize: 11, color: DIM, textAlign: 'center' }}>/{item.unit}</td>
+                    <td style={{ padding: '9px 12px', textAlign: 'right' }}><ChangeBadge change={item.change7d} /></td>
+                  </tr>
+                ))}
+                {filtered.length === 0 && (
+                  <tr><td colSpan={4} style={{ padding: 20, textAlign: 'center', color: DIM }}>데이터 없음</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+          <div style={{ marginTop: 8, fontSize: 11, color: DIM }}>
+            📌 KAMIS 도매 기준가 · 품목 클릭 시 30일 추이 확인
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 export default function AnalysisPage() {
+  const [mainTab, setMainTab]                 = useState('농산물')
   const [selectedDate, setSelectedDate]       = useState(getToday)
   const [dailyData, setDailyData]             = useState([])
   const [trendData, setTrendData]             = useState([])
@@ -768,34 +904,53 @@ export default function AnalysisPage() {
       <NewsTicker />
       <PageHeader selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
       <AnalysisNav />
-      <HolidayBanner selectedDate={selectedDate} hasData={dailyData.length > 0} />
+
+      {/* 농산물 / 축산물 탭 */}
+      <div style={{ display: 'flex', gap: 0, padding: '0 16px', borderBottom: `1px solid ${BORDER}`, background: BG, flexShrink: 0 }}>
+        {[['🌾 농산물 경매', '농산물'], ['🐄 축산물 경매', '축산물']].map(([label, tab]) => (
+          <button key={tab} onClick={() => setMainTab(tab)} style={{
+            padding: '8px 20px', fontSize: 13, background: 'none', cursor: 'pointer',
+            color: mainTab === tab ? ACCENT : DIM,
+            border: 'none',
+            borderBottom: `2px solid ${mainTab === tab ? ACCENT : 'transparent'}`,
+            fontWeight: mainTab === tab ? 700 : 400,
+          }}>{label}</button>
+        ))}
+      </div>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px 16px' }}>
-        {loading ? (
-          <div style={{ padding: 60, textAlign: 'center', color: DIM, fontSize: 15 }}>
-            불러오는 중...
-          </div>
+        {mainTab === '축산물' ? (
+          <LivestockSection selectedDate={selectedDate} />
         ) : (
           <>
-            <KpiRow data={dailyData} selectedDate={selectedDate} />
-            <TopMovers data={dailyData} onSelect={selectItem} />
-            <PriceHeatmap data={dailyData} onSelect={selectItem} />
-            {selectedItem && (
-              <TrendPanel
-                item={selectedItem}
-                data={trendData}
-                trendLoading={trendLoading}
-                onClose={() => setSelectedItem(null)}
-              />
+            <HolidayBanner selectedDate={selectedDate} hasData={dailyData.length > 0} />
+            {loading ? (
+              <div style={{ padding: 60, textAlign: 'center', color: DIM, fontSize: 15 }}>
+                불러오는 중...
+              </div>
+            ) : (
+              <>
+                <KpiRow data={dailyData} selectedDate={selectedDate} />
+                <TopMovers data={dailyData} onSelect={selectItem} />
+                <PriceHeatmap data={dailyData} onSelect={selectItem} />
+                {selectedItem && (
+                  <TrendPanel
+                    item={selectedItem}
+                    data={trendData}
+                    trendLoading={trendLoading}
+                    onClose={() => setSelectedItem(null)}
+                  />
+                )}
+                <MainSection
+                  data={dailyData}
+                  viewMode={viewMode}
+                  setViewMode={setViewMode}
+                  activeCategory={activeCategory}
+                  setActiveCategory={setActiveCategory}
+                  onSelect={selectItem}
+                />
+              </>
             )}
-            <MainSection
-              data={dailyData}
-              viewMode={viewMode}
-              setViewMode={setViewMode}
-              activeCategory={activeCategory}
-              setActiveCategory={setActiveCategory}
-              onSelect={selectItem}
-            />
           </>
         )}
       </div>
