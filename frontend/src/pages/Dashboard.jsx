@@ -14,7 +14,7 @@ import FuelPanel from '../components/FuelPanel/FuelPanel'
 import PestPanel from '../components/PestPanel/PestPanel'
 import { useSignalR } from '../hooks/useSignalR'
 
-const LAYER_LABELS = ['도매시장', '기상특보', '병해충']
+const LAYER_LABELS = ['도매시장', '기상특보', '병해충', '특산물']
 
 const DEFAULT_LAYOUT = { col1: 220, col3: 270, col4: 280, bottomH: 310 }
 
@@ -114,8 +114,9 @@ export default function Dashboard() {
         '도매시장': saved['도매시장'] ?? true,
         '기상특보': saved['기상특보'] ?? true,
         '병해충': saved['병해충'] ?? true,
+        '특산물': saved['특산물'] ?? false,
       }
-    } catch { return { '도매시장': true, '기상특보': true, '병해충': true } }
+    } catch { return { '도매시장': true, '기상특보': true, '병해충': true, '특산물': false } }
   })
   const [schedules, setSchedules] = useState([])
   const [layout, setLayout] = useState(loadLayout)
