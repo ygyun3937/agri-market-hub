@@ -708,7 +708,6 @@ function LivestockDetailPanel({ item, trendData, originData, detailLoading, onCl
 
 // ─── Livestock section ────────────────────────────────────────────────────────
 function LivestockSection() {
-  const [viewMode, setViewMode]         = useState('treemap')
   const [subTab, setSubTab]             = useState('소')
   const [listData, setListData]         = useState([])
   const [selectedItem, setSelectedItem] = useState(null)
@@ -774,15 +773,13 @@ function LivestockSection() {
         <div style={{ padding: 60, textAlign: 'center', color: DIM, fontSize: 14 }}>불러오는 중...</div>
       ) : (
         <>
-          {viewMode === 'treemap' && (
-            <div style={{
-              background: SURFACE, border: `1px solid ${BORDER}`,
-              borderRadius: 8, overflow: 'hidden', marginBottom: 12,
-              height: 374, display: 'flex', flexDirection: 'column', padding: '8px',
-            }}>
-              <TreemapView data={displayData} onSelect={selectItem} />
-            </div>
-          )}
+          <div style={{
+            background: SURFACE, border: `1px solid ${BORDER}`,
+            borderRadius: 8, overflow: 'hidden', marginBottom: 12,
+            height: 374, display: 'flex', flexDirection: 'column', padding: '8px',
+          }}>
+            <TreemapView data={displayData} onSelect={selectItem} />
+          </div>
 
           {selectedItem && (
             <LivestockDetailPanel
@@ -799,19 +796,6 @@ function LivestockSection() {
               display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px',
               borderBottom: `1px solid ${BORDER}`, flexWrap: 'wrap',
             }}>
-              <div style={{ display: 'flex', border: `1px solid ${BORDER}`, borderRadius: 20, overflow: 'hidden', marginRight: 4 }}>
-                {['treemap', 'table'].map(mode => (
-                  <button key={mode} onClick={() => setViewMode(mode)} style={{
-                    padding: '4px 14px', border: 'none', cursor: 'pointer', fontSize: 12,
-                    background: viewMode === mode ? ACCENT : 'transparent',
-                    color: viewMode === mode ? '#fff' : DIM,
-                    fontWeight: viewMode === mode ? 600 : 400,
-                    transition: 'all 0.15s',
-                  }}>
-                    {mode === 'treemap' ? '트리맵' : '테이블'}
-                  </button>
-                ))}
-              </div>
               {LIVESTOCK_SUB_TABS.map(tab => (
                 <button key={tab} onClick={() => setSubTab(tab)} style={{
                   padding: '4px 12px', borderRadius: 16, fontSize: 12,
@@ -888,7 +872,6 @@ export default function ProductsAnalysisPage() {
   const [mainTab, setMainTab]           = useState('농산물')
   const [selectedDate, setSelectedDate] = useState(getToday)
   const [dailyData, setDailyData]       = useState([])
-  const [viewMode, setViewMode]         = useState('treemap')
   const [activeCategory, setActiveCategory] = useState('전체')
   const [selectedItem, setSelectedItem] = useState(null)
   const [trendData, setTrendData]       = useState([])
@@ -989,16 +972,14 @@ export default function ProductsAnalysisPage() {
           </div>
         ) : (
           <>
-            {/* Treemap (only when viewMode === 'treemap') */}
-            {viewMode === 'treemap' && (
-              <div style={{
-                background: SURFACE, border: `1px solid ${BORDER}`,
-                borderRadius: 8, overflow: 'hidden', marginBottom: 12,
-                height: 374, display: 'flex', flexDirection: 'column', padding: '8px',
-              }}>
-                <TreemapView data={dailyData} onSelect={selectItem} />
-              </div>
-            )}
+            {/* Treemap */}
+            <div style={{
+              background: SURFACE, border: `1px solid ${BORDER}`,
+              borderRadius: 8, overflow: 'hidden', marginBottom: 12,
+              height: 374, display: 'flex', flexDirection: 'column', padding: '8px',
+            }}>
+              <TreemapView data={dailyData} onSelect={selectItem} />
+            </div>
 
             {/* Detail panel — between treemap and table */}
             {selectedItem && (
@@ -1017,24 +998,11 @@ export default function ProductsAnalysisPage() {
               background: SURFACE, border: `1px solid ${BORDER}`,
               borderRadius: 8, overflow: 'hidden', marginBottom: 0,
             }}>
-              {/* View toggle + Category tabs */}
+              {/* Category tabs */}
               <div style={{
                 display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px',
                 borderBottom: `1px solid ${BORDER}`, flexWrap: 'wrap',
               }}>
-                <div style={{ display: 'flex', border: `1px solid ${BORDER}`, borderRadius: 20, overflow: 'hidden', marginRight: 4 }}>
-                  {['treemap', 'table'].map(mode => (
-                    <button key={mode} onClick={() => setViewMode(mode)} style={{
-                      padding: '4px 14px', border: 'none', cursor: 'pointer', fontSize: 12,
-                      background: viewMode === mode ? ACCENT : 'transparent',
-                      color: viewMode === mode ? '#fff' : DIM,
-                      fontWeight: viewMode === mode ? 600 : 400,
-                      transition: 'all 0.15s',
-                    }}>
-                      {mode === 'treemap' ? '트리맵' : '테이블'}
-                    </button>
-                  ))}
-                </div>
                 {categories.map(cat => (
                   <button
                     key={cat}

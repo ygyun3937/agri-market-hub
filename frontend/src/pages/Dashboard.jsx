@@ -6,7 +6,6 @@ import AlertBanner from '../components/AlertBanner/AlertBanner'
 import NewsTicker from '../components/NewsTicker/NewsTicker'
 import NewsPanel from '../components/NewsPanel/NewsPanel'
 import MapPanel from '../components/MapPanel/MapPanel'
-import PricePanel from '../components/PricePanel/PricePanel'
 import WeatherPanel from '../components/WeatherPanel/WeatherPanel'
 import CalendarPanel from '../components/CalendarPanel/CalendarPanel'
 import ScheduleList from '../components/CalendarPanel/ScheduleList'
@@ -101,7 +100,6 @@ const MOBILE_TABS = [
   { key: 'map',      icon: '🗺️', label: '지도' },
   { key: 'weather',  icon: '⛅',  label: '날씨' },
   { key: 'schedule', icon: '📋', label: '일정' },
-  { key: 'price',    icon: '💰', label: '가격' },
 ]
 
 export default function Dashboard() {
@@ -209,7 +207,6 @@ export default function Dashboard() {
             <ScheduleList schedules={schedules} refreshSchedules={fetchSchedules} />
           </div>
         )}
-        {mobileTab === 'price' && <div style={{ overflow: 'auto', height: '100%' }}><PricePanel /></div>}
       </div>
       <div style={{ background: '#162330', borderTop: '1px solid #2d4255', display: 'flex', flexShrink: 0 }}>
         {MOBILE_TABS.map(t => (
@@ -265,11 +262,9 @@ export default function Dashboard() {
 
         <ColHandle onDelta={dx => updateLayout('col3', -dx, C)} />
 
-        {/* Col 3: 가격 + 캘린더 */}
+        {/* Col 3: 캘린더 */}
         <div style={{ width: layout.col3, flexShrink: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-          <div style={{ flex: 1, overflow: 'auto', minHeight: 0 }}><PricePanel /></div>
-          <RowHandle onDelta={dy => updateLayout('bottomH', -dy, B)} />
-          <div style={{ height: layout.bottomH, flexShrink: 0, overflow: 'auto' }}>
+          <div style={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
             <CalendarPanel schedules={schedules} refreshSchedules={fetchSchedules} />
           </div>
         </div>

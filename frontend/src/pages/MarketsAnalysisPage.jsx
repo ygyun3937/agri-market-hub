@@ -212,7 +212,7 @@ function LeftPanel({ products, selectedProduct, onSelect, watchlist, onToggleWat
   })
 
   return (
-    <div style={{ width: 200, flexShrink: 0, borderRight: `1px solid ${BORDER}`,
+    <div style={{ width: '100%', borderRight: `1px solid ${BORDER}`,
       display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
       {/* Filter tabs */}
@@ -658,7 +658,7 @@ export default function MarketsAnalysisPage() {
           </div>
 
           <RowHandle onDelta={d => setMapH(h => {
-            const next = Math.max(150, Math.min(420, h + d))
+            const next = Math.max(120, Math.min(600, h + d))
             localStorage.setItem('markets_mapH', next)
             return next
           })} />
