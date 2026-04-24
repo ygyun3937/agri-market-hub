@@ -484,7 +484,7 @@ function TrendTooltip({ active, payload, label }) {
 }
 
 // ─── Product detail panel ─────────────────────────────────────────────────────
-function DetailPanel({ item, trendData, varietyData, originData, detailLoading, onClose }) {
+function DetailPanel({ item, trendData, varietyData, originData, marketData, detailLoading, onClose }) {
   const chartData = trendData.map(row => ({
     date: fmtDate(row.date),
     avgPrice: Number(row.avgPrice),
@@ -589,6 +589,12 @@ function DetailPanel({ item, trendData, varietyData, originData, detailLoading, 
             <div style={{ fontSize: 12, fontWeight: 600, color: DIM, marginBottom: 8 }}>산지별 분포</div>
             <SimpleBarChart data={originData} />
           </div>
+
+          {/* 시장별 가격 */}
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: DIM, marginBottom: 8 }}>시장별 가격</div>
+            <MarketPriceChart data={marketData} unit={item.unit} />
+          </div>
         </div>
       )}
     </div>
@@ -624,8 +630,37 @@ function OriginPriceChart({ data }) {
   )
 }
 
+// ─── Market price bar chart ───────────────────────────────────────────────────
+function MarketPriceChart({ data, unit }) {
+  if (!data || data.length === 0)
+    return <div style={{ fontSize: 12, color: DIM, padding: '12px 0' }}>시장별 데이터 없음</div>
+  const max = Math.max(...data.map(d => Number(d.price) || 0))
+  return (
+    <div>
+      {[...data].sort((a, b) => Number(b.price) - Number(a.price)).map(d => (
+        <div key={d.marketCode} style={{ marginBottom: 10 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 4 }}>
+            <span style={{ color: TEXT, fontWeight: 600 }}>{d.marketName}</span>
+            <span style={{ color: ACCENT, fontWeight: 700 }}>
+              {Number(d.price).toLocaleString()}원
+              {(d.unit || unit) && <span style={{ color: DIM, fontWeight: 400, fontSize: 11 }}>/{d.unit || unit}</span>}
+            </span>
+          </div>
+          <div style={{ height: 8, background: '#2d4255', borderRadius: 4 }}>
+            <div style={{
+              height: 8, borderRadius: 4, transition: 'width 0.3s ease',
+              background: ACCENT,
+              width: max > 0 ? `${(Number(d.price) / max * 100).toFixed(1)}%` : '0%',
+            }} />
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 // ─── Livestock detail panel ───────────────────────────────────────────────────
-function LivestockDetailPanel({ item, trendData, originData, detailLoading, onClose }) {
+function LivestockDetailPanel({ item, trendData, originData, marketData, detailLoading, onClose }) {
   const chartData = trendData.map(row => ({
     date: fmtDate(row.date),
     avgPrice: Number(row.avgPrice),
@@ -703,6 +738,12 @@ function LivestockDetailPanel({ item, trendData, originData, detailLoading, onCl
             <div style={{ fontSize: 12, fontWeight: 600, color: DIM, marginBottom: 8 }}>원산지별 가격</div>
             <OriginPriceChart data={originData} />
           </div>
+
+          {/* 시장별 가격 */}
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: DIM, marginBottom: 8 }}>시장별 가격</div>
+            <MarketPriceChart data={marketData} unit={item.unit} />
+          </div>
         </div>
       )}
     </div>
@@ -716,6 +757,7 @@ function LivestockSection() {
   const [selectedItem, setSelectedItem] = useState(null)
   const [trendData, setTrendData]       = useState([])
   const [originData, setOriginData]     = useState([])
+  const [marketData, setMarketData]     = useState([])
   const [loading, setLoading]           = useState(false)
   const [detailLoading, setDetailLoading] = useState(false)
 
@@ -736,6 +778,7 @@ function LivestockSection() {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setTrendData([])
       setOriginData([])
+      setMarketData([])
       return
     }
     const { itemCode, origin = '국내산' } = selectedItem
@@ -743,7 +786,8 @@ function LivestockSection() {
     Promise.allSettled([
       client.get(`/livestock/trend?itemCode=${itemCode}&days=30&origin=${encodeURIComponent(origin)}`),
       client.get(`/livestock/origin?itemCode=${itemCode}`),
-    ]).then(([trend, orig]) => {
+      client.get(`/livestock/market-prices?itemCode=${itemCode}&origin=${encodeURIComponent(origin)}`),
+    ]).then(([trend, orig, market]) => {
       const tRows = trend.status === 'fulfilled'
         ? (trend.value.data || []).map(d => ({ ...d, avgPrice: d.price, volume: 0 }))
         : []
@@ -752,6 +796,10 @@ function LivestockSection() {
         orig.status === 'fulfilled' && orig.value.data?.length
           ? orig.value.data
           : MOCK_LIVESTOCK_ORIGIN(itemCode)
+      )
+      setMarketData(
+        market.status === 'fulfilled' && market.value.data?.length
+          ? market.value.data : []
       )
     }).finally(() => setDetailLoading(false))
   }, [selectedItem])
@@ -789,6 +837,7 @@ function LivestockSection() {
               item={selectedItem}
               trendData={trendData}
               originData={originData}
+              marketData={marketData}
               detailLoading={detailLoading}
               onClose={() => setSelectedItem(null)}
             />
@@ -880,6 +929,7 @@ export default function ProductsAnalysisPage() {
   const [trendData, setTrendData]       = useState([])
   const [varietyData, setVarietyData]   = useState([])
   const [originData, setOriginData]     = useState([])
+  const [marketData, setMarketData]     = useState([])
   const [loading, setLoading]           = useState(false)
   const [detailLoading, setDetailLoading] = useState(false)
 
@@ -900,6 +950,7 @@ export default function ProductsAnalysisPage() {
       setTrendData([])
       setVarietyData([])
       setOriginData([])
+      setMarketData([])
       return
     }
     setDetailLoading(true)
@@ -907,8 +958,9 @@ export default function ProductsAnalysisPage() {
       client.get(`/analysis/trend?itemCode=${selectedItem.itemCode}&days=30`),
       client.get(`/analysis/variety?itemCode=${selectedItem.itemCode}&date=${selectedDate}`),
       client.get(`/analysis/origin?itemCode=${selectedItem.itemCode}&date=${selectedDate}`),
+      client.get(`/analysis/market-prices?itemCode=${selectedItem.itemCode}&date=${selectedDate}`),
     ])
-      .then(([trend, variety, origin]) => {
+      .then(([trend, variety, origin, market]) => {
         setTrendData(
           trend.status === 'fulfilled' && trend.value.data?.length
             ? trend.value.data : MOCK_TREND(selectedItem.itemCode)
@@ -921,12 +973,16 @@ export default function ProductsAnalysisPage() {
           origin.status === 'fulfilled' && origin.value.data?.length
             ? origin.value.data : MOCK_ORIGIN(selectedItem.itemCode)
         )
+        setMarketData(
+          market.status === 'fulfilled' && market.value.data?.length
+            ? market.value.data : []
+        )
       })
       .finally(() => setDetailLoading(false))
   }, [selectedItem, selectedDate])
 
   const selectItem = useCallback((item) => {
-    setSelectedItem({ itemCode: item.itemCode, itemName: item.itemName })
+    setSelectedItem({ itemCode: item.itemCode, itemName: item.itemName, unit: item.unit })
   }, [])
 
   // Derive categories
@@ -991,6 +1047,7 @@ export default function ProductsAnalysisPage() {
                 trendData={trendData}
                 varietyData={varietyData}
                 originData={originData}
+                marketData={marketData}
                 detailLoading={detailLoading}
                 onClose={() => setSelectedItem(null)}
               />
