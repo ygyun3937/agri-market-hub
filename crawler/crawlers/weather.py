@@ -245,8 +245,16 @@ def run_forecast():
             short_dates.add(date_str)
             cats = by_date[date_str]
             forecast_date = f"{date_str[:4]}-{date_str[4:6]}-{date_str[6:]}"
+            pty = cats.get("PTY", "0")
             sky = cats.get("SKY", "1")
-            icon = {"1": "sunny", "3": "cloudy", "4": "rainy"}.get(sky, "sunny")
+            if pty in ("1", "4"):    # 비, 소나기
+                icon = "rainy"
+            elif pty in ("2", "3"):  # 비/눈, 눈
+                icon = "snowy"
+            elif sky in ("3", "4"):  # 구름많음, 흐림
+                icon = "cloudy"
+            else:
+                icon = "sunny"
             db.upsert_forecast(
                 region_code=region["code"],
                 forecast_date=forecast_date,
