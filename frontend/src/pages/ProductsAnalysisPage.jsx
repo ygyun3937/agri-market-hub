@@ -24,9 +24,11 @@ const BLUE    = '#82cfff'
 
 // ─── Livestock mock data ───────────────────────────────────────────────────────
 const MOCK_LIVESTOCK_RAW = [
-  { itemCode: 'L001', itemName: '한우 등심(거세)',  category: '소',    price: 8900, unit: '100g', change7d:  1.2, origin: '국내산' },
-  { itemCode: 'L002', itemName: '한우 설도(거세)',  category: '소',    price: 5200, unit: '100g', change7d: -0.8, origin: '국내산' },
-  { itemCode: 'L003', itemName: '육우 등심',        category: '소',    price: 4800, unit: '100g', change7d:  0.3, origin: '국내산' },
+  { itemCode: 'B001', itemName: '한우 1++등급', category: '소', price: 12800, unit: '600g', change7d:  1.2, origin: '국내산' },
+  { itemCode: 'B002', itemName: '한우 1+등급',  category: '소', price: 10500, unit: '600g', change7d: -0.5, origin: '국내산' },
+  { itemCode: 'B003', itemName: '한우 1등급',   category: '소', price:  8900, unit: '600g', change7d:  0.3, origin: '국내산' },
+  { itemCode: 'B004', itemName: '한우 2등급',   category: '소', price:  7200, unit: '600g', change7d:  0.8, origin: '국내산' },
+  { itemCode: 'B005', itemName: '한우 3등급',   category: '소', price:  5800, unit: '600g', change7d: -1.2, origin: '국내산' },
   { itemCode: 'L011', itemName: '돼지 삼겹살', category: '돼지', price: 2800, unit: '100g', change7d:  2.1, origin: '국내산' },
   { itemCode: 'L011', itemName: '돼지 삼겹살', category: '돼지', price: 1050, unit: '100g', change7d:  0.8, origin: '수입산' },
   { itemCode: 'L012', itemName: '돼지 목심',   category: '돼지', price: 2100, unit: '100g', change7d: -1.5, origin: '국내산' },
@@ -39,7 +41,7 @@ const MOCK_LIVESTOCK_RAW = [
 ]
 const MOCK_LIVESTOCK = MOCK_LIVESTOCK_RAW.map(d => ({ ...d, avgPrice: d.price, volume: 0 }))
 
-const _LS_BASE = { L001: 8900, L002: 5200, L003: 4800, L011: 2800, L012: 2100, L013: 1600, L021: 1850, L031: 230, L032: 210 }
+const _LS_BASE = { B001: 12800, B002: 10500, B003: 8900, B004: 7200, B005: 5800, L011: 2800, L012: 2100, L013: 1600, L021: 1850, L031: 230, L032: 210 }
 function MOCK_LIVESTOCK_TREND(itemCode, origin = '국내산') {
   const base = (_LS_BASE[itemCode] || 5000) * (origin === '수입산' ? 0.38 : 1)
   return Array.from({ length: 30 }, (_, i) => {
@@ -226,13 +228,13 @@ function TreemapView({ data, onSelect }) {
   }
 
   const legendItems = [
-    { label: '급등 ↑5%+', color: '#b91c1c' },
-    { label: '상승',      color: '#ef4444' },
-    { label: '소폭상승',  color: '#fca5a5' },
-    { label: '보합',      color: '#4a6278' },
-    { label: '소폭하락',  color: '#a8d4ff' },
-    { label: '하락',      color: '#5ba3f5' },
-    { label: '급락 ↓5%+', color: '#1a69c4' },
+    { label: '↑5% 이상', color: '#b91c1c' },
+    { label: '↑2~5%',    color: '#ef4444' },
+    { label: '↑0.5~2%',  color: '#fca5a5' },
+    { label: '±0.5% 보합', color: '#4a6278' },
+    { label: '↓0.5~2%',  color: '#a8d4ff' },
+    { label: '↓2~5%',    color: '#5ba3f5' },
+    { label: '↓5% 이상', color: '#1a69c4' },
   ]
 
   return (
@@ -240,7 +242,8 @@ function TreemapView({ data, onSelect }) {
       <div ref={containerRef} style={{ flex: 1, position: 'relative', minHeight: 0 }}>
         <svg ref={svgRef} style={{ display: 'block', width: '100%', height: '100%' }} />
       </div>
-      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', padding: '8px 0', flexShrink: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', padding: '6px 0', flexShrink: 0 }}>
+        <span style={{ fontSize: 10, color: DIM, whiteSpace: 'nowrap' }}>7일 등락률 기준</span>
         {legendItems.map(({ label, color }) => (
           <span key={label} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: TEXT }}>
             <span style={{ width: 10, height: 10, borderRadius: 2, background: color, display: 'inline-block' }} />
