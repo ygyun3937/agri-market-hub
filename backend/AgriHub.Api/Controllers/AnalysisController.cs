@@ -260,7 +260,7 @@ public class AnalysisController(AppDbContext db) : ControllerBase
         var from = targetDate.AddDays(-7);
 
         var rows = await db.Database
-            .SqlQueryRaw<_AuctionMarketRow>(
+            .SqlQueryRaw<AuctionMarketRow>(
                 """
                 SELECT DISTINCT ON (market_code)
                        market_code AS "MarketCode",
@@ -286,5 +286,5 @@ public class AnalysisController(AppDbContext db) : ControllerBase
         return Ok(result);
     }
 
-    private record _AuctionMarketRow(string MarketCode, decimal Price);
+    private record AuctionMarketRow(string MarketCode, decimal Price);
 }
