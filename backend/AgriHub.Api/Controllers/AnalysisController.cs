@@ -246,4 +246,45 @@ public class AnalysisController(AppDbContext db) : ControllerBase
             .ToListAsync();
         return Ok(rows);
     }
+
+    // GET /api/analysis/market-prices?itemCode=XXX&date=YYYY-MM-DD
+    [HttpGet("market-prices")]
+    public async Task<ActionResult<List<MarketPriceDto>>> GetMarketPrices(
+        [FromQuery] string itemCode,
+        [FromQuery] DateOnly? date)
+    {
+        if (string.IsNullOrWhiteSpace(itemCode))
+            return BadRequest("itemCode is required.");
+
+        var targetDate = date ?? DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1));
+        var from = targetDate.AddDays(-7);
+
+        var rows = await db.Database
+            .SqlQueryRaw<_AuctionMarketRow>(
+                """
+                SELECT DISTINCT ON (market_code)
+                       market_code AS "MarketCode",
+                       price       AS "Price"
+                FROM   auction_prices
+                WHERE  item_code = {0}
+                  AND  date BETWEEN {1} AND {2}
+                  AND  price > 0
+                ORDER  BY market_code, date DESC
+                """,
+                itemCode, from, targetDate)
+            .ToListAsync();
+
+        var result = rows
+            .Select(r => new MarketPriceDto(
+                r.MarketCode,
+                KamisMarkets.Names.GetValueOrDefault(r.MarketCode, r.MarketCode),
+                r.Price,
+                null))
+            .OrderByDescending(r => r.Price)
+            .ToList();
+
+        return Ok(result);
+    }
+
+    private record _AuctionMarketRow(string MarketCode, decimal Price);
 }
