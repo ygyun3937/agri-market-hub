@@ -124,4 +124,48 @@ public class LivestockController(AppDbContext db) : ControllerBase
 
         return Ok(rows);
     }
+
+    // GET /api/livestock/market-prices?itemCode=XXX&date=YYYY-MM-DD&origin=국내산
+    [HttpGet("market-prices")]
+    public async Task<ActionResult<List<MarketPriceDto>>> GetMarketPrices(
+        [FromQuery] string itemCode,
+        [FromQuery] DateOnly? date,
+        [FromQuery] string origin = "국내산")
+    {
+        if (string.IsNullOrWhiteSpace(itemCode))
+            return BadRequest("itemCode is required.");
+
+        var targetDate = date ?? DateOnly.FromDateTime(DateTime.UtcNow.AddHours(9).AddDays(-1));
+        var from = targetDate.AddDays(-7);
+
+        var rows = await db.Database
+            .SqlQueryRaw<LivestockMarketRow>(
+                """
+                SELECT DISTINCT ON (market_code)
+                       market_code AS "MarketCode",
+                       price       AS "Price",
+                       unit        AS "Unit"
+                FROM   livestock_prices
+                WHERE  item_code = {0}
+                  AND  origin    = {3}
+                  AND  date BETWEEN {1} AND {2}
+                  AND  price > 0
+                ORDER  BY market_code, date DESC
+                """,
+                itemCode, from, targetDate, origin)
+            .ToListAsync();
+
+        var result = rows
+            .Select(r => new MarketPriceDto(
+                r.MarketCode,
+                KamisMarkets.Names.GetValueOrDefault(r.MarketCode, r.MarketCode),
+                r.Price,
+                r.Unit))
+            .OrderByDescending(r => r.Price)
+            .ToList();
+
+        return Ok(result);
+    }
+
+    private record LivestockMarketRow(string MarketCode, decimal Price, string? Unit);
 }
