@@ -228,13 +228,13 @@ function TreemapView({ data, onSelect }) {
   }
 
   const legendItems = [
-    { label: '↑5% 이상', color: '#b91c1c' },
-    { label: '↑2~5%',    color: '#ef4444' },
-    { label: '↑0.5~2%',  color: '#fca5a5' },
+    { label: '+5% 이상', color: '#b91c1c' },
+    { label: '+2~5%',    color: '#ef4444' },
+    { label: '+0.5~2%',  color: '#fca5a5' },
     { label: '±0.5% 보합', color: '#4a6278' },
-    { label: '↓0.5~2%',  color: '#a8d4ff' },
-    { label: '↓2~5%',    color: '#5ba3f5' },
-    { label: '↓5% 이상', color: '#1a69c4' },
+    { label: '-0.5~2%',  color: '#a8d4ff' },
+    { label: '-2~5%',    color: '#5ba3f5' },
+    { label: '-5% 이상', color: '#1a69c4' },
   ]
 
   return (
