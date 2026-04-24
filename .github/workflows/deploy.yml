@@ -105,4 +105,7 @@ jobs:
             docker compose exec -T db psql -U agrihub -d agrihub -c \"ALTER TABLE livestock_prices ADD COLUMN IF NOT EXISTS origin VARCHAR(50) NOT NULL DEFAULT '국내산'\"
             docker compose exec -T db psql -U agrihub -d agrihub -c \"DO \\\$\\\$ BEGIN IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'livestock_prices_item_code_date_key') THEN ALTER TABLE livestock_prices DROP CONSTRAINT livestock_prices_item_code_date_key; END IF; END \\\$\\\$\"
             docker compose exec -T db psql -U agrihub -d agrihub -c \"ALTER TABLE livestock_prices ADD CONSTRAINT livestock_prices_item_code_origin_date_key UNIQUE (item_code, origin, date)\" || true
+            docker compose exec -T db psql -U agrihub -d agrihub -c \"ALTER TABLE livestock_prices ADD COLUMN IF NOT EXISTS market_code VARCHAR(10) NOT NULL DEFAULT '1101'\"
+            docker compose exec -T db psql -U agrihub -d agrihub -c \"DO \\\$\\\$ BEGIN IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'livestock_prices_item_code_origin_date_key') THEN ALTER TABLE livestock_prices DROP CONSTRAINT livestock_prices_item_code_origin_date_key; END IF; END \\\$\\\$\"
+            docker compose exec -T db psql -U agrihub -d agrihub -c \"ALTER TABLE livestock_prices ADD CONSTRAINT livestock_prices_item_code_origin_market_date_key UNIQUE (item_code, origin, market_code, date)\" || true
           "
