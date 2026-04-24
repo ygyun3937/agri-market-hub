@@ -29,19 +29,17 @@ const MOCK_LIVESTOCK_RAW = [
   { itemCode: 'C003', itemName: '육우 거세',    category: '소', price: 4800000, unit: '두', change7d:  0.3, origin: '국내산' },
   { itemCode: 'C004', itemName: '젖소',         category: '소', price: 1800000, unit: '두', change7d:  0.8, origin: '국내산' },
   { itemCode: 'C005', itemName: '한우 송아지',  category: '소', price: 2200000, unit: '두', change7d: -1.2, origin: '국내산' },
-  { itemCode: 'L011', itemName: '돼지 삼겹살', category: '돼지', price: 2800, unit: '100g', change7d:  2.1, origin: '국내산' },
-  { itemCode: 'L011', itemName: '돼지 삼겹살', category: '돼지', price: 1050, unit: '100g', change7d:  0.8, origin: '수입산' },
-  { itemCode: 'L012', itemName: '돼지 목심',   category: '돼지', price: 2100, unit: '100g', change7d: -1.5, origin: '국내산' },
-  { itemCode: 'L012', itemName: '돼지 목심',   category: '돼지', price:  850, unit: '100g', change7d:  1.2, origin: '수입산' },
-  { itemCode: 'L013', itemName: '돼지 앞다리', category: '돼지', price: 1600, unit: '100g', change7d:  0.0, origin: '국내산' },
-  { itemCode: 'L013', itemName: '돼지 앞다리', category: '돼지', price:  680, unit: '100g', change7d: -0.5, origin: '수입산' },
+  { itemCode: 'P001', itemName: '비육돈(수돈)', category: '돼지', price: 510000, unit: '두', change7d:  2.1, origin: '국내산' },
+  { itemCode: 'P002', itemName: '비육돈(암돈)', category: '돼지', price: 460000, unit: '두', change7d:  1.3, origin: '국내산' },
+  { itemCode: 'P003', itemName: '모돈',         category: '돼지', price: 720000, unit: '두', change7d: -0.8, origin: '국내산' },
+  { itemCode: 'P004', itemName: '자돈',         category: '돼지', price:  95000, unit: '두', change7d:  3.2, origin: '국내산' },
   { itemCode: 'L021', itemName: '닭(육계)',  category: '닭·계란', price: 1850, unit: '1kg',  change7d: -2.3, origin: '국내산' },
   { itemCode: 'L031', itemName: '계란 특란', category: '닭·계란', price:  230, unit: '30개', change7d:  3.5, origin: '국내산' },
   { itemCode: 'L032', itemName: '계란 대란', category: '닭·계란', price:  210, unit: '30개', change7d:  2.8, origin: '국내산' },
 ]
 const MOCK_LIVESTOCK = MOCK_LIVESTOCK_RAW.map(d => ({ ...d, avgPrice: d.price, volume: 0 }))
 
-const _LS_BASE = { C001: 8500000, C002: 6200000, C003: 4800000, C004: 1800000, C005: 2200000, L011: 2800, L012: 2100, L013: 1600, L021: 1850, L031: 230, L032: 210 }
+const _LS_BASE = { C001: 8500000, C002: 6200000, C003: 4800000, C004: 1800000, C005: 2200000, P001: 510000, P002: 460000, P003: 720000, P004: 95000, L021: 1850, L031: 230, L032: 210 }
 function MOCK_LIVESTOCK_TREND(itemCode, origin = '국내산') {
   const base = (_LS_BASE[itemCode] || 5000) * (origin === '수입산' ? 0.38 : 1)
   return Array.from({ length: 30 }, (_, i) => {
