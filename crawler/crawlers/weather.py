@@ -1,8 +1,10 @@
 # crawler/crawlers/weather.py
 import os
 import requests
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta, date, timezone
 import db
+
+KST = timezone(timedelta(hours=9))
 
 API_KEY = os.getenv("WEATHER_KEY", "")
 BASE_URL = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0"
@@ -19,7 +21,7 @@ MID_LAND_CODES = {
 }
 
 def _get_mid_base_time():
-    now = datetime.now()
+    now = datetime.now(KST)
     if now.hour >= 18:
         return now.strftime("%Y%m%d") + "1800"
     elif now.hour >= 6:
@@ -132,7 +134,8 @@ REGIONS = [
 
 
 def _get_base_time():
-    now = datetime.now()
+    """For getVilageFcst — 3-hourly slots in KST."""
+    now = datetime.now(KST)
     base_times = ["0200", "0500", "0800", "1100", "1400", "1700", "2000", "2300"]
     base_date = now.strftime("%Y%m%d")
     current_hm = now.strftime("%H%M")
@@ -146,8 +149,16 @@ def _get_base_time():
     return base_date, selected
 
 
+def _get_obs_base_time():
+    """For getUltraSrtNcst — hourly in KST. Data released ~10 min after the hour."""
+    now = datetime.now(KST)
+    if now.minute < 10:
+        now = now - timedelta(hours=1)
+    return now.strftime("%Y%m%d"), now.strftime("%H") + "00"
+
+
 def run_weather():
-    base_date, base_time = _get_base_time()
+    base_date, base_time = _get_obs_base_time()
     for region in REGIONS:
         params = {
             "serviceKey": API_KEY,
