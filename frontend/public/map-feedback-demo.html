@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>지도 피드백 예제</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#1c2a36; color:#eef5fb; font-family:sans-serif; }
+h1 { padding:16px 20px 4px; font-size:18px; color:#82cfff; }
+.sub { padding:0 20px 14px; font-size:13px; color:#87b8d4; }
+.tabs { display:flex; gap:8px; padding:0 20px 16px; }
+.tab { padding:8px 20px; border-radius:20px; border:1px solid #354d65;
+       cursor:pointer; font-size:13px; color:#87b8d4; background:#253748; }
+.tab.on { background:#1a7fd4; border-color:#6ab8ff; color:#fff; font-weight:700; }
+.panel { display:none; padding:0 20px 24px; }
+.panel.on { display:block; }
+.mapbox { position:relative; height:440px; border:1px solid #354d65;
+          border-radius:8px; overflow:hidden; }
+.map { width:100%; height:100%; }
+.info { position:absolute; top:10px; right:10px; z-index:999;
+        background:#111e2acc; border:1px solid #2d4255; border-radius:8px;
+        padding:10px 14px; backdrop-filter:blur(6px); max-width:190px; font-size:12px; }
+.info h3 { color:#82cfff; margin-bottom:6px; font-size:13px; }
+.info p  { color:#aacde0; line-height:1.7; }
+.leg { position:absolute; bottom:16px; left:10px; z-index:999;
+       background:#111e2acc; border:1px solid #2d4255; border-radius:8px;
+       padding:8px 12px; backdrop-filter:blur(6px); }
+.leg h4 { font-size:11px; color:#87b8d4; margin-bottom:6px; }
+.lr { display:flex; align-items:center; gap:7px; margin-bottom:4px; font-size:11px; color:#ddeaf5; }
+.note { background:#253748; border:1px solid #354d65; border-radius:8px;
+        padding:14px 16px; margin-top:14px; font-size:13px; line-height:1.9; }
+.g { color:#56e890; } .y { color:#d29922; } .b { color:#82cfff; }
+.pest-tip.leaflet-tooltip { background:transparent!important; border:none!important;
+  box-shadow:none!important; padding:0!important; }
+</style>
+</head>
+<body>
+<h1>🗺️ 지도 피드백 예제</h1>
+<p class="sub">2, 3번 개선안을 확인하세요</p>
+
+<div class="tabs">
+  <div class="tab on" onclick="show(0)">② 행정구역 경계 (줌인)</div>
+  <div class="tab" onclick="show(1)">③ 특산물 레이어</div>
+</div>
+
+<!-- ② 행정구역 -->
+<div class="panel on" id="p0">
+  <div class="mapbox">
+    <div id="map2" class="map"></div>
+    <div class="info">
+      <h3>② 행정구역 경계</h3>
+      <p>줌 7 이하 → 도 경계<br>줌 8+ → 시군구 경계<br><br>현재 줌: <b id="zl">7</b></p>
+    </div>
+    <div class="leg">
+      <h4>경계 레이어</h4>
+      <div class="lr"><div style="width:18px;height:2px;background:#82cfff;border-radius:1px"></div> 도·광역시 경계</div>
+      <div class="lr"><div style="width:18px;height:2px;background:#56e890;border-radius:1px"></div> 시·군·구 경계</div>
+    </div>
+  </div>
+  <div class="note">
+    <span class="b">🔵 구현 방법:</span> GeoJSON 두 레벨 사용<br>
+    • 현재: <code>southkorea-maps/provinces</code> (도 단위)<br>
+    • 추가: <code>southkorea-maps/municipalities_simple</code> (시군구)<br>
+    <span class="g">✅ 줌 8 이상에서 자동으로 시군구 경계 표시</span><br>
+    <span class="y">⚠️ 시군구 GeoJSON 약 1.2MB → 첫 로드 시 캐시 처리 필요</span>
+  </div>
+</div>
+
+<!-- ③ 특산물 -->
+<div class="panel" id="p1">
+  <div class="mapbox">
+    <div id="map3" class="map"></div>
+    <div class="info">
+      <h3>③ 특산물 레이어</h3>
+      <p>각 지역에 마우스를<br>올리거나 클릭하면<br>특산물 정보 표시</p>
+    </div>
+    <div class="leg">
+      <h4>🌾 지역 특산물</h4>
+      <div class="lr">🍎 경북 — 사과·포도·고추</div>
+      <div class="lr">🍓 전남 — 마늘·양파·고구마</div>
+      <div class="lr">🌾 충남 — 쌀·딸기·마늘</div>
+      <div class="lr">🍊 제주 — 감귤·한라봉·당근</div>
+    </div>
+  </div>
+  <div class="note">
+    <span class="b">🔵 구현 방법:</span> 도별 특산물 데이터 → GeoJSON 색상 + 툴팁 팝업<br>
+    <span class="g">✅ 특산물 클릭 → 해당 품목 경매분석 페이지 바로 이동 연동 가능</span><br>
+    <span class="g">✅ 농림축산식품부 지역특산물 정보 공공데이터 활용 가능</span><br>
+    <span class="y">⚠️ 계절별 특산물 업데이트 필요 (반기 1회 정도)</span>
+  </div>
+</div>
+
+<script>
+// 탭 전환
+var maps = {}
+function show(idx) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('on', i===idx))
+  document.querySelectorAll('.panel').forEach((p,i) => p.classList.toggle('on', i===idx))
+  // 지도 숨겨져있다가 나타날 때 크기 재계산
+  setTimeout(() => {
+    if (idx===0 && maps.m2) maps.m2.invalidateSize()
+    if (idx===1 && maps.m3) maps.m3.invalidateSize()
+  }, 50)
+}
+
+// ── 공통 타일
+function darkTile() {
+  return L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    { attribution:'© CARTO', maxZoom:18 })
+}
+
+// ── ② 행정구역 지도
+var m2 = L.map('map2').setView([36.5,127.8],7)
+maps.m2 = m2
+darkTile().addTo(m2)
+
+var provStyle = { color:'#82cfff', weight:1.5, fillColor:'#82cfff', fillOpacity:0.06 }
+var siStyle   = { color:'#56e890', weight:0.7, fillColor:'#56e890', fillOpacity:0.04 }
+var siLayer   = null
+
+fetch('https://raw.githubusercontent.com/southkorea/southkorea-maps/master/kostat/2013/json/skorea_provinces_geo.json')
+  .then(r=>r.json()).then(geo=>{
+    L.geoJSON(geo, {
+      style: provStyle,
+      onEachFeature:(f,l)=>{
+        l.bindTooltip('<div style="background:#162330;border:1px solid #2d4255;color:#ddeaf5;padding:4px 9px;border-radius:5px;font-size:13px">'+f.properties.name+'</div>',
+          {sticky:true,opacity:1,className:'pest-tip'})
+      }
+    }).addTo(m2)
+  })
+
+function loadSi() {
+  if (siLayer || m2.getZoom()<8) return
+  fetch('https://raw.githubusercontent.com/southkorea/southkorea-maps/master/kostat/2013/json/skorea_municipalities_geo_simple.json')
+    .then(r=>r.json()).then(geo=>{
+      siLayer = L.geoJSON(geo, {
+        style: siStyle,
+        onEachFeature:(f,l)=>{
+          l.bindTooltip('<div style="background:#162330;border:1px solid #56e890;color:#56e890;padding:3px 8px;border-radius:4px;font-size:12px">'+f.properties.name+'</div>',
+            {sticky:true,opacity:1,className:'pest-tip'})
+        }
+      }).addTo(m2)
+    }).catch(()=>{
+      // fallback URL 시도
+      fetch('https://raw.githubusercontent.com/southkorea/southkorea-maps/master/kostat/2018/json/HangJeongDong_ver20181201.geojson')
+        .then(r=>r.json()).then(geo=>{
+          siLayer = L.geoJSON(geo,{style:siStyle}).addTo(m2)
+        }).catch(()=>{})
+    })
+}
+
+m2.on('zoomend',()=>{
+  var z = m2.getZoom()
+  document.getElementById('zl').textContent = z
+  if (z>=8) loadSi()
+  else if (siLayer) { m2.removeLayer(siLayer); siLayer=null }
+})
+
+// ── ③ 특산물 지도
+var m3 = L.map('map3').setView([36.5,127.8],7)
+maps.m3 = m3
+darkTile().addTo(m3)
+
+var SP = {
+  '경기도':         {items:['쌀','복숭아','포도','배','딸기'],  icon:'🍑', color:'#4d96ff'},
+  '강원도':         {items:['감자','옥수수','더덕','황태'],     icon:'🥔', color:'#6bcb77'},
+  '강원특별자치도': {items:['감자','옥수수','더덕','황태'],     icon:'🥔', color:'#6bcb77'},
+  '충청북도':       {items:['사과','복숭아','포도'],            icon:'🍎', color:'#ff9f43'},
+  '충청남도':       {items:['쌀','딸기','마늘','양파'],         icon:'🌾', color:'#f0a202'},
+  '전라북도':       {items:['쌀','고추','수박','토마토'],       icon:'🌶️', color:'#f85149'},
+  '전북특별자치도': {items:['쌀','고추','수박','토마토'],       icon:'🌶️', color:'#f85149'},
+  '전라남도':       {items:['마늘','양파','고구마','전복','배추'],icon:'🧅', color:'#56e890'},
+  '경상북도':       {items:['사과','포도','고추','마늘','참외'],icon:'🍎', color:'#ff6348'},
+  '경상남도':       {items:['딸기','양파','마늘','참외'],       icon:'🍓', color:'#ff6b6b'},
+  '제주특별자치도': {items:['감귤','한라봉','당근','브로콜리'],icon:'🍊', color:'#ffd93d'},
+  '세종특별자치시': {items:['쌀','복숭아'],                    icon:'🍑', color:'#a29bfe'},
+  '서울특별시':     {items:['없음(소비지)'],                   icon:'🏙️', color:'#636e72'},
+  '인천광역시':     {items:['쌀','배'],                        icon:'🌾', color:'#74b9ff'},
+  '대전광역시':     {items:['쌀','딸기'],                      icon:'🍓', color:'#fd79a8'},
+  '대구광역시':     {items:['사과','복숭아'],                  icon:'🍎', color:'#e17055'},
+  '광주광역시':     {items:['쌀','배추'],                      icon:'🥬', color:'#00b894'},
+  '부산광역시':     {items:['고등어','멸치','대파'],            icon:'🐟', color:'#0984e3'},
+  '울산광역시':     {items:['배','쌀'],                        icon:'🍐', color:'#6c5ce7'},
+}
+
+fetch('https://raw.githubusercontent.com/southkorea/southkorea-maps/master/kostat/2013/json/skorea_provinces_geo.json')
+  .then(r=>r.json()).then(geo=>{
+    L.geoJSON(geo,{
+      style: f=>{
+        var s = SP[f.properties.name]
+        return { fillColor:s?s.color:'#2d4255', fillOpacity:s?0.28:0.05,
+                 color:s?s.color:'#354d65', weight:1.2 }
+      },
+      onEachFeature:(f,l)=>{
+        var s = SP[f.properties.name]
+        if (!s) return
+        var chips = s.items.map(i=>'<span style="background:#253748aa;border:1px solid #354d65;border-radius:3px;padding:1px 6px;margin:1px;display:inline-block">'+i+'</span>').join('')
+        var html = '<div style="background:#162330;border:1px solid '+s.color+';color:#ddeaf5;padding:10px 14px;border-radius:8px;font-size:12px;min-width:150px;box-shadow:0 2px 12px #000a">'
+          +'<div style="font-weight:700;font-size:14px;margin-bottom:6px">'+s.icon+' '+f.properties.name+'</div>'
+          +'<div style="color:#87b8d4;font-size:10px;margin-bottom:5px">주요 특산물</div>'
+          +'<div style="line-height:1.8">'+chips+'</div>'
+          +'</div>'
+        l.bindTooltip(html,{sticky:true,opacity:1,className:'pest-tip'})
+        l.on('mouseover',function(){this.setStyle({fillOpacity:0.45})})
+        l.on('mouseout',function(){this.setStyle({fillOpacity:0.28})})
+      }
+    }).addTo(m3)
+  })
+</script>
+</body>
+</html>

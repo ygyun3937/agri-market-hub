@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>테마 프리뷰 - B 계열</title>
+<style>
+  body { margin: 0; font-family: -apple-system, 'Segoe UI', sans-serif; background: #0d1117; color: #eee; padding: 24px; }
+  .grid { display: flex; gap: 20px; flex-wrap: wrap; }
+  .card-inner { border-radius: 8px; padding: 12px; flex: 1; }
+  .label { font-size: 12px; margin-bottom: 3px; }
+  .val { font-size: 20px; font-weight: 700; margin-bottom: 0; }
+  .row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom-width: 1px; border-bottom-style: solid; font-size: 13px; }
+  .tag { font-size: 11px; padding: 2px 7px; border-radius: 10px; font-weight: 600; }
+  .ticker { padding: 5px 14px; font-size: 13px; font-weight: 700; border-bottom-width: 1px; border-bottom-style: solid; }
+  .nav { display: flex; gap: 8px; margin-bottom: 10px; }
+  .nav span { font-size: 12px; padding: 4px 12px; border-radius: 14px; }
+  .theme-label { font-size: 16px; font-weight: 800; margin-bottom: 10px; }
+  .theme-desc { font-size: 11px; color: #888; margin-top: 8px; line-height: 1.5; }
+  .swatch-row { display: flex; gap: 6px; margin-top: 10px; }
+  .swatch { width: 28px; height: 28px; border-radius: 6px; border: 1px solid rgba(255,255,255,.15); }
+</style>
+</head>
+<body>
+<h1 style="margin:0 0 4px;font-size:20px;color:#79c0ff">슬레이트 다크 계열 3단계</h1>
+<p style="margin:0 0 24px;font-size:13px;color:#666">같은 블루-슬레이트 베이스, 밝기만 다름</p>
+
+<div class="grid">
+
+<!-- B1: 다크 -->
+<div style="width:280px">
+  <div class="theme-label" style="color:#79c0ff">B1 — 다크 (원안)</div>
+  <div style="background:#16202a;border-radius:10px;overflow:hidden;border:1px solid #2d3f52">
+    <div class="ticker" style="background:#1c2d3d;border-color:#2d3f52;color:#79c0ff">● LIVE &nbsp; 농작물 병해충 주의보 · 배추 급락</div>
+    <div style="padding:14px">
+      <div class="nav">
+        <span style="background:#1a7f64;color:#fff">대시보드</span>
+        <span style="background:#1e2e3e;color:#7aaccc;border:1px solid #2d3f52">품목별</span>
+        <span style="background:#1e2e3e;color:#7aaccc;border:1px solid #2d3f52">시장별</span>
+      </div>
+      <div class="card-inner" style="background:#1e2e3e;border:1px solid #2d3f52;margin-bottom:10px">
+        <div class="label" style="color:#7aaccc">총 거래 품목</div>
+        <div class="val" style="color:#d8e6f0">142 <span style="font-size:13px;font-weight:400;color:#7aaccc">개</span></div>
+      </div>
+      <div style="background:#1e2e3e;border:1px solid #2d3f52;border-radius:8px;padding:10px">
+        <div class="row" style="border-color:#2d3f52;color:#d8e6f0"><span>배추</span><span class="tag" style="background:#f8514920;color:#ff7070">▼ 12.3%</span></div>
+        <div class="row" style="border-color:#2d3f52;color:#d8e6f0"><span>무</span><span class="tag" style="background:#50fa7b22;color:#50fa7b">▲ 8.1%</span></div>
+        <div class="row" style="border-color:transparent;color:#d8e6f0"><span>감자</span><span class="tag" style="background:#79c0ff22;color:#79c0ff">▲ 5.4%</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="swatch-row">
+    <div class="swatch" style="background:#16202a" title="BG"></div>
+    <div class="swatch" style="background:#1e2e3e" title="SURFACE"></div>
+    <div class="swatch" style="background:#2d3f52" title="BORDER"></div>
+    <div class="swatch" style="background:#d8e6f0" title="TEXT"></div>
+    <div class="swatch" style="background:#79c0ff" title="ACCENT"></div>
+  </div>
+  <div class="theme-desc">BG #16202a · SURFACE #1e2e3e<br>현재 제안된 원안</div>
+</div>
+
+<!-- B2: 미디엄 -->
+<div style="width:280px">
+  <div class="theme-label" style="color:#82cfff">B2 — 미디엄 (추천)</div>
+  <div style="background:#1c2a36;border-radius:10px;overflow:hidden;border:1px solid #354d65">
+    <div class="ticker" style="background:#223347;border-color:#354d65;color:#82cfff">● LIVE &nbsp; 농작물 병해충 주의보 · 배추 급락</div>
+    <div style="padding:14px">
+      <div class="nav">
+        <span style="background:#1e9070;color:#fff">대시보드</span>
+        <span style="background:#253748;color:#87b8d4;border:1px solid #354d65">품목별</span>
+        <span style="background:#253748;color:#87b8d4;border:1px solid #354d65">시장별</span>
+      </div>
+      <div class="card-inner" style="background:#253748;border:1px solid #354d65;margin-bottom:10px">
+        <div class="label" style="color:#87b8d4">총 거래 품목</div>
+        <div class="val" style="color:#ddeaf5">142 <span style="font-size:13px;font-weight:400;color:#87b8d4">개</span></div>
+      </div>
+      <div style="background:#253748;border:1px solid #354d65;border-radius:8px;padding:10px">
+        <div class="row" style="border-color:#354d65;color:#ddeaf5"><span>배추</span><span class="tag" style="background:#ff707025;color:#ff8080">▼ 12.3%</span></div>
+        <div class="row" style="border-color:#354d65;color:#ddeaf5"><span>무</span><span class="tag" style="background:#56e89025;color:#56e890">▲ 8.1%</span></div>
+        <div class="row" style="border-color:transparent;color:#ddeaf5"><span>감자</span><span class="tag" style="background:#82cfff25;color:#82cfff">▲ 5.4%</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="swatch-row">
+    <div class="swatch" style="background:#1c2a36" title="BG"></div>
+    <div class="swatch" style="background:#253748" title="SURFACE"></div>
+    <div class="swatch" style="background:#354d65" title="BORDER"></div>
+    <div class="swatch" style="background:#ddeaf5" title="TEXT"></div>
+    <div class="swatch" style="background:#82cfff" title="ACCENT"></div>
+  </div>
+  <div class="theme-desc">BG #1c2a36 · SURFACE #253748<br>B1보다 10% 밝음. 균형 잡힌 가독성</div>
+</div>
+
+<!-- B3: 라이트 -->
+<div style="width:280px">
+  <div class="theme-label" style="color:#8dd8ff">B3 — 라이트</div>
+  <div style="background:#22323f;border-radius:10px;overflow:hidden;border:1px solid #3e5c73">
+    <div class="ticker" style="background:#283d4e;border-color:#3e5c73;color:#8dd8ff">● LIVE &nbsp; 농작물 병해충 주의보 · 배추 급락</div>
+    <div style="padding:14px">
+      <div class="nav">
+        <span style="background:#22a882;color:#fff">대시보드</span>
+        <span style="background:#2c4254;color:#93c4de;border:1px solid #3e5c73">품목별</span>
+        <span style="background:#2c4254;color:#93c4de;border:1px solid #3e5c73">시장별</span>
+      </div>
+      <div class="card-inner" style="background:#2c4254;border:1px solid #3e5c73;margin-bottom:10px">
+        <div class="label" style="color:#93c4de">총 거래 품목</div>
+        <div class="val" style="color:#e3eef8">142 <span style="font-size:13px;font-weight:400;color:#93c4de">개</span></div>
+      </div>
+      <div style="background:#2c4254;border:1px solid #3e5c73;border-radius:8px;padding:10px">
+        <div class="row" style="border-color:#3e5c73;color:#e3eef8"><span>배추</span><span class="tag" style="background:#ff808028;color:#ff9090">▼ 12.3%</span></div>
+        <div class="row" style="border-color:#3e5c73;color:#e3eef8"><span>무</span><span class="tag" style="background:#5cf09628;color:#5cf096">▲ 8.1%</span></div>
+        <div class="row" style="border-color:transparent;color:#e3eef8"><span>감자</span><span class="tag" style="background:#8dd8ff28;color:#8dd8ff">▲ 5.4%</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="swatch-row">
+    <div class="swatch" style="background:#22323f" title="BG"></div>
+    <div class="swatch" style="background:#2c4254" title="SURFACE"></div>
+    <div class="swatch" style="background:#3e5c73" title="BORDER"></div>
+    <div class="swatch" style="background:#e3eef8" title="TEXT"></div>
+    <div class="swatch" style="background:#8dd8ff" title="ACCENT"></div>
+  </div>
+  <div class="theme-desc">BG #22323f · SURFACE #2c4254<br>B1보다 20% 밝음. 경계선·텍스트 잘 보임</div>
+</div>
+
+</div>
+</body>
+</html>

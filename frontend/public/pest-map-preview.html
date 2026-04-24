@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>병해충 히트맵 프리뷰</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<style>
+  body { margin: 0; background: #1c2a36; font-family: -apple-system, sans-serif; display: flex; flex-direction: column; height: 100vh; }
+  #map { flex: 1; }
+  .leaflet-popup-content-wrapper { background: #253748; color: #ddeaf5; border: 1px solid #354d65; border-radius: 8px; }
+  .leaflet-popup-tip { background: #253748; }
+  .leaflet-popup-content { margin: 10px 14px; font-size: 13px; }
+  .region-label { font-size: 11px; font-weight: 800; color: #fff; text-shadow: 0 1px 4px rgba(0,0,0,.9); white-space: nowrap; pointer-events: none; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<script>
+const map = L.map('map', { center: [36.2, 127.8], zoom: 7 })
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map)
+
+// 병해충 데이터 (4월 계절 예보)
+const pests = [
+  { region: '경기', name: '진딧물',     sev: '경보', lat: 37.41, lng: 127.20 },
+  { region: '전남', name: '배추좀나방', sev: '경보', lat: 34.82, lng: 126.90 },
+  { region: '충남', name: '총채벌레',   sev: '주의', lat: 36.50, lng: 126.85 },
+  { region: '경북', name: '진딧물',     sev: '경보', lat: 36.42, lng: 128.70 },
+  { region: '전북', name: '잿빛곰팡이', sev: '주의', lat: 35.82, lng: 127.12 },
+  { region: '강원', name: '흰가루병',   sev: '주의', lat: 37.55, lng: 128.50 },
+  { region: '충북', name: '줄무늬잎마름',sev: '예보', lat: 36.80, lng: 127.90 },
+  { region: '경남', name: '배추좀나방', sev: '주의', lat: 35.40, lng: 128.30 },
+]
+
+// 중요도 → 히트맵 강도
+const intensity = { '경보': 1.0, '주의': 0.6, '예보': 0.3 }
+
+// 히트맵 포인트 생성 — 중심 + 주변 산포 (blob 효과)
+function makeBlob(lat, lng, intens) {
+  const pts = [[lat, lng, intens]]
+  const spread = 8
+  for (let i = 0; i < spread; i++) {
+    const dlat = (Math.random() - 0.5) * 0.8
+    const dlng = (Math.random() - 0.5) * 0.8
+    pts.push([lat + dlat, lng + dlng, intens * (0.3 + Math.random() * 0.5)])
+  }
+  return pts
+}
+
+const heatPoints = pests.flatMap(p => makeBlob(p.lat, p.lng, intensity[p.sev]))
+
+// 히트맵 레이어 — 기상 레이더 스타일 그라디언트
+L.heatLayer(heatPoints, {
+  radius: 55,
+  blur: 40,
+  maxZoom: 10,
+  max: 1.0,
+  gradient: {
+    0.0: '#004080',
+    0.2: '#0066cc',
+    0.4: '#00cc88',
+    0.6: '#aaee00',
+    0.75: '#ffcc00',
+    0.88: '#ff6600',
+    1.0: '#ff1a1a',
+  },
+}).addTo(map)
+
+// 지역 라벨 마커 (클릭 가능)
+const SV = { '경보': '#f85149', '주의': '#d29922', '예보': '#82cfff' }
+pests.forEach(p => {
+  const icon = L.divIcon({
+    className: '',
+    html: `<div class="region-label" style="color:${SV[p.sev]}">${p.region}<br><span style="font-size:9px;color:#ddeaf5">${p.name}</span></div>`,
+    iconSize: [70, 28], iconAnchor: [35, 14],
+  })
+  L.marker([p.lat, p.lng], { icon })
+    .bindPopup(`<div>
+      <div style="font-weight:700;font-size:13px;color:${SV[p.sev]};margin-bottom:5px">🐛 ${p.name} <span style="background:${SV[p.sev]}22;padding:1px 6px;border-radius:4px">${p.sev}</span></div>
+      <div style="font-size:12px;color:#87b8d4">📍 ${p.region}</div>
+    </div>`)
+    .addTo(map)
+})
+
+// 범례
+const legend = L.control({ position: 'bottomright' })
+legend.onAdd = () => {
+  const div = L.DomUtil.create('div')
+  div.style.cssText = 'background:#253748cc;border:1px solid #354d65;border-radius:8px;padding:10px 14px;font-size:12px;color:#ddeaf5;backdrop-filter:blur(4px)'
+  div.innerHTML = `
+    <div style="font-weight:700;margin-bottom:8px;color:#87b8d4;font-size:11px">병해충 발생 밀도</div>
+    <div style="width:140px;height:10px;border-radius:5px;background:linear-gradient(to right,#004080,#0066cc,#00cc88,#aaee00,#ffcc00,#ff6600,#ff1a1a);margin-bottom:5px"></div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:#87b8d4">
+      <span>낮음</span><span>보통</span><span>높음</span>
+    </div>
+    <div style="margin-top:10px;font-size:11px;color:#87b8d4;font-weight:700">발생 등급</div>
+    <div style="margin-top:5px;display:flex;flex-direction:column;gap:3px;font-size:11px">
+      <span style="color:#f85149">● 경보</span>
+      <span style="color:#d29922">● 주의</span>
+      <span style="color:#82cfff">● 예보</span>
+    </div>`
+  return div
+}
+legend.addTo(map)
+</script>
+</body>
+</html>

@@ -12,11 +12,11 @@ import client from '../api/client'
 import { MOCK_DAILY, MOCK_TREND } from '../data/analysisMock'
 
 const MOCK_LIVESTOCK = [
-  { itemCode: 'B001', itemName: '한우 1++등급', category: '소', price: 12800, unit: '600g', change7d:  1.2, origin: '국내산' },
-  { itemCode: 'B002', itemName: '한우 1+등급',  category: '소', price: 10500, unit: '600g', change7d: -0.5, origin: '국내산' },
-  { itemCode: 'B003', itemName: '한우 1등급',   category: '소', price:  8900, unit: '600g', change7d:  0.3, origin: '국내산' },
-  { itemCode: 'B004', itemName: '한우 2등급',   category: '소', price:  7200, unit: '600g', change7d:  0.8, origin: '국내산' },
-  { itemCode: 'B005', itemName: '한우 3등급',   category: '소', price:  5800, unit: '600g', change7d: -1.2, origin: '국내산' },
+  { itemCode: 'C001', itemName: '한우 거세',   category: '소', price: 8500000, unit: '두', change7d:  1.2, origin: '국내산' },
+  { itemCode: 'C002', itemName: '한우 암소',   category: '소', price: 6200000, unit: '두', change7d: -0.5, origin: '국내산' },
+  { itemCode: 'C003', itemName: '육우 거세',   category: '소', price: 4800000, unit: '두', change7d:  0.3, origin: '국내산' },
+  { itemCode: 'C004', itemName: '젖소',        category: '소', price: 1800000, unit: '두', change7d:  0.8, origin: '국내산' },
+  { itemCode: 'C005', itemName: '한우 송아지', category: '소', price: 2200000, unit: '두', change7d: -1.2, origin: '국내산' },
   { itemCode: 'L011', itemName: '돼지 삼겹살', category: '돼지', price: 2450, unit: '100g', change7d:  2.1, origin: '국내산' },
   { itemCode: 'L011', itemName: '돼지 삼겹살', category: '돼지', price: 1050, unit: '100g', change7d:  0.8, origin: '수입산' },
   { itemCode: 'L012', itemName: '돼지 목심',   category: '돼지', price: 2100, unit: '100g', change7d: -0.5, origin: '국내산' },
@@ -29,7 +29,7 @@ const MOCK_LIVESTOCK = [
 ]
 
 const LIVESTOCK_BASE_PRICE = {
-  'B001': 12800, 'B002': 10500, 'B003': 8900, 'B004': 7200, 'B005': 5800,
+  'C001': 8500000, 'C002': 6200000, 'C003': 4800000, 'C004': 1800000, 'C005': 2200000,
   'L011': 2450, 'L012': 2100, 'L013': 1680,
   'L021': 4200, 'L031': 1420, 'L032': 1280,
 }
