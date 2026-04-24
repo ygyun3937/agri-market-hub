@@ -846,6 +846,7 @@ function LivestockSection({ selectedDate }) {
   const [data, setData] = useState([])
   const [trendData, setTrendData] = useState([])
   const [originData, setOriginData] = useState([])
+  const [marketData, setMarketData] = useState([])
   const [selectedItem, setSelectedItem] = useState(null)
   const [loading, setLoading] = useState(false)
   const [trendLoading, setTrendLoading] = useState(false)
@@ -856,6 +857,7 @@ function LivestockSection({ selectedDate }) {
     setSelectedItem(null)
     setTrendData([])
     setOriginData([])
+    setMarketData([])
     client.get(`/livestock/daily?date=${selectedDate}`)
       .then(r => setData(r.data?.length ? r.data : MOCK_LIVESTOCK))
       .catch(() => setData(MOCK_LIVESTOCK))
@@ -867,6 +869,7 @@ function LivestockSection({ selectedDate }) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setTrendData([])
       setOriginData([])
+      setMarketData([])
       return
     }
     const { itemCode, origin = '국내산' } = selectedItem
@@ -874,7 +877,8 @@ function LivestockSection({ selectedDate }) {
     Promise.allSettled([
       client.get(`/livestock/trend?itemCode=${itemCode}&days=30&origin=${encodeURIComponent(origin)}`),
       client.get(`/livestock/origin?itemCode=${itemCode}&date=${selectedDate}`),
-    ]).then(([trend, orig]) => {
+      client.get(`/livestock/market-prices?itemCode=${itemCode}&origin=${encodeURIComponent(origin)}`),
+    ]).then(([trend, orig, market]) => {
       const tRows = trend.status === 'fulfilled'
         ? (trend.value.data || []).map(d => ({ ...d, avgPrice: d.price, volume: 0 }))
         : []
@@ -883,6 +887,10 @@ function LivestockSection({ selectedDate }) {
         orig.status === 'fulfilled' && orig.value.data?.length
           ? orig.value.data
           : MOCK_LIVESTOCK_ORIGIN(itemCode)
+      )
+      setMarketData(
+        market.status === 'fulfilled' && market.value.data?.length
+          ? market.value.data : []
       )
     }).finally(() => setTrendLoading(false))
   }, [selectedItem, selectedDate])
@@ -946,6 +954,32 @@ function LivestockSection({ selectedDate }) {
                           <div style={{
                             height: 8, borderRadius: 4, transition: 'width 0.3s ease',
                             background: d.origin.includes('수입') ? '#5ba3f5' : ACCENT,
+                            width: max > 0 ? `${(Number(d.price) / max * 100).toFixed(1)}%` : '0%',
+                          }} />
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+              {marketData.length > 0 && (
+                <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 8, padding: '12px 16px', marginBottom: 12 }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: DIM, marginBottom: 12 }}>시장별 가격 비교</div>
+                  {[...marketData].sort((a, b) => Number(b.price) - Number(a.price)).map(d => {
+                    const max = Math.max(...marketData.map(x => Number(x.price) || 0))
+                    return (
+                      <div key={d.marketCode} style={{ marginBottom: 10 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 4 }}>
+                          <span style={{ color: TEXT, fontWeight: 600 }}>{d.marketName}</span>
+                          <span style={{ color: ACCENT, fontWeight: 700 }}>
+                            {Number(d.price).toLocaleString()}원
+                            {d.unit && <span style={{ color: DIM, fontWeight: 400, fontSize: 11 }}>/{d.unit}</span>}
+                          </span>
+                        </div>
+                        <div style={{ height: 8, background: '#2d4255', borderRadius: 4 }}>
+                          <div style={{
+                            height: 8, borderRadius: 4, transition: 'width 0.3s ease',
+                            background: ACCENT,
                             width: max > 0 ? `${(Number(d.price) / max * 100).toFixed(1)}%` : '0%',
                           }} />
                         </div>
