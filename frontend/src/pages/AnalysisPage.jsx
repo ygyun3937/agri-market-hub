@@ -719,12 +719,18 @@ function HolidayBanner({ selectedDate, hasData }) {
   return (
     <div style={{
       background: '#d2992222', border: '1px solid #d29922',
-      borderRadius: 6, padding: '8px 14px', margin: '12px 16px 0',
+      borderRadius: 6, padding: '8px 14px', margin: '12px 16px',
       fontSize: 14, color: '#d29922', display: 'flex', alignItems: 'center', gap: 8,
     }}>
       ⚠️ {msg} 가장 가까운 거래일을 선택해주세요.
     </div>
   )
+}
+
+function formatDateKR(dateStr) {
+  const d = new Date(dateStr)
+  const days = ['일', '월', '화', '수', '목', '금', '토']
+  return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 (${days[d.getDay()]})`
 }
 
 function PageHeader({ selectedDate, setSelectedDate }) {
@@ -742,22 +748,30 @@ function PageHeader({ selectedDate, setSelectedDate }) {
           전국 농수산물 경매 현황
         </h1>
       )}
-      <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, color: DIM }}>
-        {isMobile ? '📅 기준일:' : '기준일:'}
-        <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
-          <input
-            type="date"
-            value={selectedDate}
-            max={getToday()}
-            onChange={e => setSelectedDate(e.target.value)}
-            style={{
-              background: BG, border: `1px solid ${BORDER}`, borderRadius: 5,
-              color: TEXT, fontSize: 14, padding: '4px 28px 4px 8px', outline: 'none', cursor: 'pointer',
-            }}
-          />
-          <span style={{ position: 'absolute', right: 6, pointerEvents: 'none', fontSize: 15 }}>📅</span>
-        </div>
-      </label>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <span style={{
+          fontSize: 13, fontWeight: 700, color: ACCENT,
+          background: '#1a3a52', borderRadius: 16, padding: '3px 12px',
+        }}>
+          📅 {formatDateKR(selectedDate)}
+        </span>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, color: DIM }}>
+          변경:
+          <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
+            <input
+              type="date"
+              value={selectedDate}
+              max={getToday()}
+              onChange={e => setSelectedDate(e.target.value)}
+              style={{
+                background: BG, border: `1px solid ${BORDER}`, borderRadius: 5,
+                color: TEXT, fontSize: 14, padding: '4px 28px 4px 8px', outline: 'none', cursor: 'pointer',
+              }}
+            />
+            <span style={{ position: 'absolute', right: 6, pointerEvents: 'none', fontSize: 15 }}>📅</span>
+          </div>
+        </label>
+      </div>
     </div>
   )
 }
@@ -903,8 +917,9 @@ function LivestockSection({ selectedDate }) {
 
   return (
     <div>
+      <HolidayBanner selectedDate={selectedDate} hasData={data.length > 0} />
       {/* 축종 서브탭 */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 14, marginTop: 4 }}>
         {LIVESTOCK_SUB_TABS.map(tab => (
           <button key={tab} onClick={() => { setSubTab(tab); setSelectedItem(null) }} style={{
             padding: '6px 18px', borderRadius: 20,
