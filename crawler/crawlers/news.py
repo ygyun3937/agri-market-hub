@@ -1,10 +1,13 @@
 # crawler/crawlers/news.py
 import os
 import html
+import logging
 import requests
 import re
 from datetime import datetime
 import db
+
+log = logging.getLogger(__name__)
 
 CLIENT_ID = os.getenv("NAVER_CLIENT_ID", "")
 CLIENT_SECRET = os.getenv("NAVER_CLIENT_SECRET", "")
@@ -30,7 +33,11 @@ def run_news():
             params=params,
             timeout=10,
         )
-        resp.raise_for_status()
+        try:
+            resp.raise_for_status()
+        except Exception as e:
+            log.warning(f"News API error [{query}]: {e} — check NAVER_CLIENT_ID/SECRET")
+            continue
         for item in resp.json().get("items", []):
             title = html.unescape(re.sub(r"<[^>]+>", "", item.get("title", "")))
             summary = html.unescape(re.sub(r"<[^>]+>", "", item.get("description", "")))

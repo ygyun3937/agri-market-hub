@@ -19,7 +19,7 @@ export default function NewsPanel() {
       if (tab === 'headline') {
         client.get('/news').then(r => setNews(r.data || [])).catch(() => {})
       } else {
-        client.get(`/news?tab=${tab}`).then(r => setNews(r.data)).catch(() => {})
+        client.get(`/news?tab=${tab}`).then(r => setNews(r.data || [])).catch(() => {})
       }
     }
     fetch()
