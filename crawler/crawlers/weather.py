@@ -1,5 +1,6 @@
 # crawler/crawlers/weather.py
 import os
+import time
 import requests
 import logging
 from datetime import datetime, timedelta, timezone, date
@@ -150,6 +151,7 @@ def run_weather():
             log.info(f"Weather: {region['name']} = {d['main']['temp']}°C")
         except Exception as e:
             log.warning(f"Weather fetch failed [{region['name']}]: {e}")
+        time.sleep(1.1)  # OWM free tier: 60 calls/min
 
 
 def run_forecast():
@@ -192,6 +194,7 @@ def run_forecast():
                 rain_prob=int(max(vals["pops"])),
             )
         log.info(f"Forecast: {region['name']} — {len(daily)} days saved")
+        time.sleep(1.1)  # OWM free tier: 60 calls/min
 
 
 def run_disaster_alerts():
