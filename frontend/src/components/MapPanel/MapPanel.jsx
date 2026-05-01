@@ -51,39 +51,39 @@ const PEST_COLORS = [
 ]
 
 const SEASONAL = {
-  1:  [{ itemName: '잿빛곰팡이병', severity: '주의', region: '전국', crops: ['딸기', '상추', '시금치'] },
-       { itemName: '흰가루병',     severity: '주의', region: '전국', crops: ['오이', '호박'] }],
-  2:  [{ itemName: '총채벌레',     severity: '주의', region: '전국', crops: ['딸기', '파프리카'] },
-       { itemName: '잿빛곰팡이병', severity: '주의', region: '전국', crops: ['딸기', '상추', '오이'] }],
-  3:  [{ itemName: '진딧물',       severity: '경보', region: '전국', crops: ['배추', '무', '감자'] },
-       { itemName: '배추좀나방',   severity: '주의', region: '남부', crops: ['배추'] },
-       { itemName: '흰가루병',     severity: '주의', region: '전국', crops: ['오이', '딸기'] }],
-  4:  [{ itemName: '진딧물',       severity: '경보', region: '전국', crops: ['배추', '감자', '고추', '사과', '배'] },
-       { itemName: '배추좀나방',   severity: '경보', region: '전국', crops: ['배추'] },
-       { itemName: '총채벌레',     severity: '주의', region: '전국', crops: ['딸기', '고추', '파프리카'] },
-       { itemName: '잿빛곰팡이병', severity: '주의', region: '전국', crops: ['딸기', '토마토'] },
-       { itemName: '벼 줄무늬잎마름병', severity: '예비주의', region: '남부', crops: ['쌀', '벼'] }],
-  5:  [{ itemName: '복숭아순나방', severity: '경보', region: '전국', crops: ['사과', '복숭아', '배'] },
-       { itemName: '진딧물',       severity: '주의', region: '전국', crops: ['고추', '옥수수'] },
-       { itemName: '역병',         severity: '주의', region: '전국', crops: ['고추'] }],
-  6:  [{ itemName: '벼멸구',       severity: '주의', region: '남부', crops: ['쌀', '벼'] },
-       { itemName: '고추 탄저병',  severity: '경보', region: '전국', crops: ['고추'] },
-       { itemName: '복숭아순나방', severity: '주의', region: '전국', crops: ['사과', '복숭아', '배'] }],
-  7:  [{ itemName: '벼멸구',           severity: '경보', region: '남부', crops: ['쌀', '벼'] },
-       { itemName: '흰등멸구',         severity: '주의', region: '남부', crops: ['쌀', '벼'] },
-       { itemName: '고추 역병·탄저병', severity: '경보', region: '전국', crops: ['고추'] }],
-  8:  [{ itemName: '벼멸구',           severity: '경보', region: '전국', crops: ['쌀', '벼'] },
-       { itemName: '배추 무름병',      severity: '주의', region: '전국', crops: ['배추'] },
-       { itemName: '사과 겹무늬썩음병', severity: '주의', region: '전국', crops: ['사과'] }],
-  9:  [{ itemName: '벼 이삭도열병', severity: '경보', region: '전국', crops: ['쌀', '벼'] },
-       { itemName: '배추 진딧물',   severity: '주의', region: '전국', crops: ['배추'] },
-       { itemName: '노린재',        severity: '주의', region: '전국', crops: ['쌀', '벼', '콩'] }],
-  10: [{ itemName: '노린재',      severity: '주의', region: '전국', crops: ['쌀', '벼', '사과', '배'] },
-       { itemName: '배추 무름병', severity: '주의', region: '전국', crops: ['배추'] }],
-  11: [{ itemName: '흰가루병',     severity: '주의', region: '전국', crops: ['딸기', '상추'] },
-       { itemName: '잿빛곰팡이병', severity: '주의', region: '전국', crops: ['딸기', '상추', '오이'] }],
-  12: [{ itemName: '잿빛곰팡이병', severity: '주의', region: '전국', crops: ['딸기', '상추'] },
-       { itemName: '흰가루병',     severity: '주의', region: '전국', crops: ['오이', '상추'] }],
+  1:  [{ itemName: '잿빛곰팡이병', severity: '주의', region: '전국', crops: ['딸기', '상추', '시금치'], tip: '시설 환기 자주, 습도 85% 이하 유지. 이병 잎·과실 즉시 제거' },
+       { itemName: '흰가루병',     severity: '주의', region: '전국', crops: ['오이', '호박'],           tip: '과습 방지·햇빛 확보. 발생 초기 황·수화제 살포' }],
+  2:  [{ itemName: '총채벌레',     severity: '주의', region: '전국', crops: ['딸기', '파프리카'],       tip: '황색 끈끈이 트랩 설치. 발생 초기 스피노사드계 약제 처리' },
+       { itemName: '잿빛곰팡이병', severity: '주의', region: '전국', crops: ['딸기', '상추', '오이'],   tip: '환기 철저, 잎 간격 확보. 감염 부위 조기 제거 후 살균제 처리' }],
+  3:  [{ itemName: '진딧물',       severity: '경보', region: '전국', crops: ['배추', '무', '감자'],     tip: '천적(무당벌레) 활용 또는 피레스로이드계 약제. 반사 멀칭 효과적' },
+       { itemName: '배추좀나방',   severity: '주의', region: '남부', crops: ['배추'],                   tip: '페로몬 트랩 예찰, 성충 밀도 높으면 BT제 살포' },
+       { itemName: '흰가루병',     severity: '주의', region: '전국', crops: ['오이', '딸기'],           tip: '건조 조건 방지, 적정 습도 유지. 유황수화제 주기적 예방 살포' }],
+  4:  [{ itemName: '진딧물',       severity: '경보', region: '전국', crops: ['배추', '감자', '고추', '사과', '배'], tip: '이미다클로프리드 또는 플로니카미드계 약제. 새순·잎 뒷면 집중 방제' },
+       { itemName: '배추좀나방',   severity: '경보', region: '전국', crops: ['배추'],                   tip: '1세대 유충 최성기 — BT제 3~4일 간격 살포, 방충망 설치' },
+       { itemName: '총채벌레',     severity: '주의', region: '전국', crops: ['딸기', '고추', '파프리카'], tip: '황색 끈끈이 트랩 예찰, 스피네토람계 약제 처리' },
+       { itemName: '잿빛곰팡이병', severity: '주의', region: '전국', crops: ['딸기', '토마토'],         tip: '수확기 과습 주의, 보트리티스 전용 살균제 예방 살포' },
+       { itemName: '벼 줄무늬잎마름병', severity: '예비주의', region: '남부', crops: ['쌀', '벼'],     tip: '애멸구 방제가 핵심 — 이앙 전 상자처리제 사용' }],
+  5:  [{ itemName: '복숭아순나방', severity: '경보', region: '전국', crops: ['사과', '복숭아', '배'],  tip: '교미 교란제(페로몬) 설치, 1세대 성충 발생 직후 약제 살포' },
+       { itemName: '진딧물',       severity: '주의', region: '전국', crops: ['고추', '옥수수'],         tip: '정식 후 2주 내 발생 확인, 초기 방제가 피해 최소화' },
+       { itemName: '역병',         severity: '주의', region: '전국', crops: ['고추'],                   tip: '배수 철저, 연작 회피. 메탈락실계 약제 토양 관주 처리' }],
+  6:  [{ itemName: '벼멸구',       severity: '주의', region: '남부', crops: ['쌀', '벼'],              tip: '비래 예찰 강화, 밀도 높으면 부프로페진·에토펜프록스 처리' },
+       { itemName: '고추 탄저병',  severity: '경보', region: '전국', crops: ['고추'],                  tip: '장마 전 예방 살포 필수. 만코제브·아족시스트로빈계 약제 7일 간격' },
+       { itemName: '복숭아순나방', severity: '주의', region: '전국', crops: ['사과', '복숭아', '배'],  tip: '2세대 발생 — 피해과 즉시 제거, 페로몬 트랩 계속 운용' }],
+  7:  [{ itemName: '벼멸구',           severity: '경보', region: '남부', crops: ['쌀', '벼'],          tip: '논 예찰 주 2회, 밀도 급증 시 에토펜프록스·부프로페진 즉시 처리' },
+       { itemName: '흰등멸구',         severity: '주의', region: '남부', crops: ['쌀', '벼'],          tip: '벼멸구와 동시 방제 가능 — 합성 피레스로이드계 약제 활용' },
+       { itemName: '고추 역병·탄저병', severity: '경보', region: '전국', crops: ['고추'],              tip: '장마철 최고위험기 — 강우 전후 살균제 살포, 배수로 정비' }],
+  8:  [{ itemName: '벼멸구',         severity: '경보', region: '전국', crops: ['쌀', '벼'],            tip: '출수기 전 집중 방제. 줄기 황변·도복 징후 발견 즉시 약제 처리' },
+       { itemName: '배추 무름병',    severity: '주의', region: '전국', crops: ['배추'],                tip: '고온다습 시 배수 개선, 연작 피하고 동제 살균제 예방 살포' },
+       { itemName: '사과 겹무늬썩음병', severity: '주의', region: '전국', crops: ['사과'],            tip: '수확 45일 전까지 방제 완료. 봉지 씌우기로 예방 효과' }],
+  9:  [{ itemName: '벼 이삭도열병', severity: '경보', region: '전국', crops: ['쌀', '벼'],            tip: '출수 직전~10% 출수기 약제 살포 — 트리사이클라졸·이소티아닐 처리' },
+       { itemName: '배추 진딧물',    severity: '주의', region: '전국', crops: ['배추'],                tip: '정착 초기 방제. 피리미카브 등 선택성 약제 사용' },
+       { itemName: '노린재',         severity: '주의', region: '전국', crops: ['쌀', '벼', '콩'],     tip: '포집기 예찰, 논·콩밭 주변 잡초 제거. 에토펜프록스계 처리' }],
+  10: [{ itemName: '노린재',      severity: '주의', region: '전국', crops: ['쌀', '벼', '사과', '배'], tip: '수확 직전 방제 주의(잔류). 수확 후 월동처 제거' },
+       { itemName: '배추 무름병', severity: '주의', region: '전국', crops: ['배추'],                   tip: '결구기 배수 관리, 상처 최소화. 감염주 즉시 제거' }],
+  11: [{ itemName: '흰가루병',     severity: '주의', region: '전국', crops: ['딸기', '상추'],          tip: '시설 환기·광량 확보. 황수화제 또는 트리플록시스트로빈계 예방 살포' },
+       { itemName: '잿빛곰팡이병', severity: '주의', region: '전국', crops: ['딸기', '상추', '오이'],  tip: '저온·다습 조건 차단, 오래된 잎 제거. 플루디옥소닐계 약제 처리' }],
+  12: [{ itemName: '잿빛곰팡이병', severity: '주의', region: '전국', crops: ['딸기', '상추'],          tip: '수확기 시설 온도 10°C 이상 유지, 환기 주 3회 이상' },
+       { itemName: '흰가루병',     severity: '주의', region: '전국', crops: ['오이', '상추'],          tip: '햇빛 최대 확보, 야간 습도 관리. 발생 초기 예방 살포' }],
 }
 
 const SOUTH_REGIONS = ['전남', '전북', '경남', '경북', '부산', '광주', '대구', '울산', '제주']
@@ -294,7 +294,7 @@ function PestChoropleth({ source, colorMap }) {
           )
         : expandRegion(items[0]?.region || '전국')
 
-      regions.forEach(r => { regionStyle[r] = { color, fillOpacity, name, sev, crops: items[0]?.crops } })
+      regions.forEach(r => { regionStyle[r] = { color, fillOpacity, name, sev, crops: items[0]?.crops, tip: items[0]?.tip } })
     })
 
     let cancelled = false
@@ -323,12 +323,16 @@ function PestChoropleth({ source, colorMap }) {
               const cropsHtml = s.crops?.length
                 ? `<div style="color:#82cfff;font-size:10px;margin-top:2px">🌿 ${s.crops.join(' · ')}</div>`
                 : ''
+              const tipHtml = s.tip
+                ? `<div style="color:#d4e8c2;font-size:10px;margin-top:4px;padding-top:4px;border-top:1px solid #2d4255;line-height:1.5">💡 ${s.tip}</div>`
+                : ''
               layer.bindTooltip(
-                `<div style="background:#162330;border:1px solid #2d4255;color:#ddeaf5;padding:5px 9px;border-radius:5px;font-size:12px;line-height:1.6;pointer-events:none">
+                `<div style="background:#162330;border:1px solid #2d4255;color:#ddeaf5;padding:6px 10px;border-radius:6px;font-size:12px;line-height:1.6;pointer-events:none;max-width:220px">
                   <b style="color:#eef5fb">${r}</b><br>
                   <span style="color:#87b8d4">${s.name}</span>
                   <span style="color:${sevColor};font-weight:600;margin-left:6px">${s.sev}</span>
                   ${cropsHtml}
+                  ${tipHtml}
                 </div>`,
                 { sticky: true, opacity: 1, className: 'pest-tip' }
               )
