@@ -4,6 +4,34 @@ import { useNavigate } from 'react-router-dom'
 import client from '../../api/client'
 import { useAuth } from '../../hooks/useAuth'
 
+const HOLIDAYS = {
+  2025: {
+    '01-01': '신정', '01-28': '설연휴', '01-29': '설날', '01-30': '설연휴',
+    '03-01': '삼일절', '05-05': '어린이날', '06-06': '현충일',
+    '08-15': '광복절', '10-03': '개천절', '10-05': '추석연휴',
+    '10-06': '추석', '10-07': '추석연휴', '10-09': '한글날', '12-25': '성탄절',
+  },
+  2026: {
+    '01-01': '신정', '02-16': '설연휴', '02-17': '설날', '02-18': '설연휴',
+    '03-01': '삼일절', '05-05': '어린이날', '06-06': '현충일',
+    '08-15': '광복절', '09-24': '추석연휴', '09-25': '추석', '09-26': '추석연휴',
+    '10-03': '개천절', '10-09': '한글날', '12-25': '성탄절',
+  },
+  2027: {
+    '01-01': '신정', '02-06': '설연휴', '02-07': '설날', '02-08': '설연휴',
+    '03-01': '삼일절', '05-05': '어린이날', '06-06': '현충일',
+    '08-15': '광복절', '10-03': '개천절', '10-09': '한글날',
+    '10-14': '추석연휴', '10-15': '추석', '10-16': '추석연휴', '12-25': '성탄절',
+  },
+}
+
+function getDayInfo(year, month, day) {
+  const mmdd = `${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+  const holidayName = (HOLIDAYS[year] || {})[mmdd]
+  const dow = new Date(year, month, day).getDay()
+  return { holidayName, isSun: dow === 0, isSat: dow === 6, isHoliday: !!holidayName }
+}
+
 function gcalLink(s) {
   const d = s.date.replace(/-/g, '')
   return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(s.title)}&dates=${d}/${d}&details=${encodeURIComponent(s.memo || '')}`
@@ -56,6 +84,11 @@ export default function CalendarPanel({ schedules = [], refreshSchedules }) {
     setSaving(false)
   }
 
+  const refDay = selectedDay || today
+  const refInfo = getDayInfo(year, month, refDay)
+  const bankOpen = !refInfo.isSun && !refInfo.isSat && !refInfo.isHoliday
+  const auctionOpen = !refInfo.isSun && !refInfo.isHoliday
+
   return (
     <div style={{ padding: '10px 14px', position: 'relative' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
@@ -66,28 +99,46 @@ export default function CalendarPanel({ schedules = [], refreshSchedules }) {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2 }}>
-        {['일', '월', '화', '수', '목', '금', '토'].map(d => (
-          <div key={d} style={{ fontSize: 11, color: '#87b8d4', textAlign: 'center', padding: '2px 0' }}>{d}</div>
+        {['일', '월', '화', '수', '목', '금', '토'].map((d, i) => (
+          <div key={d} style={{
+            fontSize: 11, textAlign: 'center', padding: '2px 0',
+            color: i === 0 ? '#f85149' : i === 6 ? '#82cfff' : '#87b8d4',
+          }}>{d}</div>
         ))}
         {cells.map((day, i) => {
+          if (!day) return <div key={i} />
+          const { holidayName, isSun, isSat, isHoliday } = getDayInfo(year, month, day)
           const isToday = day === today
           const isSelected = day === selectedDay
-          const daySchedules = day && schedulesByDay[day]
+          const daySchedules = schedulesByDay[day]
+
+          const textColor = isToday ? '#1c2a36'
+            : isSelected ? '#fff'
+            : (isSun || isHoliday) ? '#f85149'
+            : isSat ? '#82cfff'
+            : '#ddeaf5'
+
           return (
-            <div key={i} onClick={() => day && setSelectedDay(day === selectedDay ? null : day)}
+            <div key={i} onClick={() => setSelectedDay(day === selectedDay ? null : day)}
               style={{
-                fontSize: 13, textAlign: 'center', padding: '3px 1px',
-                borderRadius: 4, cursor: day ? 'pointer' : 'default', minHeight: 30,
-                color: isToday ? '#1c2a36' : isSelected ? '#fff' : day ? '#ddeaf5' : 'transparent',
+                fontSize: 12, textAlign: 'center', padding: '2px 1px',
+                borderRadius: 4, cursor: 'pointer', minHeight: 32,
+                color: textColor,
                 background: isToday ? '#56e890' : isSelected ? '#1a7fd4' : 'transparent',
                 border: isSelected && !isToday ? '1px solid #6ab8ff' : '1px solid transparent',
               }}>
-              {day || ''}
-              {daySchedules && daySchedules.map((s, si) => (
+              {day}
+              {holidayName && (
+                <div style={{
+                  fontSize: 8, lineHeight: 1.1, whiteSpace: 'nowrap', overflow: 'hidden',
+                  textOverflow: 'ellipsis', color: isToday ? '#1c2a3699' : '#f85149bb',
+                }}>{holidayName}</div>
+              )}
+              {daySchedules?.map((s, si) => (
                 <div key={si} style={{
-                  fontSize: 9, color: isToday ? '#1c2a36' : '#82cfff',
+                  fontSize: 8, color: isToday ? '#1c2a36' : '#82cfff',
                   whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                  lineHeight: 1.2, textAlign: 'left', paddingLeft: 1,
+                  lineHeight: 1.1, textAlign: 'left', paddingLeft: 1,
                 }}>{s.title}</div>
               ))}
             </div>
@@ -95,8 +146,41 @@ export default function CalendarPanel({ schedules = [], refreshSchedules }) {
         })}
       </div>
 
+      {/* 은행/경매장 영업 상태 */}
+      <div style={{
+        marginTop: 8, padding: '5px 8px', borderTop: '1px solid #2d4255',
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+      }}>
+        <span style={{ fontSize: 10, color: '#6a8fa8' }}>
+          {selectedDay ? `${month + 1}/${selectedDay}` : '오늘'}
+          {refInfo.holidayName
+            ? ` · ${refInfo.holidayName}`
+            : refInfo.isSun ? ' · 일요일'
+            : refInfo.isSat ? ' · 토요일'
+            : ''}
+        </span>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <span style={{ fontSize: 10, color: '#87b8d4' }}>
+            은행{' '}
+            <span style={{
+              color: bankOpen ? '#56e890' : '#f85149', fontWeight: 600,
+              background: bankOpen ? '#56e89022' : '#f8514922',
+              padding: '1px 5px', borderRadius: 3,
+            }}>{bankOpen ? '영업' : '휴무'}</span>
+          </span>
+          <span style={{ fontSize: 10, color: '#87b8d4' }}>
+            경매장{' '}
+            <span style={{
+              color: auctionOpen ? '#56e890' : '#f85149', fontWeight: 600,
+              background: auctionOpen ? '#56e89022' : '#f8514922',
+              padding: '1px 5px', borderRadius: 3,
+            }}>{auctionOpen ? '개장' : '휴장'}</span>
+          </span>
+        </div>
+      </div>
+
       {selectedDay && (
-        <div style={{ marginTop: 8, background: '#253748', border: '1px solid #354d65', borderRadius: 6, padding: '8px 10px' }}>
+        <div style={{ marginTop: 4, background: '#253748', border: '1px solid #354d65', borderRadius: 6, padding: '8px 10px' }}>
           <div style={{ fontSize: 12, color: '#87b8d4', marginBottom: 6 }}>{dateStr(selectedDay)} 일정</div>
           {(schedulesByDay[selectedDay] || []).map(s => (
             <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
