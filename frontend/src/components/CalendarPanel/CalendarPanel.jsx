@@ -90,18 +90,18 @@ export default function CalendarPanel({ schedules = [], refreshSchedules }) {
   const auctionOpen = !refInfo.isSun && !refInfo.isHoliday
 
   return (
-    <div style={{ padding: '10px 14px', position: 'relative' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-        <span style={{ fontSize: 14, color: '#ddeaf5', fontWeight: 600 }}>
+    <div style={{ padding: '12px 14px', position: 'relative' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+        <span style={{ fontSize: 16, color: '#ddeaf5', fontWeight: 700 }}>
           📅 {year}.{String(month + 1).padStart(2, '0')}
         </span>
-        <span style={{ fontSize: 11, color: '#87b8d4' }}>날짜 클릭 → 추가</span>
+        <span style={{ fontSize: 12, color: '#87b8d4' }}>날짜 클릭 → 일정 추가</span>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 3 }}>
         {['일', '월', '화', '수', '목', '금', '토'].map((d, i) => (
           <div key={d} style={{
-            fontSize: 11, textAlign: 'center', padding: '2px 0',
+            fontSize: 13, textAlign: 'center', padding: '3px 0', fontWeight: 600,
             color: i === 0 ? '#f85149' : i === 6 ? '#82cfff' : '#87b8d4',
           }}>{d}</div>
         ))}
@@ -121,8 +121,9 @@ export default function CalendarPanel({ schedules = [], refreshSchedules }) {
           return (
             <div key={i} onClick={() => setSelectedDay(day === selectedDay ? null : day)}
               style={{
-                fontSize: 12, textAlign: 'center', padding: '2px 1px',
-                borderRadius: 4, cursor: 'pointer', minHeight: 32,
+                fontSize: 15, textAlign: 'center', padding: '4px 2px',
+                borderRadius: 5, cursor: 'pointer', minHeight: 40,
+                fontWeight: isToday ? 700 : 400,
                 color: textColor,
                 background: isToday ? '#56e890' : isSelected ? '#1a7fd4' : 'transparent',
                 border: isSelected && !isToday ? '1px solid #6ab8ff' : '1px solid transparent',
@@ -130,15 +131,15 @@ export default function CalendarPanel({ schedules = [], refreshSchedules }) {
               {day}
               {holidayName && (
                 <div style={{
-                  fontSize: 8, lineHeight: 1.1, whiteSpace: 'nowrap', overflow: 'hidden',
+                  fontSize: 10, lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden',
                   textOverflow: 'ellipsis', color: isToday ? '#1c2a3699' : '#f85149bb',
                 }}>{holidayName}</div>
               )}
               {daySchedules?.map((s, si) => (
                 <div key={si} style={{
-                  fontSize: 8, color: isToday ? '#1c2a36' : '#82cfff',
+                  fontSize: 10, color: isToday ? '#1c2a36' : '#82cfff',
                   whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                  lineHeight: 1.1, textAlign: 'left', paddingLeft: 1,
+                  lineHeight: 1.2, textAlign: 'left', paddingLeft: 2,
                 }}>{s.title}</div>
               ))}
             </div>
@@ -148,10 +149,10 @@ export default function CalendarPanel({ schedules = [], refreshSchedules }) {
 
       {/* 은행/경매장 영업 상태 */}
       <div style={{
-        marginTop: 8, padding: '5px 8px', borderTop: '1px solid #2d4255',
+        marginTop: 10, padding: '7px 8px', borderTop: '1px solid #2d4255',
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
       }}>
-        <span style={{ fontSize: 10, color: '#6a8fa8' }}>
+        <span style={{ fontSize: 12, color: '#6a8fa8' }}>
           {selectedDay ? `${month + 1}/${selectedDay}` : '오늘'}
           {refInfo.holidayName
             ? ` · ${refInfo.holidayName}`
@@ -159,34 +160,34 @@ export default function CalendarPanel({ schedules = [], refreshSchedules }) {
             : refInfo.isSat ? ' · 토요일'
             : ''}
         </span>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <span style={{ fontSize: 10, color: '#87b8d4' }}>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <span style={{ fontSize: 12, color: '#87b8d4' }}>
             은행{' '}
             <span style={{
-              color: bankOpen ? '#56e890' : '#f85149', fontWeight: 600,
+              color: bankOpen ? '#56e890' : '#f85149', fontWeight: 700,
               background: bankOpen ? '#56e89022' : '#f8514922',
-              padding: '1px 5px', borderRadius: 3,
+              padding: '2px 6px', borderRadius: 3,
             }}>{bankOpen ? '영업' : '휴무'}</span>
           </span>
-          <span style={{ fontSize: 10, color: '#87b8d4' }}>
+          <span style={{ fontSize: 12, color: '#87b8d4' }}>
             경매장{' '}
             <span style={{
-              color: auctionOpen ? '#56e890' : '#f85149', fontWeight: 600,
+              color: auctionOpen ? '#56e890' : '#f85149', fontWeight: 700,
               background: auctionOpen ? '#56e89022' : '#f8514922',
-              padding: '1px 5px', borderRadius: 3,
+              padding: '2px 6px', borderRadius: 3,
             }}>{auctionOpen ? '개장' : '휴장'}</span>
           </span>
         </div>
       </div>
 
       {selectedDay && (
-        <div style={{ marginTop: 4, background: '#253748', border: '1px solid #354d65', borderRadius: 6, padding: '8px 10px' }}>
-          <div style={{ fontSize: 12, color: '#87b8d4', marginBottom: 6 }}>{dateStr(selectedDay)} 일정</div>
+        <div style={{ marginTop: 6, background: '#253748', border: '1px solid #354d65', borderRadius: 6, padding: '10px 12px' }}>
+          <div style={{ fontSize: 13, color: '#87b8d4', marginBottom: 8 }}>{dateStr(selectedDay)} 일정</div>
           {(schedulesByDay[selectedDay] || []).map(s => (
-            <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-              <span style={{ fontSize: 12, color: '#ddeaf5', flex: 1 }}>{s.title}</span>
+            <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+              <span style={{ fontSize: 13, color: '#ddeaf5', flex: 1 }}>{s.title}</span>
               <a href={gcalLink(s)} target="_blank" rel="noreferrer"
-                style={{ fontSize: 11, color: '#82cfff', textDecoration: 'none' }}>GCal</a>
+                style={{ fontSize: 12, color: '#82cfff', textDecoration: 'none' }}>GCal</a>
             </div>
           ))}
           {user ? (
@@ -197,25 +198,25 @@ export default function CalendarPanel({ schedules = [], refreshSchedules }) {
                 style={{
                   width: '100%', boxSizing: 'border-box', background: '#1c2a36',
                   border: '1px solid #354d65', borderRadius: 4, color: '#eef5fb',
-                  fontSize: 12, padding: '4px 6px', marginBottom: 4, outline: 'none'
+                  fontSize: 13, padding: '6px 8px', marginBottom: 6, outline: 'none'
                 }} />
               <div style={{ display: 'flex', gap: 4 }}>
                 <button onClick={handleSave} disabled={saving} style={{
                   flex: 1, background: '#1e9070', border: 'none', borderRadius: 4,
-                  color: '#fff', fontSize: 12, padding: '4px 0', cursor: 'pointer'
+                  color: '#fff', fontSize: 13, padding: '6px 0', cursor: 'pointer'
                 }}>추가</button>
                 <button onClick={() => setSelectedDay(null)} style={{
                   background: '#2d4255', border: '1px solid #354d65', borderRadius: 4,
-                  color: '#87b8d4', fontSize: 12, padding: '4px 8px', cursor: 'pointer'
+                  color: '#87b8d4', fontSize: 13, padding: '6px 10px', cursor: 'pointer'
                 }}>닫기</button>
               </div>
             </>
           ) : (
-            <div style={{ textAlign: 'center', padding: '6px 0' }}>
-              <div style={{ fontSize: 12, color: '#87b8d4', marginBottom: 6 }}>일정 추가는 로그인이 필요합니다</div>
+            <div style={{ textAlign: 'center', padding: '8px 0' }}>
+              <div style={{ fontSize: 13, color: '#87b8d4', marginBottom: 8 }}>일정 추가는 로그인이 필요합니다</div>
               <button onClick={() => navigate('/login')} style={{
                 background: '#1e9070', border: 'none', borderRadius: 4,
-                color: '#fff', fontSize: 12, padding: '5px 16px', cursor: 'pointer', fontWeight: 600
+                color: '#fff', fontSize: 13, padding: '6px 18px', cursor: 'pointer', fontWeight: 600
               }}>로그인하기</button>
             </div>
           )}

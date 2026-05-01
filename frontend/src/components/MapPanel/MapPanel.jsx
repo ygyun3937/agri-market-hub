@@ -1,6 +1,6 @@
 // src/components/MapPanel/MapPanel.jsx
 import { useEffect, useMemo, useState } from 'react'
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
+import { MapContainer, Marker, Popup, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 import client from '../../api/client'
@@ -526,14 +526,14 @@ export default function MapPanel({ layers = { '도매시장': true, '기상특�
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       {/* leaflet tooltip 기본 흰 배경 제거 */}
-      <style>{`.pest-tip { background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; }`}</style>
+      <style>{`
+        .pest-tip { background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; }
+        .leaflet-container { background: #0f1923 !important; }
+        .leaflet-control-attribution { display: none !important; }
+      `}</style>
 
-      <MapContainer center={[36.5, 127.5]} zoom={7} minZoom={6} maxBounds={[[33.0, 124.0], [38.9, 131.0]]} maxBoundsViscosity={1.0} style={{ width: '100%', height: '100%' }} zoomControl>
+      <MapContainer center={[36.5, 127.5]} zoom={7} minZoom={7} maxZoom={12} maxBounds={[[33.0, 124.5], [38.9, 130.5]]} maxBoundsViscosity={1.0} style={{ width: '100%', height: '100%' }} zoomControl>
         <MapResizer />
-        <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-          attribution='&copy; <a href="https://carto.com/">CARTO</a>'
-        />
 
         {/* 도매시장 마커 */}
         {layers['도매시장'] && MARKETS.map(m => {
