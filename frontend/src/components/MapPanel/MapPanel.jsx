@@ -415,6 +415,23 @@ function spTooltip(name, s, borderColor) {
   </div>`
 }
 
+function KoreaBaseLayer() {
+  const map = useMap()
+  useEffect(() => {
+    let cancelled = false
+    let layer = null
+    getKoreaGeo().then(geo => {
+      if (cancelled) return
+      layer = L.geoJSON(geo, {
+        style: () => ({ fillColor: '#1a2e3f', fillOpacity: 0.6, color: '#3a5a72', weight: 1.2 }),
+        interactive: false,
+      }).addTo(map)
+    }).catch(() => {})
+    return () => { cancelled = true; if (layer) map.removeLayer(layer) }
+  }, [map])
+  return null
+}
+
 function SpecialtyLayer() {
   const map = useMap()
 
@@ -538,6 +555,7 @@ export default function MapPanel({ layers = { '도매시장': true, '기상특�
 
       <MapContainer center={[36.5, 127.5]} zoom={7} minZoom={7} maxZoom={12} maxBounds={[[33.0, 124.5], [38.9, 130.5]]} maxBoundsViscosity={1.0} style={{ width: '100%', height: '100%' }} zoomControl>
         <MapResizer />
+        <KoreaBaseLayer />
 
         {/* 도매시장 마커 */}
         {layers['도매시장'] && MARKETS.map(m => {
