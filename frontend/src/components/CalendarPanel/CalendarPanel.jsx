@@ -38,16 +38,27 @@ function gcalLink(s) {
 }
 
 export default function CalendarPanel({ schedules = [], refreshSchedules }) {
-  const [now] = useState(() => new Date())
+  const [base, setBase] = useState(() => {
+    const d = new Date(); return { year: d.getFullYear(), month: d.getMonth() }
+  })
   const [selectedDay, setSelectedDay] = useState(null)
   const [form, setForm] = useState({ title: '', memo: '' })
   const [saving, setSaving] = useState(false)
   const { user } = useAuth()
   const navigate = useNavigate()
 
-  const year = now.getFullYear()
-  const month = now.getMonth()
-  const today = now.getDate()
+  const { year, month } = base
+  const realToday = new Date()
+  const today = realToday.getFullYear() === year && realToday.getMonth() === month
+    ? realToday.getDate() : null
+
+  const goMonth = (delta) => {
+    setSelectedDay(null)
+    setBase(b => {
+      const d = new Date(b.year, b.month + delta, 1)
+      return { year: d.getFullYear(), month: d.getMonth() }
+    })
+  }
 
   const firstDay = new Date(year, month, 1).getDay()
   const daysInMonth = new Date(year, month + 1, 0).getDate()
@@ -85,17 +96,24 @@ export default function CalendarPanel({ schedules = [], refreshSchedules }) {
   }
 
   const refDay = selectedDay || today
-  const refInfo = getDayInfo(year, month, refDay)
-  const bankOpen = !refInfo.isSun && !refInfo.isSat && !refInfo.isHoliday
-  const auctionOpen = !refInfo.isSun && !refInfo.isHoliday
+  const refInfo = refDay ? getDayInfo(year, month, refDay) : null
+  const bankOpen = refInfo && !refInfo.isSun && !refInfo.isSat && !refInfo.isHoliday
+  const auctionOpen = refInfo && !refInfo.isSun && !refInfo.isHoliday
 
   return (
     <div style={{ padding: '12px 14px', position: 'relative' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+        <button onClick={() => goMonth(-1)} style={{
+          background: 'none', border: '1px solid #354d65', borderRadius: 4,
+          color: '#87b8d4', fontSize: 14, padding: '2px 8px', cursor: 'pointer',
+        }}>‹</button>
         <span style={{ fontSize: 16, color: '#ddeaf5', fontWeight: 700 }}>
           📅 {year}.{String(month + 1).padStart(2, '0')}
         </span>
-        <span style={{ fontSize: 12, color: '#87b8d4' }}>날짜 클릭 → 일정 추가</span>
+        <button onClick={() => goMonth(1)} style={{
+          background: 'none', border: '1px solid #354d65', borderRadius: 4,
+          color: '#87b8d4', fontSize: 14, padding: '2px 8px', cursor: 'pointer',
+        }}>›</button>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 3 }}>
@@ -148,37 +166,39 @@ export default function CalendarPanel({ schedules = [], refreshSchedules }) {
       </div>
 
       {/* 은행/경매장 영업 상태 */}
-      <div style={{
-        marginTop: 10, padding: '7px 8px', borderTop: '1px solid #2d4255',
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-      }}>
-        <span style={{ fontSize: 12, color: '#6a8fa8' }}>
-          {selectedDay ? `${month + 1}/${selectedDay}` : '오늘'}
-          {refInfo.holidayName
-            ? ` · ${refInfo.holidayName}`
-            : refInfo.isSun ? ' · 일요일'
-            : refInfo.isSat ? ' · 토요일'
-            : ''}
-        </span>
-        <div style={{ display: 'flex', gap: 10 }}>
-          <span style={{ fontSize: 12, color: '#87b8d4' }}>
-            은행{' '}
-            <span style={{
-              color: bankOpen ? '#56e890' : '#f85149', fontWeight: 700,
-              background: bankOpen ? '#56e89022' : '#f8514922',
-              padding: '2px 6px', borderRadius: 3,
-            }}>{bankOpen ? '영업' : '휴무'}</span>
+      {refInfo && (
+        <div style={{
+          marginTop: 10, padding: '7px 8px', borderTop: '1px solid #2d4255',
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        }}>
+          <span style={{ fontSize: 12, color: '#6a8fa8' }}>
+            {selectedDay ? `${month + 1}/${selectedDay}` : '오늘'}
+            {refInfo.holidayName
+              ? ` · ${refInfo.holidayName}`
+              : refInfo.isSun ? ' · 일요일'
+              : refInfo.isSat ? ' · 토요일'
+              : ''}
           </span>
-          <span style={{ fontSize: 12, color: '#87b8d4' }}>
-            경매장{' '}
-            <span style={{
-              color: auctionOpen ? '#56e890' : '#f85149', fontWeight: 700,
-              background: auctionOpen ? '#56e89022' : '#f8514922',
-              padding: '2px 6px', borderRadius: 3,
-            }}>{auctionOpen ? '개장' : '휴장'}</span>
-          </span>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <span style={{ fontSize: 12, color: '#87b8d4' }}>
+              은행{' '}
+              <span style={{
+                color: bankOpen ? '#56e890' : '#f85149', fontWeight: 700,
+                background: bankOpen ? '#56e89022' : '#f8514922',
+                padding: '2px 6px', borderRadius: 3,
+              }}>{bankOpen ? '영업' : '휴무'}</span>
+            </span>
+            <span style={{ fontSize: 12, color: '#87b8d4' }}>
+              경매장{' '}
+              <span style={{
+                color: auctionOpen ? '#56e890' : '#f85149', fontWeight: 700,
+                background: auctionOpen ? '#56e89022' : '#f8514922',
+                padding: '2px 6px', borderRadius: 3,
+              }}>{auctionOpen ? '개장' : '휴장'}</span>
+            </span>
+          </div>
         </div>
-      </div>
+      )}
 
       {selectedDay && (
         <div style={{ marginTop: 6, background: '#253748', border: '1px solid #354d65', borderRadius: 6, padding: '10px 12px' }}>
