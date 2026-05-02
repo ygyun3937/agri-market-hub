@@ -1,6 +1,6 @@
 // src/components/MapPanel/MapPanel.jsx
 import { useEffect, useMemo, useState } from 'react'
-import { MapContainer, Marker, Popup, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 import client from '../../api/client'
@@ -423,7 +423,7 @@ function KoreaBaseLayer() {
     getKoreaGeo().then(geo => {
       if (cancelled) return
       layer = L.geoJSON(geo, {
-        style: () => ({ fillColor: '#1a2e3f', fillOpacity: 0.6, color: '#3a5a72', weight: 1.2 }),
+        style: () => ({ fillColor: '#1a2e3f', fillOpacity: 0.15, color: '#3a5a72', weight: 1.0 }),
         interactive: false,
       }).addTo(map)
     }).catch(() => {})
@@ -549,13 +549,15 @@ export default function MapPanel({ layers = { '도매시장': true, '기상특�
       {/* leaflet tooltip 기본 흰 배경 제거 */}
       <style>{`
         .pest-tip { background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; }
-        .leaflet-container { background: #0f1923 !important; }
         .leaflet-control-attribution { display: none !important; }
       `}</style>
 
       <MapContainer center={[36.5, 127.5]} zoom={7} minZoom={7} maxZoom={12} maxBounds={[[33.0, 124.5], [38.9, 130.5]]} maxBoundsViscosity={1.0} style={{ width: '100%', height: '100%' }} zoomControl>
         <MapResizer />
         <KoreaBaseLayer />
+        <TileLayer
+          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+        />
 
         {/* 도매시장 마커 */}
         {layers['도매시장'] && MARKETS.map(m => {
