@@ -2,6 +2,7 @@
 import logging
 import schedule
 import time
+import db
 from crawlers.weather import run_weather, run_forecast, run_disaster_alerts
 from crawlers.kamis import run_prices
 from crawlers.news import run_news
@@ -29,6 +30,7 @@ schedule.every(30).minutes.do(safe(run_news))
 schedule.every(1).hours.do(safe(run_weather))
 schedule.every(3).hours.do(safe(run_forecast))
 schedule.every(6).hours.do(safe(run_pest))
+schedule.every().day.at("04:00").do(safe(lambda: db.cleanup_old_weather()))
 schedule.every().day.at("06:00").do(safe(run_fuel))
 schedule.every().day.at("07:00").do(safe(run_auction))
 schedule.every(30).minutes.do(safe(run_livestock))
@@ -43,6 +45,7 @@ if __name__ == "__main__":
     safe(run_fuel)()
     safe(run_auction)()
     safe(run_livestock)()
+    safe(lambda: db.cleanup_old_weather())()
     log.info("Initial run complete, entering schedule loop")
     while True:
         schedule.run_pending()

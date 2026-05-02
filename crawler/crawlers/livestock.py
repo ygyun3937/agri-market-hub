@@ -39,8 +39,8 @@ LIVESTOCK_TARGETS = [
     ("자돈",       "P004", "자돈",         "두", "돼지"),
     # 닭·계란
     ("닭(육계)",  "L021", "닭(육계)",  "1kg",  "닭·계란"),
-    ("계란(특란)", "L031", "계란 특란", "30개", "닭·계란"),
-    ("계란(대란)", "L032", "계란 대란", "30개", "닭·계란"),
+    ("계란",      "L031", "계란 특란", "30개", "닭·계란", "특란"),
+    ("계란",      "L032", "계란 대란", "30개", "닭·계란", "대란"),
 ]
 
 
@@ -99,12 +99,18 @@ def run_livestock():
             continue
 
         matched = 0
-        for search, code, name, unit, cat in LIVESTOCK_TARGETS:
+        for target in LIVESTOCK_TARGETS:
+            search, code, name, unit, cat = target[0], target[1], target[2], target[3], target[4]
+            kind_filter = target[5] if len(target) > 5 else None
             seen_origins = set()
             for it in all_items:
                 item_name = it.get("item_name", "")
                 if search not in item_name:
                     continue
+                if kind_filter:
+                    kind_name = (it.get("kind_name", "") or "").strip()
+                    if kind_filter not in kind_name:
+                        continue
                 raw_kind = (it.get("kind_name", "") or "").strip()
                 origin = "수입산" if "수입" in raw_kind else "국내산"
                 if origin in seen_origins:

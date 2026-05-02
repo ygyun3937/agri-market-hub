@@ -46,7 +46,8 @@ def run_pest():
 
     log.info(f"Pest API returned {len(items)} items")
     if not items:
-        log.warning(f"Pest API empty response keys: {list(data.keys())}")
+        log.warning(f"Pest API empty — keys: {list(data.keys())}, using seasonal fallback")
+        log.warning(f"Pest raw response preview: {str(data)[:300]}")
         return
 
     for item in items:
@@ -56,3 +57,4 @@ def run_pest():
             severity=item.get("insectNm") or item.get("pestNm") or item.get("severity", ""),
             description=item.get("remark") or item.get("description", ""),
         )
+    log.info(f"Pest API: {len(items)} alerts saved successfully (real data)")

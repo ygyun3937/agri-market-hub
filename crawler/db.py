@@ -1,7 +1,10 @@
 # crawler/db.py
 import os
+import logging
 import psycopg2
 from psycopg2.extras import execute_values
+
+log = logging.getLogger(__name__)
 
 
 def get_conn():
@@ -163,3 +166,12 @@ def aggregate_daily_auction(date_str):
                              item_name=EXCLUDED.item_name""",
             (date_str,),
         )
+
+
+def cleanup_old_weather(days=30):
+    with get_conn() as conn, conn.cursor() as cur:
+        cur.execute(
+            "DELETE FROM weather_data WHERE collected_at < NOW() - INTERVAL '%s days'",
+            (days,)
+        )
+        log.info(f"weather_data cleanup: {cur.rowcount} rows deleted (older than {days} days)")
