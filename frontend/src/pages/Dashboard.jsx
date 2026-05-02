@@ -100,6 +100,7 @@ const MOBILE_TABS = [
   { key: 'map',      icon: '🗺️', label: '지도' },
   { key: 'weather',  icon: '⛅',  label: '날씨' },
   { key: 'schedule', icon: '📋', label: '일정' },
+  { key: 'info',     icon: '📊', label: '정보' },
 ]
 
 export default function Dashboard() {
@@ -188,12 +189,13 @@ export default function Dashboard() {
         {mobileTab === 'map' && (
           <>
             <MapPanel layers={layers} />
-            <div style={{ position: 'absolute', top: 8, right: 8, display: 'flex', flexDirection: 'column', gap: 4, zIndex: 1000 }}>
+            <div style={{ position: 'absolute', top: 8, right: 8, display: 'flex', flexDirection: 'column', gap: 6, zIndex: 1000 }}>
               {LAYER_LABELS.map(l => (
-                <label key={l} style={{ background: '#253748cc', border: '1px solid #354d65', borderRadius: 6,
-                  padding: '3px 8px', fontSize: 11, color: layers[l] ? '#ddeaf5' : '#555',
-                  display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
-                  <input type="checkbox" checked={layers[l]} onChange={() => toggleLayer(l)} style={{ margin: 0 }} />
+                <label key={l} style={{ background: '#253748ee', border: '1px solid #354d65', borderRadius: 8,
+                  padding: '6px 12px', fontSize: 13, color: layers[l] ? '#ddeaf5' : '#667',
+                  display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', minHeight: 36 }}>
+                  <input type="checkbox" checked={layers[l]} onChange={() => toggleLayer(l)}
+                    style={{ margin: 0, width: 18, height: 18 }} />
                   {l}
                 </label>
               ))}
@@ -207,16 +209,23 @@ export default function Dashboard() {
             <ScheduleList schedules={schedules} refreshSchedules={fetchSchedules} />
           </div>
         )}
+        {mobileTab === 'info' && (
+          <div style={{ overflow: 'auto', height: '100%', padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <FuelPanel />
+            <PestPanel />
+          </div>
+        )}
       </div>
       <div style={{ background: '#162330', borderTop: '1px solid #2d4255', display: 'flex', flexShrink: 0 }}>
         {MOBILE_TABS.map(t => (
           <button key={t.key} onClick={() => setMobileTab(t.key)} style={{
-            flex: 1, padding: '8px 0 10px', display: 'flex', flexDirection: 'column',
-            alignItems: 'center', gap: 2, background: mobileTab === t.key ? '#1a2e3a' : 'none',
+            flex: 1, padding: '10px 0 12px', display: 'flex', flexDirection: 'column',
+            alignItems: 'center', gap: 3, background: mobileTab === t.key ? '#1a2e3a' : 'none',
             border: 'none', cursor: 'pointer',
+            borderTop: mobileTab === t.key ? '2px solid #82cfff' : '2px solid transparent',
           }}>
-            <span style={{ fontSize: 20 }}>{t.icon}</span>
-            <span style={{ fontSize: 10, color: mobileTab === t.key ? '#82cfff' : '#87b8d4' }}>{t.label}</span>
+            <span style={{ fontSize: 24 }}>{t.icon}</span>
+            <span style={{ fontSize: 12, fontWeight: mobileTab === t.key ? 700 : 400, color: mobileTab === t.key ? '#82cfff' : '#87b8d4' }}>{t.label}</span>
           </button>
         ))}
       </div>
