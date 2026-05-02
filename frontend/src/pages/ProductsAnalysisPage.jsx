@@ -11,6 +11,23 @@ import AnalysisNav from '../components/Analysis/AnalysisNav'
 import client from '../api/client'
 import { MOCK_DAILY, MOCK_TREND, MOCK_VARIETY, MOCK_ORIGIN } from '../data/analysisMock'
 
+function downloadCSV(rows, filename) {
+  if (!rows?.length) return
+  const headers = Object.keys(rows[0])
+  const lines = [
+    headers.join(','),
+    ...rows.map(r => headers.map(h => {
+      const v = r[h] ?? ''
+      return typeof v === 'string' && v.includes(',') ? `"${v}"` : v
+    }).join(','))
+  ]
+  const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url; a.download = filename; a.click()
+  URL.revokeObjectURL(url)
+}
+
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const BG      = '#1c2a36'
 const SURFACE = '#253748'
@@ -859,6 +876,15 @@ function LivestockSection() {
                   {tab}
                 </button>
               ))}
+              <button
+                onClick={() => downloadCSV(filtered, `축산물_${getToday()}.csv`)}
+                style={{
+                  marginLeft: 'auto', background: '#253748', border: '1px solid #354d65', borderRadius: 5,
+                  color: '#82cfff', fontSize: 12, padding: '4px 10px', cursor: 'pointer',
+                }}
+              >
+                📥 CSV
+              </button>
             </div>
             <ProductTable data={filtered} onSelect={selectItem} />
           </div>
@@ -1092,6 +1118,15 @@ export default function ProductsAnalysisPage() {
                     {cat}
                   </button>
                 ))}
+                <button
+                  onClick={() => downloadCSV(filteredData, `농산물_${selectedDate || '오늘'}.csv`)}
+                  style={{
+                    marginLeft: 'auto', background: '#253748', border: '1px solid #354d65', borderRadius: 5,
+                    color: '#82cfff', fontSize: 12, padding: '4px 10px', cursor: 'pointer',
+                  }}
+                >
+                  📥 CSV
+                </button>
               </div>
               <ProductTable data={filteredData} onSelect={selectItem} />
             </div>

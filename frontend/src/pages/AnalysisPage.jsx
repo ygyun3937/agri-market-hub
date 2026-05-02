@@ -49,6 +49,23 @@ function MOCK_LIVESTOCK_ORIGIN(itemCode) {
 const LIVESTOCK_SUB_TABS = ['소', '돼지', '닭·계란']
 const LIVESTOCK_ICONS = { '소': '🐄', '돼지': '🐷', '닭·계란': '🐔' }
 
+function downloadCSV(rows, filename) {
+  if (!rows?.length) return
+  const headers = Object.keys(rows[0])
+  const lines = [
+    headers.join(','),
+    ...rows.map(r => headers.map(h => {
+      const v = r[h] ?? ''
+      return typeof v === 'string' && v.includes(',') ? `"${v}"` : v
+    }).join(','))
+  ]
+  const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url; a.download = filename; a.click()
+  URL.revokeObjectURL(url)
+}
+
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const BG      = '#1c2a36'
 const SURFACE = '#253748'
@@ -526,7 +543,7 @@ function TreemapView({ data, onSelect }) {
 const CATEGORY_TOP = '🔥 거래량 TOP'
 const CATEGORY_ALL = '전체'
 
-function MainSection({ data, viewMode, setViewMode, activeCategory, setActiveCategory, onSelect }) {
+function MainSection({ data, viewMode, setViewMode, activeCategory, setActiveCategory, onSelect, selectedDate }) {
   const categories = [CATEGORY_TOP, CATEGORY_ALL, ...Array.from(new Set(data.map(d => d.category))).filter(Boolean)]
 
   let rows = data
@@ -587,6 +604,17 @@ function MainSection({ data, viewMode, setViewMode, activeCategory, setActiveCat
             </button>
           ))}
         </div>
+
+        {/* CSV download */}
+        <button
+          onClick={() => downloadCSV(rows, `농산물_${selectedDate || '오늘'}.csv`)}
+          style={{
+            marginLeft: 'auto', background: '#253748', border: '1px solid #354d65', borderRadius: 5,
+            color: '#82cfff', fontSize: 12, padding: '4px 10px', cursor: 'pointer',
+          }}
+        >
+          📥 CSV
+        </button>
       </div>
 
       {/* Content */}
@@ -1107,6 +1135,7 @@ export default function AnalysisPage() {
                   activeCategory={activeCategory}
                   setActiveCategory={setActiveCategory}
                   onSelect={selectItem}
+                  selectedDate={selectedDate}
                 />
               </>
             )}
