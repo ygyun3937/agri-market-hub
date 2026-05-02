@@ -12,6 +12,7 @@ import ScheduleList from '../components/CalendarPanel/ScheduleList'
 import FuelPanel from '../components/FuelPanel/FuelPanel'
 import PestPanel from '../components/PestPanel/PestPanel'
 import { useSignalR } from '../hooks/useSignalR'
+import { usePush } from '../hooks/usePush'
 
 const LAYER_LABELS = ['도매시장', '기상특보', '병해충', '특산물']
 
@@ -123,6 +124,7 @@ export default function Dashboard() {
   const [mobileTab, setMobileTab] = useState('map')
 
   const isLoggedIn = !!localStorage.getItem('token')
+  const { subscribe: subscribePush } = usePush()
 
   const fetchSchedules = useCallback(() => {
     Promise.all([
@@ -148,6 +150,7 @@ export default function Dashboard() {
     if (isLoggedIn) {
       client.get('/notifications').then(r => setNotifications(r.data)).catch(() => {})
       fetchSchedules()
+      subscribePush().catch(() => {})
     }
   }, [fetchSchedules])
 
