@@ -219,7 +219,8 @@ export default function Dashboard() {
           </div>
         )}
       </div>
-      <div style={{ background: '#162330', borderTop: '1px solid #2d4255', display: 'flex', flexShrink: 0 }}>
+      <div style={{ background: '#162330', borderTop: '1px solid #2d4255', display: 'flex', flexShrink: 0,
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
         {MOBILE_TABS.map(t => (
           <button key={t.key} onClick={() => setMobileTab(t.key)} style={{
             flex: 1, padding: '10px 0 12px', display: 'flex', flexDirection: 'column',
